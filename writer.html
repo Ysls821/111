@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>剧本生成器 v2.0 - 全模块</title>
+    <style>
+        /* 复用之前的深色主题 CSS */
+        :root { --bg-dark: #1e1e1e; --bg-panel: #252526; --border: #3e3e42; --accent: #007acc; --text: #cccccc; }
+        * { box-sizing: border-box; }
+        body { margin: 0; font-family: 'Segoe UI', sans-serif; background: var(--bg-dark); color: var(--text); height: 100vh; display: flex; overflow: hidden; }
+
+        /* 左侧导航栏 (新) */
+        .nav-bar {
+            width: 60px;
+            background: #333333;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding-top: 20px;
+            border-right: 1px solid var(--border);
+        }
+        .nav-btn {
+            width: 40px;
+            height: 40px;
+            margin-bottom: 15px;
+            border-radius: 8px;
+            border: none;
+            background: #444;
+            color: #aaa;
+            cursor: pointer;
+            font-size: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .nav-btn.active { background: var(--accent); color: white; }
+        .nav-btn:hover { background: #555; }
+
+        /* 二级侧边栏 */
+        .sidebar { width: 220px; background: var(--bg-panel); border-right: 1px solid var(--border); display: flex; flex-direction: column; }
+        .scene-list { flex: 1; overflow-y: auto; list-style: none; padding: 0; margin: 0; }
+        .scene-item { padding: 10px 15px; cursor: pointer; border-bottom: 1px solid var(--border); font-size: 13px; }
+        .scene-item:hover { background: #2a2d2e; }
+        .scene-item.active { background: #37373d; border-left: 3px solid var(--accent); }
+        .sidebar-header { padding: 10px; border-bottom: 1px solid var(--border); display: flex; gap: 5px; }
+
+        /* 主编辑区 */
+        .main-editor { flex: 1; padding: 20px; overflow-y: auto; background: var(--bg-dark); }
+        .preview-panel { width: 300px; background: var(--bg-panel); border-left: 1px solid var(--border); padding: 10px; display: flex; flex-direction: column; }
+
+        /* 通用表单控件 */
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; font-size: 12px; color: #888; }
+        input, textarea, select { width: 100%; padding: 8px; background: #3c3c3c; border: 1px solid #3c3c3c; color: white; border-radius: 4px; }
+        input:focus, textarea:focus { outline: 1px solid var(--accent); }
+        textarea { min-height: 100px; resize: vertical; }
+        .btn { padding: 6px 12px; border: none; border-radius: 4px; cursor: pointer; font-size: 12px; color: white; }
+        .btn-primary { background: var(--accent); }
+        .btn-danger { background: #d9534f; }
+        .btn-success { background: #4caf50; }
+        pre { background: #1e1e1e; padding: 10px; border-radius: 4px; flex: 1; overflow: auto; font-size: 12px; color: #9cdcfe; }
+        
+        .section-title { font-size: 18px; margin-bottom: 20px; color: white; border-bottom: 1px solid #444; padding-bottom: 10px; }
+        .option-card { background: #2d2d30; padding: 10px; margin-bottom: 10px; border: 1px solid var(--border); }
+        .char-card { background: #2d2d30; padding: 15px; margin-bottom: 15px; border-radius: 8px; border: 1px solid var(--border); }
+    </style>
+</head>
+<body>
+
+    <!-- 1. 最左侧大导航 (板块切换) -->
+    <div class="nav-bar">
+        <button class="nav-btn active" onclick="switchSection('world')" title="世界观">🌍</button>
+        <button class="nav-btn" onclick="switchSection('main')" title="主线剧情">📖</button>
+        <button class="nav-btn" onclick="switchSection('branch')" title="普通支线">🌿</button>
+        <button class="nav-btn" onclick="switchSection('char_route')" title="角色专属线">❤️</button>
+        <button class="nav-btn" onclick="switchSection('chars')" title="角色设定">👤</button>
+    </div>
+
+    <!-- 2. 二级列表栏 (仅在剧情板块显示) -->
+    <div class="sidebar" id="sidebarPanel">
+        <div class="sidebar-header">
+            <button class="btn btn-primary" onclick="addItem()" style="width:100%">+ 新建条目</button>
+        </div>
+        <ul class="scene-list" id="itemList">
+            <!-- JS 生成 -->
+        </ul>
+    </div>
+
+    <!-- 3. 中间编辑区 -->
+    <div class="main-editor">
+        <h2 id="sectionTitle" class="section-title">世界观设置</h2>
+
+        <!-- A. 世界观表单 -->
+        <div id="formWorld" class="editor-form">
+            <div class="form-group">
+                <label>世界观名称</label>
+                <input type="text" id="worldName" oninput="saveWorld()">
+            </div>
+            <div class="form-group">
+                <label>背景设定 (背景故事、规则、力量体系)</label>
+                <textarea id="worldDesc" style="height: 300px;" oninput="saveWorld()"></textarea>
+            </div>
+        </div>
+
+        <!-- B. 角色设定表单 -->
+        <div id="formChar" class="editor-form" style="display:none;">
+            <div id="charEditorContainer">
+                <div class="form-group">
+                    <label>角色 ID</label>
+                    <input type="text" id="charId" disabled>
+                </div>
+                <div class="form-group">
+                    <label>姓名</label>
+                    <input type="text" id="charName" oninput="saveCurrentItem()">
+                </div>
+                <div class="form-group">
+                    <label>人设 Prompt (性格、外貌、说话风格)</label>
+                    <textarea id="charPersona" style="height: 150px;" oninput="saveCurrentItem()"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>头像 URL</label>
+                    <input type="text" id="charAvatar" oninput="saveCurrentItem()">
+                </div>
+                <button class="btn btn-danger" onclick="deleteCurrentItem()">删除角色</button>
+            </div>
+            <div id="charEmpty" style="display:none; color:#666;">请在左侧选择角色</div>
+        </div>
+
+        <!-- C. 剧情节点表单 (主线/支线共用) -->
+        <div id="formScene" class="editor-form" style="display:none;">
+            <div id="sceneEditorContainer">
+                <div class="form-group">
+                    <label>场景 ID</label>
+                    <input type="text" id="sceneId" disabled>
+                </div>
+                <div class="form-group">
+                    <label>类型</label>
+                    <select id="sceneType" onchange="saveCurrentItem()">
+                        <option value="fixed">Fixed (固定剧本)</option>
+                        <option value="ai">AI (AI生成)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>内容 / Prompt</label>
+                    <textarea id="sceneContent" style="height: 150px;" oninput="saveCurrentItem()"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>背景图 URL</label>
+                    <input type="text" id="sceneBg" oninput="saveCurrentItem()">
+                </div>
+                <div class="form-group">
+                    <label>选项 (Options)</label>
+                    <button class="btn btn-success btn-sm" onclick="addOption()">+ 加选项</button>
+                    <div id="optionsList" style="margin-top:10px;"></div>
+                </div>
+                <button class="btn btn-danger" onclick="deleteCurrentItem()">删除节点</button>
+            </div>
+            <div id="sceneEmpty" style="display:none; color:#666;">请在左侧选择剧情节点</div>
+        </div>
+    </div>
+
+    <!-- 4. 右侧预览 -->
+    <div class="preview-panel">
+        <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
+            <label>整包预览</label>
+            <button class="btn btn-success btn-sm" onclick="exportJson()">📦 打包导出</button>
+        </div>
+        <pre id="jsonPreview"></pre>
+        <input type="file" id="importFile" style="display:none" onchange="importJson(this)">
+        <button class="btn btn-primary" onclick="document.getElementById('importFile').click()" style="width:100%; margin-top:10px;">📂 导入编辑</button>
+    </div>
+
+    <script>
+        // === 全局数据结构 ===
+        let fullData = {
+            worldview: { name: "", description: "" },
+            characters: {},    // map: id -> {name, persona, avatar}
+            main_story: {},    // map: id -> sceneObj
+            side_stories: {},  // map: id -> sceneObj
+            char_routes: {}    // map: id -> sceneObj
+        };
+
+        let currentSection = 'world'; // world, main, branch, char_route, chars
+        let currentItemId = null;
+
+        // === 初始化 ===
+        function init() {
+            switchSection('world');
+            renderPreview();
+        }
+
+        // === 切换板块 ===
+        function switchSection(section) {
+            currentSection = section;
+            currentItemId = null;
+
+            // 1. 更新左侧导航高亮
+            document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.closest('.nav-btn')?.classList.add('active');
+
+            // 2. 更新标题
+            const titles = {
+                'world': '世界观设定',
+                'main': '主线剧情 (Main Story)',
+                'branch': '普通支线 (Side Stories)',
+                'char_route': '角色专属线 (Character Routes)',
+                'chars': '角色设定 (Characters)'
+            };
+            document.getElementById('sectionTitle').textContent = titles[section];
+
+            // 3. 切换编辑器显示
+            document.querySelectorAll('.editor-form').forEach(el => el.style.display = 'none');
+            
+            // 侧边栏逻辑
+            const sidebar = document.getElementById('sidebarPanel');
+            
+            if (section === 'world') {
+                sidebar.style.display = 'none'; // 世界观不需要列表
+                document.getElementById('formWorld').style.display = 'block';
+                // 填充数据
+                document.getElementById('worldName').value = fullData.worldview.name || "";
+                document.getElementById('worldDesc').value = fullData.worldview.description || "";
+            } else {
+                sidebar.style.display = 'flex'; // 其他都需要列表
+                renderSidebarList(); // 渲染对应板块的列表
+                
+                // 显示对应的右侧空状态
+                if (section === 'chars') {
+                    document.getElementById('formChar').style.display = 'block';
+                    document.getElementById('charEditorContainer').style.display = 'none';
+                    document.getElementById('charEmpty').style.display = 'block';
+                } else {
+                    document.getElementById('formScene').style.display = 'block';
+                    document.getElementById('sceneEditorContainer').style.display = 'none';
+                    document.getElementById('sceneEmpty').style.display = 'block';
+                }
+            }
+        }
+
+        // === 渲染侧边栏列表 ===
+        function renderSidebarList() {
+            const listEl = document.getElementById('itemList');
+            listEl.innerHTML = '';
+            
+            let dataMap = getDataMapBySection();
+            
+            Object.keys(dataMap).forEach(key => {
+                const li = document.createElement('li');
+                li.className = `scene-item ${key === currentItemId ? 'active' : ''}`;
+                
+                // 显示名字（角色显示name，剧情显示ID）
+                let label = key;
+                if (currentSection === 'chars') label = dataMap[key].name || key;
+                
+                li.innerText = label;
+                li.onclick = () => loadItem(key);
+                listEl.appendChild(li);
+            });
+        }
+
+        function getDataMapBySection() {
+            if (currentSection === 'chars') return fullData.characters;
+            if (currentSection === 'main') return fullData.main_story;
+            if (currentSection === 'branch') return fullData.side_stories;
+            if (currentSection === 'char_route') return fullData.char_routes;
+            return {};
+        }
+
+        // === 加载条目详情 ===
+        function loadItem(id) {
+            currentItemId = id;
+            const dataMap = getDataMapBySection();
+            const data = dataMap[id];
+            renderSidebarList(); // 更新高亮
+
+            if (currentSection === 'chars') {
+                document.getElementById('charEditorContainer').style.display = 'block';
+                document.getElementById('charEmpty').style.display = 'none';
+                
+                document.getElementById('charId').value = id;
+                document.getElementById('charName').value = data.name || "";
+                document.getElementById('charPersona').value = data.persona || "";
+                document.getElementById('charAvatar').value = data.avatar || "";
+            } else {
+                // 剧情类
+                document.getElementById('sceneEditorContainer').style.display = 'block';
+                document.getElementById('sceneEmpty').style.display = 'none';
+                
+                document.getElementById('sceneId').value = id;
+                document.getElementById('sceneType').value = data.type || 'fixed';
+                document.getElementById('sceneContent').value = data.text || data.prompt || "";
+                document.getElementById('sceneBg').value = data.background || "";
+                renderOptions(data.options || []);
+            }
+        }
+
+        // === 新建条目 ===
+        function addItem() {
+            const ts = Date.now().toString().slice(-4);
+            let newId = "";
+            let newObj = {};
+
+            if (currentSection === 'chars') {
+                newId = "char_" + ts;
+                newObj = { name: "新角色", persona: "", avatar: "" };
+            } else {
+                newId = currentSection + "_" + ts;
+                newObj = { type: "fixed", text: "", options: [] };
+            }
+
+            getDataMapBySection()[newId] = newObj;
+            loadItem(newId);
+            renderSidebarList();
+            renderPreview();
+        }
+
+        // === 保存数据 ===
+        function saveWorld() {
+            fullData.worldview.name = document.getElementById('worldName').value;
+            fullData.worldview.description = document.getElementById('worldDesc').value;
+            renderPreview();
+        }
+
+        function saveCurrentItem() {
+            if (!currentItemId) return;
+            const map = getDataMapBySection();
+            
+            if (currentSection === 'chars') {
+                map[currentItemId].name = document.getElementById('charName').value;
+                map[currentItemId].persona = document.getElementById('charPersona').value;
+                map[currentItemId].avatar = document.getElementById('charAvatar').value;
+                // 更新列表上的名字
+                renderSidebarList();
+            } else {
+                map[currentItemId].type = document.getElementById('sceneType').value;
+                const content = document.getElementById('sceneContent').value;
+                if (map[currentItemId].type === 'ai') {
+                    map[currentItemId].prompt = content;
+                    delete map[currentItemId].text;
+                } else {
+                    map[currentItemId].text = content;
+                    delete map[currentItemId].prompt;
+                }
+                map[currentItemId].background = document.getElementById('sceneBg').value;
+            }
+            renderPreview();
+        }
+
+        function deleteCurrentItem() {
+            if(confirm('确定删除吗？')) {
+                delete getDataMapBySection()[currentItemId];
+                currentItemId = null;
+                // 隐藏表单
+                if(currentSection === 'chars') document.getElementById('charEditorContainer').style.display = 'none';
+                else document.getElementById('sceneEditorContainer').style.display = 'none';
+                
+                renderSidebarList();
+                renderPreview();
+            }
+        }
+
+        // === 选项逻辑 (复用) ===
+        function renderOptions(opts) {
+            const list = document.getElementById('optionsList');
+            list.innerHTML = '';
+            opts.forEach((opt, idx) => {
+                const div = document.createElement('div');
+                div.className = 'option-card';
+                div.innerHTML = `
+                    <div style="display:flex; gap:5px; margin-bottom:5px;">
+                        <input placeholder="按钮文案" value="${opt.label||''}" oninput="updateOpt(${idx}, 'label', this.value)">
+                        <input placeholder="跳转ID" value="${opt.nextScene||''}" oninput="updateOpt(${idx}, 'nextScene', this.value)">
+                    </div>
+                    <button class="btn btn-danger btn-sm" onclick="delOpt(${idx})">删</button>
+                `;
+                list.appendChild(div);
+            });
+        }
+        function addOption() {
+            const map = getDataMapBySection();
+            if(!map[currentItemId].options) map[currentItemId].options = [];
+            map[currentItemId].options.push({label:"", nextScene:""});
+            loadItem(currentItemId); // 刷新
+            renderPreview();
+        }
+        function updateOpt(idx, key, val) {
+            getDataMapBySection()[currentItemId].options[idx][key] = val;
+            renderPreview();
+        }
+        function delOpt(idx) {
+            getDataMapBySection()[currentItemId].options.splice(idx, 1);
+            loadItem(currentItemId);
+            renderPreview();
+        }
+
+        // === 导入导出 ===
+        function renderPreview() {
+            document.getElementById('jsonPreview').innerText = JSON.stringify(fullData, null, 2);
+        }
+        function exportJson() {
+            const blob = new Blob([JSON.stringify(fullData, null, 2)], {type: "application/json"});
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = "full_script.json";
+            a.click();
+        }
+        function importJson(input) {
+            const file = input.files[0];
+            if(!file) return;
+            const reader = new FileReader();
+            reader.onload = e => {
+                try {
+                    fullData = JSON.parse(e.target.result);
+                    // 补全结构防报错
+                    if(!fullData.worldview) fullData.worldview = {};
+                    if(!fullData.characters) fullData.characters = {};
+                    if(!fullData.main_story) fullData.main_story = {};
+                    if(!fullData.side_stories) fullData.side_stories = {};
+                    if(!fullData.char_routes) fullData.char_routes = {};
+                    
+                    switchSection('world');
+                    renderPreview();
+                    alert('导入成功！');
+                } catch(err) { alert('JSON 格式错误'); }
+            };
+            reader.readAsText(file);
+        }
+
+        init();
+    </script>
+</body>
+</html>

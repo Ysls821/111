@@ -827,7 +827,7 @@
     <div class="login-page" id="loginPage">
         <div class="login-card glass-panel">
             <h1 class="login-title">INFINITE LOVE</h1>
-            <p class="login-subtitle">主神空间 · 沉浸式恋爱模拟</p>
+            <p class="login-subtitle">Utopia note · 乌托邦手记</p>
             
             <div class="input-wrapper">
                 <input type="text" class="input-modern" id="username" placeholder="请输入你的代号..." autocomplete="off">
@@ -1091,6 +1091,8 @@
                 <button class="btn-glow" onclick="saveApiConfig()">
                      保存配置
                 </button>
+            </div>
+               <div id="apiTestResult" style="margin-top: 12px; padding: 12px; border-radius: 8px; font-size: 13px; display: none;"></div>
             </div>
 
             <!-- 主题设置 -->
@@ -1445,7 +1447,7 @@
             isTyping = false;
             textEl.textContent = typingText;
         }
-
+        
         // API 配置保存（v20 版本的三个字段）
         function saveApiConfig() {
             const apiName = document.getElementById('apiName').value.trim();
@@ -1489,6 +1491,89 @@
                     console.error('Config load failed', e);
                 }
             }
+        }
+        // 测试 API 连接并获取模型列表
+        async function testApiConnection() {
+            const apiUrl = document.getElementById('apiUrl').value.trim();
+            const apiKey = document.getElementById('settingsApiKey').value.trim();
+            const resultDiv = document.getElementById('apiTestResult');
+            const modelSelect = document.getElementById('apiModel');
+
+            if (!apiUrl || !apiKey) {
+                showApiTestResult('⚠️ 请先填写 API URL 和 Key', 'error');
+                return;
+            }
+
+            showApiTestResult('🔄 正在测试连接...', 'loading');
+
+            try {
+                // 尝试获取模型列表
+                const modelsUrl = apiUrl.replace(/\/$/, '').replace(/\/chat\/completions$/, '') + '/models';
+                
+                const res = await fetch(modelsUrl, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': 'Bearer ' + apiKey,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (!res.ok) {
+                    const errorText = await res.text();
+                    showApiTestResult(`❌ 连接失败: ${res.status} ${res.statusText}`, 'error');
+                    console.error('API Error:', errorText);
+                    return;
+                }
+
+                const data = await res.json();
+                
+                if (data.data && Array.isArray(data.data)) {
+                    // 成功获取模型列表
+                    const models = data.data;
+                    showApiTestResult(`✅ 连接成功！找到 ${models.length} 个可用模型`, 'success');
+                    
+                    // 填充模型下拉框
+                    modelSelect.innerHTML = '<option value="">-- 请选择模型 --</option>';
+                    models.forEach(model => {
+                        const option = document.createElement('option');
+                        option.value = model.id;
+                        option.textContent = model.id;
+                        modelSelect.appendChild(option);
+                    });
+
+                    // 如果之前保存过模型，自动选中
+                    const savedConfig = localStorage.getItem('apiConfig');
+                    if (savedConfig) {
+                        try {
+                            const config = JSON.parse(savedConfig);
+                            if (config.model) {
+                                modelSelect.value = config.model;
+                            }
+                        } catch (e) {}
+                    }
+                } else {
+                    showApiTestResult('✅ 连接成功！但未能获取模型列表，请手动输入模型名', 'warning');
+                }
+            } catch (error) {
+                showApiTestResult(`❌ 网络错误: ${error.message}`, 'error');
+                console.error('Fetch error:', error);
+            }
+        }
+
+        function showApiTestResult(message, type) {
+            const resultDiv = document.getElementById('apiTestResult');
+            if (!resultDiv) return;
+
+            const colors = {
+                success: 'background: rgba(16, 185, 129, 0.2); border: 1px solid rgba(16, 185, 129, 0.4); color: #10b981;',
+                error: 'background: rgba(239, 68, 68, 0.2); border: 1px solid rgba(239, 68, 68, 0.4); color: #ef4444;',
+                warning: 'background: rgba(245, 158, 11, 0.2); border: 1px solid rgba(245, 158, 11, 0.4); color: #f59e0b;',
+                loading: 'background: rgba(59, 130, 246, 0.2); border: 1px solid rgba(59, 130, 246, 0.4); color: #3b82f6;'
+            };
+
+            resultDiv.style.cssText = colors[type] || colors.loading;
+            resultDiv.textContent = message;
+            resultDiv.style.display = 'block';
         }
 
         // 主题切换（v20 版本的主题系统）

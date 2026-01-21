@@ -6,623 +6,1817 @@
     <title>Utopia note·乌托邦手记</title>
     <style>
         :root {
+            /* 霓射质感配色系统 */
             --primary: #d946ef;
             --secondary: #8b5cf6;
             --accent: #06b6d4;
             --bg-deep: #0f0720;
+            
+            /* 霓射渐变 */
             --gradient-holo: linear-gradient(135deg, rgba(217,70,239,0.8), rgba(139,92,246,0.8), rgba(6,182,212,0.8));
-            --glass-surface: rgba(20, 10, 35, 0.6);
+            --gradient-glass: linear-gradient(145deg, rgba(255,255,255,0.1), rgba(255,255,255,0.05));
+            --gradient-border: linear-gradient(90deg, #d946ef, #8b5cf6, #06b6d4);
+            
+            --glass-surface: rgba(20, 10, 35, 0.4);
             --glass-border: rgba(255, 255, 255, 0.1);
             --text-main: #ffffff;
             --text-muted: rgba(255, 255, 255, 0.7);
+            --shadow-glow: 0 0 20px rgba(139, 92, 246, 0.3);
+            --shadow-card: 0 8px 32px rgba(0, 0, 0, 0.3);
         }
 
-        [data-theme="white"] { --primary: #5b7aef; --bg-deep: #f5f7fa; --text-main: #1a1a1a; --glass-surface: rgba(255, 255, 255, 0.8); }
-        
+        /* 主题变体 */
+        [data-theme="black"] {
+            --primary: #888;
+            --secondary: #666;
+            --accent: #999;
+            --bg-deep: #000000;
+            --gradient-holo: linear-gradient(135deg, rgba(136,136,136,0.8), rgba(102,102,102,0.8), rgba(153,153,153,0.8));
+            --gradient-border: linear-gradient(90deg, #888, #666, #999);
+        }
+
+        [data-theme="white"] {
+            --primary: #5b7aef;
+            --secondary: #4461d9;
+            --accent: #2dd4bf;
+            --bg-deep: #f5f7fa;
+            --glass-surface: rgba(255, 255, 255, 0.6);
+            --text-main: #1a1a1a;
+            --text-muted: rgba(0, 0, 0, 0.6);
+            --gradient-holo: linear-gradient(135deg, rgba(91,122,239,0.8), rgba(68,97,217,0.8), rgba(45,212,191,0.8));
+            --gradient-border: linear-gradient(90deg, #5b7aef, #4461d9, #2dd4bf);
+        }
+
+        [data-theme="green"] {
+            --primary: #10b981;
+            --secondary: #059669;
+            --accent: #34d399;
+            --bg-deep: #020a06;
+            --gradient-holo: linear-gradient(135deg, rgba(16,185,129,0.8), rgba(5,150,105,0.8), rgba(52,211,153,0.8));
+            --gradient-border: linear-gradient(90deg, #10b981, #059669, #34d399);
+        }
+
+        [data-theme="blue"] {
+            --primary: #3b82f6;
+            --secondary: #2563eb;
+            --accent: #60a5fa;
+            --bg-deep: #020510;
+            --gradient-holo: linear-gradient(135deg, rgba(59,130,246,0.8), rgba(37,99,235,0.8), rgba(96,165,250,0.8));
+            --gradient-border: linear-gradient(90deg, #3b82f6, #2563eb, #60a5fa);
+        }
+
         * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        body { font-family: 'SF Pro Display', sans-serif; background: var(--bg-deep); color: var(--text-main); min-height: 100vh; overflow-x: hidden; transition: 0.5s; background-image: radial-gradient(circle at 10% 20%, rgba(217, 70, 239, 0.15), transparent 40%), radial-gradient(circle at 90% 80%, rgba(6, 182, 212, 0.15), transparent 40%); background-attachment: fixed; }
-        
-        .glass-panel { background: var(--glass-surface); backdrop-filter: blur(24px); border: 1px solid var(--glass-border); box-shadow: 0 8px 32px rgba(0,0,0,0.3); }
-        .btn-glow { padding: 12px 20px; border: none; border-radius: 12px; background: var(--gradient-holo); color: white; font-weight: 600; cursor: pointer; transition: transform 0.2s; }
+
+        body {
+            font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Microsoft YaHei', sans-serif;
+            background-color: var(--bg-deep);
+            color: var(--text-main);
+            min-height: 100vh;
+            overflow-x: hidden;
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(217, 70, 239, 0.15) 0%, transparent 40%),
+                radial-gradient(circle at 90% 80%, rgba(6, 182, 212, 0.15) 0%, transparent 40%),
+                radial-gradient(circle at 50% 50%, rgba(139, 92, 246, 0.1) 0%, transparent 60%);
+            background-attachment: fixed;
+            transition: background-color 0.5s, color 0.5s;
+        }
+
+        .aurora-bg {
+            position: fixed;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: conic-gradient(from 0deg at 50% 50%, 
+                rgba(139, 92, 246, 0.1), 
+                rgba(217, 70, 239, 0.1), 
+                rgba(6, 182, 212, 0.1), 
+                rgba(139, 92, 246, 0.1));
+            filter: blur(80px);
+            animation: rotate 20s linear infinite;
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .glass-panel {
+            background: var(--glass-surface);
+            backdrop-filter: blur(24px) saturate(120%);
+            -webkit-backdrop-filter: blur(24px) saturate(120%);
+            border: 1px solid var(--glass-border);
+            border-top: 1px solid rgba(255,255,255,0.2);
+            box-shadow: var(--shadow-card);
+        }
+
+        .icon {
+            width: 20px;
+            height: 20px;
+            fill: none;
+            stroke: currentColor;
+            stroke-width: 2;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        /* 登录页 */
+        .login-page {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 20px;
+            position: relative;
+            z-index: 10;
+        }
+
+        .login-card {
+            width: 100%;
+            max-width: 400px;
+            padding: 40px 30px;
+            border-radius: 24px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .login-card::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: 24px;
+            padding: 1px;
+            background: var(--gradient-border);
+            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            -webkit-mask-composite: xor;
+            mask-composite: exclude;
+            pointer-events: none;
+        }
+
+        .login-title {
+            font-size: 36px;
+            font-weight: 800;
+            margin-bottom: 8px;
+            background: var(--gradient-border);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            letter-spacing: -1px;
+        }
+
+        .login-subtitle {
+            color: var(--text-muted);
+            font-size: 14px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            margin-bottom: 40px;
+        }
+
+        .input-wrapper {
+            position: relative;
+            margin-bottom: 24px;
+        }
+
+        .input-modern {
+            width: 100%;
+            padding: 16px 20px;
+            background: rgba(0,0,0,0.3);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 16px;
+            color: white;
+            font-size: 16px;
+            outline: none;
+            transition: all 0.3s;
+        }
+
+        .input-modern:focus {
+            background: rgba(0,0,0,0.5);
+            border-color: var(--secondary);
+            box-shadow: 0 0 0 4px rgba(139, 92, 246, 0.2);
+        }
+
+        .btn-glow {
+            width: 100%;
+            padding: 16px;
+            border: none;
+            border-radius: 16px;
+            background: var(--gradient-holo);
+            color: white;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            position: relative;
+            overflow: hidden;
+        }
+
         .btn-glow:active { transform: scale(0.98); }
-        .input-modern { width: 100%; padding: 14px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.2); border-radius: 12px; color: white; margin-bottom: 15px; }
+        .btn-glow:hover { box-shadow: 0 0 30px rgba(217, 70, 239, 0.4); }
+
+        /* 主界面 */
+        .main-hub {
+            display: none;
+            padding: 20px 20px 100px 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        /* 顶部栏 */
+        .top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        .user-pill {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 8px 16px 8px 8px;
+            border-radius: 100px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .avatar-small {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: var(--gradient-holo);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
         
-        /* 布局类 */
-        .view-section { display: none; padding-bottom: 80px; animation: fadeIn 0.4s; }
+        .avatar-small img { 
+            width: 100%; 
+            height: 100%; 
+            object-fit: cover; 
+        }
+
+        .resource-pill {
+            display: flex;
+            gap: 16px;
+        }
+        
+        .res-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 14px;
+            font-weight: 600;
+        }
+        
+        .res-icon { color: var(--accent); }
+
+        /* 底部导航 Dock */
+        .dock-nav {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 8px;
+            padding: 10px;
+            border-radius: 24px;
+            z-index: 100;
+        }
+
+        .dock-item {
+            position: relative;
+            width: 50px;
+            height: 50px;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .dock-item:hover, .dock-item.active {
+            color: white;
+            background: rgba(255,255,255,0.15);
+            transform: translateY(-5px);
+        }
+
+        .dock-item.active::after {
+            content: '';
+            position: absolute;
+            bottom: -6px;
+            width: 4px;
+            height: 4px;
+            background: var(--primary);
+            border-radius: 50%;
+            box-shadow: 0 0 8px var(--primary);
+        }
+
+        .dock-icon { width: 24px; height: 24px; }
+
+        /* 视图容器 */
+        .view-section { 
+            display: none; 
+            animation: fadeIn 0.4s ease; 
+        }
+        
         .view-section.active { display: block; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         
-        /* 游戏运行界面 (Game Container) */
-        .game-container { position: fixed; inset: 0; z-index: 200; display: none; background: #000; }
-        .game-bg { position: absolute; inset: 0; background-size: cover; background-position: center; filter: brightness(0.6); transition: background-image 0.5s; }
-        .game-ui { position: absolute; bottom: 0; left: 0; right: 0; padding: 20px; background: linear-gradient(to top, #000 80%, transparent); }
-        .game-text-box { background: rgba(0,0,0,0.75); padding: 20px; border-radius: 16px; color: #fff; min-height: 120px; font-size: 16px; line-height: 1.6; margin-bottom: 20px; border: 1px solid rgba(255,255,255,0.1); white-space: pre-wrap; }
-        .game-option-btn { width: 100%; padding: 12px; margin-bottom: 10px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white; border-radius: 50px; text-align: left; padding-left: 20px; cursor: pointer; transition: background 0.2s; }
-        .game-option-btn:hover { background: var(--primary); border-color: var(--primary); }
+        @keyframes fadeIn { 
+            from { opacity: 0; transform: translateY(10px); } 
+            to { opacity: 1; transform: translateY(0); } 
+        }
+
+        /* 副本卡片 */
+        .section-header {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 20px;
+            background: linear-gradient(to right, var(--text-main), var(--text-muted));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .grid-layout {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 24px;
+        }
+
+        .card-instance {
+            border-radius: 24px;
+            overflow: hidden;
+            transition: transform 0.3s, box-shadow 0.3s;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .card-instance:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+        }
+
+        .card-instance.locked {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .card-instance.locked:hover {
+            transform: none;
+        }
+
+        .card-cover {
+            height: 200px;
+            width: 100%;
+            position: relative;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+        }
         
-        /* 顶部按钮组 */
-        .game-top-bar { position: absolute; top: 20px; right: 20px; z-index: 20; display: flex; gap: 10px; }
-        .game-btn-small { padding: 8px 16px; background: rgba(0,0,0,0.5); border-radius: 20px; border: 1px solid rgba(255,255,255,0.2); color: white; cursor: pointer; }
+        .card-cover img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.5s;
+        }
+
+        .card-instance:not(.locked):hover .card-cover img { 
+            transform: scale(1.1); 
+        }
+
+        .card-badge {
+            position: absolute;
+            top: 12px;
+            left: 12px;
+            padding: 4px 12px;
+            border-radius: 100px;
+            background: rgba(0,0,0,0.6);
+            backdrop-filter: blur(4px);
+            font-size: 12px;
+            font-weight: 600;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .locked-overlay {
+            position: absolute;
+            inset: 0;
+            background: rgba(0,0,0,0.7);
+            backdrop-filter: blur(5px);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .lock-icon {
+            font-size: 48px;
+            opacity: 0.8;
+        }
+
+        .lock-text {
+            color: var(--text-muted);
+            font-size: 14px;
+        }
+
+        .card-body {
+            padding: 20px;
+        }
+
+        .card-title { 
+            font-size: 18px; 
+            font-weight: 700; 
+            margin-bottom: 6px; 
+        }
         
-        /* Toast 提示 */
-        #toast { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(0,0,0,0.8); color: white; padding: 15px 30px; border-radius: 30px; display: none; z-index: 300; backdrop-filter: blur(5px); border: 1px solid var(--primary); animation: popIn 0.3s; }
-        @keyframes popIn { from { transform: translate(-50%, -40%); opacity: 0; } to { transform: translate(-50%, -50%); opacity: 1; } }
+        .card-desc { 
+            font-size: 13px; 
+            color: var(--text-muted); 
+            line-height: 1.5; 
+        }
 
-        /* 记忆回廊样式 */
-        .log-container { background: rgba(0,0,0,0.2); border-radius: 12px; padding: 20px; height: 60vh; overflow-y: auto; font-size: 14px; line-height: 1.8; white-space: pre-wrap; color: #ddd; }
+        /* 详情页：左图右文布局 */
+        .detail-layout {
+            display: flex;
+            gap: 24px;
+            border-radius: 24px;
+            padding: 24px;
+            margin-bottom: 24px;
+        }
 
-        /* 个人设定修复样式 */
-        .persona-strip { display: flex; gap: 15px; overflow-x: auto; padding: 10px 0; min-height: 80px; }
-        .persona-chip { flex: 0 0 auto; text-align: center; cursor: pointer; opacity: 0.6; transition: 0.3s; }
-        .persona-chip.active { opacity: 1; transform: scale(1.1); }
-        .persona-avatar { width: 50px; height: 50px; border-radius: 50%; background: var(--gradient-holo); display: flex; align-items: center; justify-content: center; margin: 0 auto 5px; overflow: hidden; border: 2px solid transparent; }
-        .persona-chip.active .persona-avatar { border-color: #fff; }
-        .persona-avatar img { width: 100%; height: 100%; object-fit: cover; }
-        .persona-avatar-slot { width: 100px; height: 100px; border-radius: 20px; background: rgba(255,255,255,0.1); display: flex; align-items: center; justify-content: center; overflow: hidden; cursor: pointer; border: 1px dashed rgba(255,255,255,0.3); }
-        .persona-avatar-slot img { width: 100%; height: 100%; object-fit: cover; }
+        .detail-cover {
+            flex: 0 0 40%;
+            border-radius: 20px;
+            overflow: hidden;
+            background: #111;
+        }
 
-        /* 其他UI复用 */
-        .dock-nav { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); display: flex; gap: 8px; padding: 10px; border-radius: 24px; z-index: 100; }
-        .dock-item { width: 50px; height: 50px; border-radius: 16px; display: flex; align-items: center; justify-content: center; color: var(--text-muted); cursor: pointer; }
-        .dock-item.active { background: rgba(255,255,255,0.2); color: white; }
-        .card-instance { border-radius: 20px; overflow: hidden; margin: 20px; position: relative; height: 200px; }
-        .card-instance img { width: 100%; height: 100%; object-fit: cover; }
-        .card-info { position: absolute; bottom: 0; left: 0; right: 0; padding: 15px; background: linear-gradient(to top, #000, transparent); }
+        .detail-cover img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        .detail-info {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            gap: 16px;
+        }
+
+        .detail-title {
+            font-size: 32px;
+            font-weight: 800;
+            margin-bottom: 8px;
+        }
+
+        .detail-meta {
+            font-size: 14px;
+            color: var(--text-muted);
+            line-height: 1.7;
+        }
+
+        .detail-desc {
+            margin-top: 8px;
+            font-size: 14px;
+            line-height: 1.7;
+        }
+
+        .tag-row { 
+            display: flex; 
+            gap: 10px; 
+            margin-top: 8px; 
+        }
         
-        .detail-layout { display: flex; gap: 20px; padding: 20px; flex-wrap: wrap; }
-        .detail-cover img { width: 100%; max-width: 300px; border-radius: 16px; }
-    </style>
-</head>
-<body onload="init()">
+        .tag { 
+            padding: 4px 10px; 
+            background: rgba(255,255,255,0.08); 
+            border-radius: 999px; 
+            font-size: 12px; 
+        }
 
-    <!-- Toast 提示框 -->
-    <div id="toast">✅ 存档成功</div>
+        /* 角色头像 */
+        .char-scroll {
+            display: flex;
+            gap: 20px;
+            overflow-x: auto;
+            padding-bottom: 20px;
+            scrollbar-width: none;
+        }
+        
+        .char-item {
+            flex: 0 0 auto;
+            text-align: center;
+            width: 80px;
+        }
 
-    <!-- 1. 登录页 -->
-    <div id="loginPage" class="login-page" style="display:flex; height:100vh; align-items:center; justify-content:center;">
-        <div class="glass-panel" style="padding:40px; border-radius:24px; width:350px; text-align:center;">
-            <h1 style="color:var(--primary); margin-bottom:10px;">UTOPIA NOTE</h1>
-            <p style="color:var(--text-muted); margin-bottom:30px;">乌托邦手记</p>
-            <input id="username" class="input-modern" placeholder="输入代号...">
-            <button class="btn-glow" onclick="enterHub()">连接神经元</button>
-        </div>
-    </div>
+        .char-avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            border: 2px solid rgba(255,255,255,0.2);
+            padding: 2px;
+            margin-bottom: 8px;
+            position: relative;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            overflow: hidden;
+        }
 
-    <!-- 2. 主界面 -->
-    <div id="mainHub" style="display:none;">
-        <!-- 顶部 -->
-        <div style="padding:20px; display:flex; justify-content:space-between;">
-            <span style="font-weight:bold; font-size:18px;">👤 <span id="displayName"></span></span>
-            <span style="color:var(--accent);">💎 1250</span>
-        </div>
+        .char-avatar img {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            object-fit: cover;
+        }
 
-        <!-- 视图：副本中心 -->
-        <div id="view-hub" class="view-section active">
-            <h2 style="padding:0 20px;">探索世界</h2>
-            <div class="card-instance" onclick="showDetail()">
-                <img src="https://images.unsplash.com/photo-1599707367072-cd6ad6cb3d2e?w=600&q=80">
-                <div class="card-info">
-                    <h3>紫禁城迷梦</h3>
-                    <p style="font-size:12px; opacity:0.8;">古代 · 权谋 · 恋爱</p>
-                </div>
-            </div>
-        </div>
+        .char-name { 
+            font-size: 12px; 
+            color: var(--text-muted); 
+        }
 
-        <!-- 视图：详情页 -->
-        <div id="view-detail" class="view-section">
-            <div class="detail-layout">
-                <div class="detail-cover">
-                    <img src="https://images.unsplash.com/photo-1599707367072-cd6ad6cb3d2e?w=800">
-                </div>
-                <div style="flex:1;">
-                    <button onclick="switchView('hub')" style="background:none; border:none; color:white; margin-bottom:10px;">← 返回</button>
-                    <h1>紫禁城迷梦</h1>
-                    <p style="line-height:1.6; color:var(--text-muted); margin:15px 0;">穿越到明朝永乐年间，你成为了一名入宫的秀女。在这座深宫中，每一个选择都关乎生死与爱恨。</p>
-                    
-                    <div style="display:flex; gap:10px; flex-wrap:wrap;">
-                        <button class="btn-glow" style="flex:1" onclick="startGame('start')">📖 新旅程</button>
-                        <button class="btn-glow" style="flex:1; background:rgba(16, 185, 129, 0.3);" onclick="startGame('continue')">📂 继续剧情</button>
-                    </div>
-                    <button class="btn-glow" style="width:100%; margin-top:10px; background:rgba(255,255,255,0.1);" onclick="startGame('endless')">♾️ 无尽模式</button>
-                </div>
-            </div>
-        </div>
-
-        <!-- 视图：记忆回廊 (新增回放功能) -->
-        <div id="view-gallery" class="view-section">
-            <div style="padding:20px;">
-                <h2>剧情回放</h2>
-                <p style="color:var(--text-muted); font-size:12px; margin-bottom:10px;">这里记录了你经历过的所有故事片段。</p>
-                <div id="storyLog" class="log-container">
-                    暂无记忆。请先进行游戏。
-                </div>
-                <button class="btn-glow" onclick="clearMemory()" style="margin-top:10px; background:rgba(239, 68, 68, 0.5);">🗑️ 清空记忆</button>
-            </div>
-        </div>
-
-        <!-- 视图：道具商店 -->
-        <div id="view-shop" class="view-section">
-            <div style="padding:20px;">
-                <h2>道具商店</h2>
-                <div class="glass-panel" style="padding:20px; border-radius:16px; margin-top:20px;">
-                    <p>商店功能开发中...</p>
-                </div>
-            </div>
-        </div>
-
-        <!-- 视图：我的设定 (Bug修复版) -->
-        <div id="view-persona" class="view-section">
-            <div class="persona-container" style="padding:20px;">
-                <h2>我的设定</h2>
-                
-                <!-- 头像条 -->
-                <div class="glass-panel" style="padding:15px; border-radius:20px; margin-bottom:20px;">
-                    <div class="persona-strip" id="persona-strip"></div>
+        /* 个人设定页（Dock 第四项） */
+        <div class="persona-container">
+                <!-- 修复：顶部头像条 -->
+                <div class="glass-panel" style="border-radius: 20px; padding: 12px 16px; margin-bottom: 20px;">
+                    <div class="persona-strip" id="persona-strip" style="display:flex; gap:10px; overflow-x:auto; min-height:80px;"></div>
                 </div>
 
-                <!-- 编辑表单 -->
-                <div class="glass-panel persona-form" style="padding:20px; border-radius:20px;">
+                <!-- 当前设定表单 -->
+                <div class="glass-panel persona-form" style="margin-top: 16px;">
                     <div class="persona-row">
-                        <span style="font-size:12px; color:var(--text-muted);">姓名</span>
+                        <span class="persona-label">姓名</span>
                         <input id="persona-name" class="input-modern" placeholder="角色名">
                     </div>
                     <div class="persona-row">
-                        <span style="font-size:12px; color:var(--text-muted);">头像</span>
-                        <div style="display:flex; gap:15px; align-items:center;">
+                        <span class="persona-label">设定</span>
+                        <textarea id="persona-desc" class="persona-textarea" placeholder="人物小传..."></textarea>
+                    </div>
+                    <div class="persona-row">
+                        <span class="persona-label">头像</span>
+                        <div style="display:flex; align-items:center; gap:16px;">
                             <div class="persona-avatar-slot" id="persona-avatar-slot" onclick="triggerAvatarUpload()">
-                                <img id="persona-avatar-preview" src="" style="display:none;">
-                                <span id="persona-placeholder" style="font-size:12px;">点击上传</span>
+                                <img id="persona-avatar-preview" style="display:none; width:100%; height:100%; object-fit:cover;">
+                                <span id="persona-placeholder">点击上传</span>
                             </div>
-                            <span style="font-size:12px; color:var(--text-muted);">仅保存在本地</span>
+                            <span style="font-size:12px; color:var(--text-muted);">仅本地保存</span>
                         </div>
                         <input type="file" id="persona-avatar-input" accept="image/*" style="display:none;" onchange="onAvatarFileChange(event)">
                     </div>
-                    <button class="btn-glow" onclick="savePersona()" style="margin-top:15px;">保存设定</button>
-                </div>
-            </div>
-        </div>
-
-        <!-- 视图：设置页 -->
-        <div id="view-settings" class="view-section">
-            <div style="padding:20px;">
-                <h2>系统设置</h2>
-                <div class="glass-panel" style="padding:20px; border-radius:16px; margin-top:20px;">
-                    <h3>API 连接 (必填)</h3>
-                    <input id="apiUrl" class="input-modern" placeholder="API 地址">
-                    <input id="apiKey" class="input-modern" type="password" placeholder="sk-...">
-                    <button class="btn-glow" onclick="saveApi()">💾 保存配置</button>
-                </div>
-                
-                <!-- 剧本上传 -->
-                <div class="glass-panel" style="padding:20px; border-radius:16px; margin-top:20px;">
-                    <h3>剧本管理</h3>
-                    <div style="margin-top:10px; display:flex; gap:10px;">
-                        <button class="btn-glow" onclick="document.getElementById('storyUpload').click()" style="background:rgba(255,255,255,0.1);">📂 导入剧本</button>
-                        <input type="file" id="storyUpload" accept=".json" style="display:none;" onchange="handleStoryUpload(event)">
-                        <button class="btn-glow" onclick="resetStory()" style="background:rgba(239,68,68,0.5);">🗑️ 重置</button>
+                    <div class="persona-actions">
+                        <button class="btn-glow" style="flex:1;" onclick="savePersona()">保存设定</button>
                     </div>
-                    <div id="storyMsg" style="font-size:12px; margin-top:5px; color:#10b981;"></div>
                 </div>
-            </div>
-        </div>
+            </div>       
 
-        <!-- 底部导航 -->
-        <div class="dock-nav glass-panel">
-            <div class="dock-item active" onclick="switchView('hub')">🏠</div>
-            <div class="dock-item" onclick="switchView('gallery')">📜</div> <!-- 记忆回廊 -->
-            <div class="dock-item" onclick="switchView('shop')">🛒</div>
-            <div class="dock-item" onclick="switchView('persona')">👤</div>
-            <div class="dock-item" onclick="switchView('settings')">⚙️</div>
+        /* 系统设置 */
+        .settings-container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .setting-group {
+            margin-bottom: 24px;
+            padding: 24px;
+            border-radius: 20px;
+        }
+        
+        .input-label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 13px;
+            color: var(--text-muted);
+            font-weight: 600;
+        }
+
+        .theme-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+            gap: 12px;
+            margin-top: 12px;
+        }
+
+        .theme-btn {
+            padding: 12px;
+            border-radius: 12px;
+            border: 2px solid rgba(255,255,255,0.1);
+            background: rgba(0,0,0,0.3);
+            color: var(--text-main);
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .theme-btn:hover {
+            border-color: var(--primary);
+            transform: translateY(-2px);
+        }
+
+        .theme-btn.active {
+            background: var(--gradient-holo);
+            border-color: transparent;
+            color: white;
+        }
+
+        /* 游戏界面 */
+        .game-container {
+            position: fixed;
+            inset: 0;
+            z-index: 200;
+            display: none;
+            background-color: #000;
+            overflow: hidden;
+        }
+
+        .game-bg {
+            position: absolute;
+            inset: 0;
+            background-size: cover;
+            background-position: center;
+            filter: brightness(0.65);
+        }
+
+        .game-content {
+            position: relative;
+            z-index: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            height: 100%;
+            padding: 20px 16px 28px;
+        }
+
+        .game-text-box {
+            max-width: 900px;
+            margin: 0 auto 16px;
+            background: rgba(0,0,0,0.68);
+            border-radius: 16px;
+            padding: 16px 18px;
+            color: #fff;
+            min-height: 90px;
+            font-size: 15px;
+            line-height: 1.7;
+            cursor: pointer;
+        }
+
+        .game-text-box span {
+            white-space: pre-wrap;
+        }
+
+        .game-options {
+            max-width: 900px;
+            margin: 0 auto;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .game-option-btn {
+            padding: 10px 16px;
+            border-radius: 999px;
+            border: none;
+            background: rgba(0,0,0,0.7);
+            color: #fff;
+            font-size: 14px;
+            cursor: pointer;
+            transition: background 0.2s, transform 0.1s;
+        }
+
+        .game-option-btn:hover {
+            background: rgba(255,255,255,0.08);
+        }
+
+        .game-option-btn:active {
+            transform: scale(0.97);
+        }
+
+        .game-exit-btn {
+            position: absolute;
+            top: 14px;
+            right: 16px;
+            z-index: 2;
+            padding: 8px 14px;
+            border-radius: 999px;
+            border: none;
+            background: rgba(0,0,0,0.7);
+            color: #fff;
+            font-size: 13px;
+            cursor: pointer;
+        }
+
+        /* 剧本编辑器区域 */
+        .story-upload-area {
+            margin-top: 30px;
+            border-top: 1px solid rgba(255,255,255,0.1);
+            padding-top: 20px;
+        }
+        .file-btn {
+            display: inline-block;
+            padding: 10px 20px;
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 12px;
+            cursor: pointer;
+            color: var(--text-muted);
+            font-size: 13px;
+        }
+
+        /* 响应式 */
+        @media (max-width: 768px) {
+            .detail-layout {
+                flex-direction: column;
+            }
+            .detail-cover {
+                flex-basis: auto;
+                height: 220px;
+            }
+            .dock-nav { 
+                width: 90%; 
+                justify-content: space-between; 
+                padding: 12px 20px; 
+            }
+            .grid-layout {
+                grid-template-columns: 1fr;
+            }
+
+            .game-content {
+                padding: 16px 10px 24px;
+            }
+            .game-text-box {
+                font-size: 14px;
+                padding: 14px 14px;
+            }
+        }
+
+    </style>
+</head>
+<body data-theme="purple">
+    <div class="aurora-bg"></div>
+
+    <!-- 登录页面 -->
+    <div class="login-page" id="loginPage">
+        <div class="login-card glass-panel">
+            <h1 class="login-title">INFINITE LOVE</h1>
+            <p class="login-subtitle">Utopia note · 乌托邦手记</p>
+            
+            <div class="input-wrapper">
+                <input type="text" class="input-modern" id="username" placeholder="请输入你的代号..." autocomplete="off">
+            </div>
+            
+            <button class="btn-glow" onclick="enterHub()">
+                <span style="display: flex; align-items: center; justify-content: center; gap: 8px;">
+                    连接神经元
+                    <svg class="icon" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                </span>
+            </button>
         </div>
     </div>
 
-    <!-- 3. 游戏运行容器 -->
+    <!-- 主界面 -->
+    <div class="main-hub" id="mainHub">
+        <!-- 顶部信息栏 -->
+        <div class="top-bar">
+            <div class="user-pill glass-panel">
+                <div class="avatar-small">
+                    <div style="font-size: 18px;">👤</div>
+                </div>
+                <span style="font-weight: 600; font-size: 14px;" id="displayName">旅行者</span>
+            </div>
+
+            <div class="resource-pill">
+                <div class="res-item glass-panel" style="padding: 6px 12px; border-radius: 12px;">
+                    <svg class="icon res-icon" viewBox="0 0 24 24"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+                    <span>80</span>
+                </div>
+                <div class="res-item glass-panel" style="padding: 6px 12px; border-radius: 12px;">
+                    <svg class="icon res-icon" style="color: #d946ef;" viewBox="0 0 24 24"><path d="M6 3h12l4 6-10 10L2 9h4z"/></svg>
+                    <span>1250</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 1. 副本中心视图 -->
+        <div class="view-section active" id="view-hub">
+            <h2 class="section-header">探索世界</h2>
+            <div class="grid-layout">
+                <!-- 可玩副本 -->
+                <div class="card-instance glass-panel" onclick="showInstanceDetail()">
+                    <div class="card-cover">
+                        <img src="https://images.unsplash.com/photo-1599707367072-cd6ad6cb3d2e?auto=format&fit=crop&w=600&q=80" alt="紫禁城">
+                        <span class="card-badge">古代宫廷</span>
+                    </div>
+                    <div class="card-body">
+                        <div class="card-title">紫禁城迷梦</div>
+                        <div class="card-desc">权力与爱欲交织的深宫，你能否独善其身？</div>
+                    </div>
+                </div>
+
+                <!-- 锁定副本 -->
+                <div class="card-instance glass-panel locked">
+                    <div class="card-cover">
+                        <div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:60px;">🔒</div>
+                        <span class="card-badge" style="background: rgba(0,0,0,0.8);">待解锁</span>
+                    </div>
+                    <div class="card-body">
+                        <div class="card-title">???</div>
+                        <div class="card-desc">完成当前副本解锁更多世界</div>
+                    </div>
+                    <div class="locked-overlay">
+                        <div class="lock-icon">🔐</div>
+                        <div class="lock-text">需要 500 积分</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 2. 副本详情视图 -->
+        <div class="view-section" id="view-detail">
+            <button class="glass-panel" onclick="switchView('hub')" style="margin-bottom: 20px; padding: 10px 20px; border-radius: 12px; border:none; color:white; cursor:pointer; display:flex; align-items:center; gap:8px;">
+                <svg class="icon" viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+                返回
+            </button>
+
+            <!-- 左图右文头图区域 -->
+            <div class="detail-layout glass-panel">
+                <div class="detail-cover">
+                    <img src="https://images.unsplash.com/photo-1599707367072-cd6ad6cb3d2e?auto=format&fit=crop&w=1200&q=80" alt="紫禁城迷梦封面">
+                </div>
+                <div class="detail-info">
+                    <div>
+                        <div class="detail-title">紫禁城迷梦</div>
+                        <div class="detail-meta">
+                            作者：主神空间<br>
+                            标签：
+                            <div class="tag-row">
+                                <span class="tag">古代宫廷</span>
+                                <span class="tag">权谋</span>
+                                <span class="tag">恋爱</span>
+                            </div>
+                            <div class="detail-desc">
+                                穿越到明朝永乐年间，你成为了一名入宫的秀女。在这个金碧辉煌却暗流涌动的紫禁城中，每一步都可能是生死考验。
+                            </div>
+                        </div>
+                    </div>
+                    <div>
+                        <div style="display:flex; gap:10px;">
+                            <button class="btn-glow" style="flex:1" onclick="startGame('start')">
+                                📖 开始剧情
+                            </button>
+                            <button class="btn-glow" style="flex:1; background: rgba(16, 185, 129, 0.2);" onclick="startGame('continue')">
+                                📂 继续剧情
+                            </button>
+                        </div>
+                        <button class="btn-glow" onclick="startGame('endless')" style="width:100%; margin-top:10px; background: rgba(255,255,255,0.1);">
+                            ♾️ 无尽模式
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="glass-panel" style="padding: 24px; border-radius: 24px; margin-bottom: 30px;">
+                <h3 style="margin-bottom: 16px; font-weight: 700;">主要角色</h3>
+                <div class="char-scroll">
+                    <!-- 角色 1 -->
+                    <div class="char-item">
+                        <div class="char-avatar">
+                            <div style="font-size: 40px; display:flex; align-items:center; justify-content:center; height:100%;">👑</div>
+                        </div>
+                        <div class="char-name">夜幽皇子</div>
+                    </div>
+                    <!-- 角色 2 -->
+                    <div class="char-item">
+                        <div class="char-avatar">
+                            <div style="font-size: 40px; display:flex; align-items:center; justify-content:center; height:100%;">🗡️</div>
+                        </div>
+                        <div class="char-name">侍卫云墨</div>
+                    </div>
+                    <!-- 角色 3 -->
+                    <div class="char-item">
+                        <div class="char-avatar">
+                            <div style="font-size: 40px; display:flex; align-items:center; justify-content:center; height:100%;">🎭</div>
+                        </div>
+                        <div class="char-name">神秘术士</div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- 剧情分享区 -->
+            <div class="glass-panel" style="padding: 24px; border-radius: 24px;">
+                <h3 style="margin-bottom: 16px; font-weight: 700;">✨ 优秀剧情分享</h3>
+                <div style="background: rgba(0,0,0,0.3); padding: 16px; border-radius: 12px; margin-bottom: 12px; border-left: 3px solid var(--primary);">
+                    <div style="color: var(--primary); font-weight: 600; margin-bottom: 8px;">🌸 樱花落</div>
+                    <div style="color: var(--text-muted); line-height: 1.6; font-size: 14px;">
+                        "我在紫禁城遇到的侍卫云墨简直太温柔了！在我被人陷害时，他冒着生命危险为我作证。最后我们一起逃出皇宫，隐居山林的结局太美好了！"
+                    </div>
+                </div>
+                <div style="background: rgba(0,0,0,0.3); padding: 16px; border-radius: 12px; border-left: 3px solid var(--primary);">
+                    <div style="color: var(--primary); font-weight: 600; margin-bottom: 8px;">⚔️ 剑客行</div>
+                    <div style="color: var(--text-muted); line-height: 1.6; font-size: 14px;">
+                        "选择了皇子线，虽然他表面冷酷，但在深宫暗斗中始终保护我。最终他登基为帝，我成为皇后，但我们约定不忘初心的场景太催泪了..."
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 3. 记忆回廊视图 -->
+        <div class="view-section" id="view-gallery">
+            <h2 class="section-header">记忆回廊</h2>
+            <div class="settings-container glass-panel setting-group">
+                <p style="color: var(--text-muted); line-height: 1.8;">
+                    CG相册、剧情回放、结局树功能开发中...
+                </p>
+            </div>
+        </div>
+
+        <!-- 4. 道具商店视图 -->
+        <div class="view-section" id="view-shop">
+            <h2 class="section-header">道具商店</h2>
+            <div class="settings-container glass-panel setting-group">
+                <p style="color: var(--text-muted); line-height: 1.8;">
+                    魅力口红、测谎仪、限定门票等道具即将上线...
+                </p>
+            </div>
+        </div>
+
+        <!-- 5. 我的设定视图 -->
+        <div class="view-section" id="view-persona">
+            <h2 class="section-header">我的设定</h2>
+            <div class="persona-container">
+                <!-- 顶部头像一排 -->
+                <div class="glass-panel" style="border-radius: 20px; padding: 12px 16px 4px;">
+                    <div class="persona-strip" id="persona-strip">
+                        <!-- 动态插入头像 chip -->
+                    </div>
+                </div>
+
+                <!-- 当前设定表单 -->
+                <div class="glass-panel persona-form" style="margin-top: 16px;">
+                    <div class="persona-row">
+                        <span class="persona-label">姓名</span>
+                        <input id="persona-name" class="input-modern" placeholder="如：沈如意 / 玩家代号">
+                    </div>
+                    <div class="persona-row">
+                        <span class="persona-label">设定</span>
+                        <textarea id="persona-desc" class="persona-textarea" placeholder="人物背景、性格、小秘密……"></textarea>
+                    </div>
+                    <div class="persona-row">
+                        <span class="persona-label">头像</span>
+                        <div style="display:flex; align-items:center; gap:16px;">
+                            <div class="persona-avatar-slot" id="persona-avatar-slot" onclick="triggerAvatarUpload()">
+                                <span id="persona-avatar-placeholder">点击上传头像</span>
+                                <img id="persona-avatar-preview" style="display:none;" alt="自定义头像预览">
+                            </div>
+                            <div style="font-size: 12px; color: var(--text-muted); line-height: 1.6;">
+                                头像仅保存在本地浏览器，不会上传到服务器。<br>
+                                建议使用方形图片以获得更好效果。
+                            </div>
+                        </div>
+                        <input type="file" id="persona-avatar-input" accept="image/*" style="display:none;" onchange="onAvatarFileChange(event)">
+                    </div>
+                    <div class="persona-actions">
+                        <button class="btn-glow" style="flex:1;" onclick="savePersona()">保存此设定</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 6. 系统设置视图 -->
+        <div class="view-section" id="view-settings">
+            <h2 class="section-header">系统设置</h2>
+            
+            <!-- API 配置 -->
+            <div class="settings-container glass-panel setting-group">
+                <h3 style="margin-bottom: 20px; font-size: 18px;">API 连接配置</h3>
+                
+                <div class="input-wrapper">
+                    <label class="input-label">配置名称</label>
+                    <input type="text" class="input-modern" id="apiName" placeholder="例如：我的 OpenAI 配置">
+                </div>
+                
+                <div class="input-wrapper">
+                    <label class="input-label">API URL 代理地址</label>
+                    <input type="text" class="input-modern" id="apiUrl" placeholder="例如：https://api.openai.com/v1">
+                </div>
+                
+                <div class="input-wrapper">
+                    <label class="input-label">API 密钥 (Key)</label>
+                    <input type="password" class="input-modern" id="settingsApiKey" placeholder="sk-...">
+                </div>
+                <div class="input-wrapper">
+                    <label class="input-label">模型选择</label>
+                    <select class="input-modern" id="apiModel" style="cursor: pointer;">
+                        <option value="">-- 请先测试连接获取模型列表 --</option>
+                    </select>
+                </div>
+
+                <div style="display: flex; gap: 12px;">
+                    <button class="btn-glow" style="flex: 1;" onclick="testApiConnection()">
+                        测试连接
+                    </button>
+                    <button class="btn-glow" style="flex: 1;" onclick="saveApiConfig()">
+                        保存配置
+                    </button>
+                </div>
+                
+                <div id="apiTestResult" style="margin-top: 12px; padding: 12px; border-radius: 8px; font-size: 13px; display: none;"></div>
+            </div>
+
+            <!-- 剧本管理 (新增) -->
+            <div class="settings-container glass-panel setting-group" style="margin-top: 24px;">
+                <h3 style="margin-bottom: 20px; font-size: 18px;">剧本管理</h3>
+                <div style="color: var(--text-muted); font-size: 13px; margin-bottom: 12px;">
+                    上传编辑器导出的 JSON 文件来替换默认剧情。
+                </div>
+                
+                <div style="display:flex; gap:10px; align-items:center;">
+                    <label class="file-btn">
+                        📂 上传剧本文件
+                        <input type="file" id="storyFileUpload" accept=".json" style="display:none;" onchange="handleStoryUpload(event)">
+                    </label>
+                    <button class="btn-glow" style="background: rgba(239, 68, 68, 0.5); width: auto;" onclick="resetStory()">
+                        🗑️ 恢复默认
+                    </button>
+                </div>
+                <div id="storyUploadMsg" style="margin-top:8px; font-size:12px; color:#10b981;"></div>
+            </div>
+
+            <!-- 主题设置 -->
+            <div class="settings-container glass-panel setting-group" style="margin-top: 24px;">
+                <h3 style="margin-bottom: 20px; font-size: 18px;">主题风格</h3>
+                <div class="theme-grid">
+                    <button class="theme-btn active" data-theme="purple" onclick="changeTheme('purple')">💜 紫色</button>
+                    <button class="theme-btn" data-theme="black" onclick="changeTheme('black')">🖤 黑色</button>
+                    <button class="theme-btn" data-theme="white" onclick="changeTheme('white')">🤍 白色</button>
+                    <button class="theme-btn" data-theme="green" onclick="changeTheme('green')">💚 绿色</button>
+                    <button class="theme-btn" data-theme="blue" onclick="changeTheme('blue')">💙 蓝色</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 底部 Dock 导航 -->
+        <div class="dock-nav glass-panel">
+            <div class="dock-item active" onclick="switchView('hub')" title="副本中心">
+                <svg class="icon dock-icon" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+            </div>
+            <div class="dock-item" onclick="switchView('gallery')" title="记忆回廊">
+                <svg class="icon dock-icon" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
+            </div>
+            <div class="dock-item" onclick="switchView('shop')" title="道具商店">
+                <svg class="icon dock-icon" viewBox="0 0 24 24"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
+            </div>
+            <div class="dock-item" onclick="switchView('persona')" title="我的设定">
+                <svg class="icon dock-icon" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+            </div>
+            <div class="dock-item" onclick="switchView('settings')" title="系统设置">
+                <svg class="icon dock-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+            </div>
+        </div>
+    </div>
+
+    <!-- 游戏界面 -->
     <div id="gameContainer" class="game-container">
         <div id="gameBg" class="game-bg"></div>
-        
-        <!-- 顶部按钮组 (新增保存按钮) -->
-        <div class="game-top-bar">
-            <button class="game-btn-small" onclick="saveProgress(true)">💾 存档</button>
-            <button class="game-btn-small" onclick="exitGame()">❌ 退出</button>
-        </div>
-        
-        <div class="game-ui">
-            <div id="gameTextBox" class="game-text-box"></div>
-            <div id="gameOptions"></div>
+        <button class="game-exit-btn" onclick="exitGame()">退出</button>
+        <div class="game-content">
+            <div id="gameTextBox" class="game-text-box">
+                <span id="gameText"></span>
+            </div>
+            <div id="gameOptions" class="game-options"></div>
         </div>
     </div>
 
     <script>
-        // === 全局状态 ===
         const USERNAME_STORAGE = 'infinite.username';
         const PERSONA_STORAGE = 'infinite.personas';
         const STORY_STORAGE = 'infinite.customStory';
-        const SAVE_STORAGE = 'infinite.save';
 
         let currentPersonaId = null;
-        let currentSceneId = null;
-        let activeStoryData = {};
-        
-        // 默认剧本
-        const defaultStory = {
-            "start": {
-                type: "fixed",
-                text: "夜风微凉，你站在紫禁城的长街上...",
-                bg: "https://images.unsplash.com/photo-1599707367072-cd6ad6cb3d2e?w=800",
+        let currentSceneId = null; // 全局记录当前场景 ID
+
+        // 打字机状态
+        let typingTimer = null;
+        let typingIndex = 0;
+        let typingText = '';
+        let isTyping = false;
+
+        // 默认剧本数据（支持 fixed / ai 混合）
+        const storyData = {
+            start: {
+                type: 'fixed',
+                bg: 'https://images.unsplash.com/photo-1599707367072-cd6ad6cb3d2e?auto=format&fit=crop&w=1200&q=80',
+                text:
+`夜风从宫墙之上吹过，檐角的金铃被吹得轻轻作响。你随同新入宫的秀女队伍缓缓前行，脚下是被岁月磨得发亮的青石板，仿佛每一步都踩在前人留下的秘密上。\n\n远处乐声隐约，宫灯一盏盏点亮，金碧辉煌却让人心底发寒。你感觉到有目光在暗处注视——是那位传闻冷心冷面的皇子，还是站在阴影里的侍卫？今晚，将是你命运真正开始的时刻。`,
                 options: [
-                    { text: "回望宫门", nextScene: "scene_look_back" },
-                    { text: "踏入深宫", nextScene: "scene_enter" }
+                    { text: '顺从领路宫女，安静地走完入宫流程', nextScene: 'followMaid' },
+                    { text: '偷偷回头，看一眼站在暗处的侍卫', nextScene: 'lookGuard' }
                 ]
             },
-            "scene_look_back": {
-                type: "fixed",
-                text: "你回头望去，宫门已然紧闭。",
-                options: [{ text: "继续走", nextScene: "scene_enter" }]
+            followMaid: {
+                type: 'fixed',
+                bg: 'https://images.unsplash.com/photo-1563298723-dcfebaa392e3?auto=format&fit=crop&w=1200&q=80',
+                text:
+`你压下心中所有的好奇，只是低头跟在领路宫女身后。她的步伐轻快却不失规矩，显然已经习惯了把新人送往不同宫院的流程。\n\n路过偏殿时，你听见门后传来压低的争吵声，字句里提到“选秀名单”和“有人动了手脚”。宫女猛地加快了脚步，仿佛害怕你听见更多。你隐约意识到，自己能否留在这座宫城里，早已不是单纯的运气问题。`,
+                options: [
+                    { text: '假装没听见，先稳住脚跟', nextScene: 'safeEnd' },
+                    { text: '记下这些话，暗中查清真相', nextScene: 'plotBeginAi' }
+                ]
             },
-            "scene_enter": {
-                type: "ai",
-                bg: "https://images.unsplash.com/photo-1563298723-dcfebaa392e3?w=800",
-                prompt: "场景：深夜的储秀宫。人物：掌事姑姑。事件：主角迟到。请生成掌事姑姑训斥主角的剧情。200字。",
-                options: [{ text: "低头认错", nextScene: "ai_next_1" }]
+            lookGuard: {
+                type: 'fixed',
+                bg: 'https://images.unsplash.com/photo-1558985303-38eab1f8e51c?auto=format&fit=crop&w=1200&q=80',
+                text:
+`你不顾宫规，还是回头看了一眼。那名侍卫半隐在宫灯照不到的阴影里，盔甲没有完全扣好，似乎刚刚才从某处急匆匆赶来。\n\n四目相对的一瞬，他明显愣了一下，随即很快低头行礼，仿佛从未与人对视。可你清楚地看到，他默默对你做了一个极轻微的手势——像是在提醒你，今晚不要独自离开人群。`,
+                options: [
+                    { text: '记住这位侍卫，悄悄跟在队伍中间', nextScene: 'plotBeginAi' },
+                    { text: '无视警告，趁人不注意时绕近宫墙', nextScene: 'dangerEnd' }
+                ]
             },
-            "ai_start": {
-                type: "ai",
-                prompt: "生成一个无限流赛博朋克风格开场。200字。",
-                options: [{text:"醒来", nextScene:"ai_next"}]
+            // 使用 AI 续写的场景示例
+            plotBeginAi: {
+                type: 'ai',
+                bg: 'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1200&q=80',
+                prompt: '继续这个紫禁城开局故事：主角在夜色中意识到自己被卷入权谋斗争之中，语气偏抒情、第一人称，控制在 250 字以内。',
+                options: [
+                    { text: '本章结束，回到主神空间', nextScene: null }
+                ]
+            },
+            safeEnd: {
+                type: 'fixed',
+                bg: 'https://images.unsplash.com/photo-1578301978018-3005759f48f9?auto=format&fit=crop&w=1200&q=80',
+                text:
+`你选择把所有不安先压在心底，只求在这陌生的宫城安稳活下去。或许这是最安全的做法，但也是最容易被时代遗忘的路径。\n\n当寝宫的门在你身后关上，你忽然有种被世界隔绝的错觉。也许，真正决定命运的机会，已经悄悄从你指缝间溜走。`,
+                options: [
+                    { text: '结束体验，返回主神空间', nextScene: null }
+                ]
+            },
+            dangerEnd: {
+                type: 'fixed',
+                bg: 'https://images.unsplash.com/photo-1526498460520-4c246339dccb?auto=format&fit=crop&w=1200&q=80',
+                text:
+`你趁宫女回头点人数的空档，悄悄往宫墙阴影里退去。夜风比想象中更冷，墙角积雪未融，踩上去发出细碎的声响。\n\n还没等你看清前路，一只冰冷的手已经扣在你肩上——那是巡夜的禁军。他没有多问，只是低声提醒你：“今晚第一次犯规，只算你迷路。”你被重新带回队伍，却知道自己已经被这座宫城真正记住了。`,
+                options: [
+                    { text: '结束体验，返回主神空间', nextScene: null }
+                ]
             }
         };
 
+        // 当前生效剧本（可被自定义 JSON 覆盖）
+        let activeStoryData = storyData;
+
         // 初始化
         function init() {
-            // 恢复用户名
-            const user = localStorage.getItem(USERNAME_STORAGE);
-            if(user) {
-                document.getElementById('username').value = user;
-                enterHub();
-            }
-            // 恢复API
-            const config = JSON.parse(localStorage.getItem('apiConfig') || '{}');
-            if(config.url) document.getElementById('apiUrl').value = config.url;
-            if(config.key) document.getElementById('apiKey').value = config.key;
+            loadApiConfig();
+            loadTheme();
+            loadCustomStory(); // 这里会自动加载你上传的剧本
 
-            // 加载剧本
-            loadCustomStory();
-            
-            // 初始化人设
+            // 用户名自动回填 + 自动进入主界面
+            const nameInput = document.getElementById('username');
+            const savedName = localStorage.getItem(USERNAME_STORAGE);
+            if (savedName) {
+                nameInput.value = savedName;
+                document.getElementById('displayName').textContent = savedName;
+                document.getElementById('loginPage').style.display = 'none';
+                document.getElementById('mainHub').style.display = 'block';
+                switchView('hub');
+            }
+
+            nameInput.addEventListener('blur', () => {
+                const v = nameInput.value.trim();
+                if (v) localStorage.setItem(USERNAME_STORAGE, v);
+            });
+
             initPersonas();
         }
 
-        // === 视图控制 ===
+        // 切换视图逻辑
+        function switchView(viewName) {
+            // 隐藏所有视图
+            document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
+            
+            // 显示目标视图
+            const target = document.getElementById('view-' + viewName);
+            if (target) target.classList.add('active');
+
+            // 更新底部 Dock 激活状态
+            document.querySelectorAll('.dock-item').forEach(el => el.classList.remove('active'));
+            
+            // 根据视图更新激活状态
+            const dockItems = document.querySelectorAll('.dock-item');
+            const viewMap = {
+                'hub': 0,
+                'gallery': 1,
+                'shop': 2,
+                'persona': 3,
+                'settings': 4
+            };
+            
+            const index = viewMap[viewName];
+            if (index !== undefined && dockItems[index]) {
+                dockItems[index].classList.add('active');
+            }
+        }
+
+        // 登录逻辑
         function enterHub() {
-            const name = document.getElementById('username').value;
-            if(!name) return;
-            localStorage.setItem(USERNAME_STORAGE, name);
-            document.getElementById('displayName').innerText = name;
+            const username = document.getElementById('username').value.trim();
+            if (!username) {
+                // 简单的晃动动画
+                const card = document.querySelector('.login-card');
+                card.style.transform = 'translateX(10px)';
+                setTimeout(() => card.style.transform = 'translateX(0)', 100);
+                setTimeout(() => card.style.transform = 'translateX(-10px)', 200);
+                setTimeout(() => card.style.transform = 'translateX(0)', 300);
+                return;
+            }
+            
+            document.getElementById('displayName').textContent = username;
+            localStorage.setItem(USERNAME_STORAGE, username);
+            
+            // 切换界面
             document.getElementById('loginPage').style.display = 'none';
             document.getElementById('mainHub').style.display = 'block';
-        }
-
-        function switchView(id) {
-            document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
-            document.getElementById('view-' + id).classList.add('active');
             
-            // 如果切到回廊，刷新日志
-            if (id === 'gallery') refreshStoryLog();
+            // 默认显示副本页
+            switchView('hub');
         }
 
-        function showDetail() { switchView('detail'); }
+        // 显示副本详情
+        function showInstanceDetail() {
+            switchView('detail');
+        }
 
-        // === 游戏引擎 ===
+        // ===== 游戏流程 =====
         function startGame(mode) {
-            document.getElementById('mainHub').style.display = 'none';
-            document.getElementById('gameContainer').style.display = 'block';
+            const mainHub = document.getElementById('mainHub');
+            const game = document.getElementById('gameContainer');
+            const dock = document.querySelector('.dock-nav');
 
-            // 继续游戏逻辑
+            if (mainHub) mainHub.style.display = 'none';
+            if (dock) dock.style.display = 'none';
+            if (game) game.style.display = 'block';
+
+            // 1. 如果是点击“继续游戏”
             if (mode === 'continue') {
-                const saveStr = localStorage.getItem(SAVE_STORAGE);
-                if (saveStr) {
-                    const save = JSON.parse(saveStr);
+                const saveRaw = localStorage.getItem('infinite.save');
+                if (saveRaw) {
+                    const save = JSON.parse(saveRaw);
                     // 恢复记忆
-                    if(save.memory) activeStoryData.memory = save.memory;
-                    loadScene(save.sceneId);
+                    activeStoryData.memory = save.memory || ''; 
+                    loadScene(save.currentSceneId);
                     return;
                 } else {
-                    alert("无存档，开始新游戏");
+                    alert("没有找到存档，将开始新游戏");
                 }
             }
 
-            // 新游戏初始化
-            if (mode !== 'continue') {
-                activeStoryData.memory = ""; // 清空记忆
-                localStorage.removeItem(SAVE_STORAGE);
-            }
+            // 2. 如果是新游戏，清空记忆
+            activeStoryData.memory = "故事开端。"; // 初始化记忆
+            localStorage.removeItem('infinite.save'); // 清除旧档
 
+            // 尝试从 main_story 获取起始节点
             let firstScene = 'start';
-            if (mode === 'endless') firstScene = 'ai_start';
-            else if (mode === 'start') firstScene = 'start';
-            
-            // 容错
-            if (!activeStoryData[firstScene] && !firstScene.includes('ai')) {
-                firstScene = Object.keys(activeStoryData)[0] || 'start';
+            if (mode === 'endless' && activeStoryData['plotBeginAi']) {
+                firstScene = 'plotBeginAi';
+            } else if (!activeStoryData[firstScene]) {
+                // 如果没有 'start'，尝试找第一个Key
+                const keys = Object.keys(activeStoryData);
+                if (keys.length > 0) firstScene = keys[0];
             }
-
+            
             loadScene(firstScene);
         }
 
         function exitGame() {
-            document.getElementById('gameContainer').style.display = 'none';
-            document.getElementById('mainHub').style.display = 'block';
+            const mainHub = document.getElementById('mainHub');
+            const game = document.getElementById('gameContainer');
+            const dock = document.querySelector('.dock-nav');
+
+            if (game) game.style.display = 'none';
+            if (mainHub) mainHub.style.display = 'block';
+            if (dock) dock.style.display = 'flex';
+
+            // 返回副本详情
             switchView('detail');
         }
 
-        function showToast(msg) {
-            const t = document.getElementById('toast');
-            t.innerText = msg;
-            t.style.display = 'block';
-            setTimeout(() => t.style.display = 'none', 2000);
-        }
-
-        // === 核心存档 ===
-        function saveProgress(showMsg = false) {
-            if (!currentSceneId) return;
-            const save = {
-                sceneId: currentSceneId,
+        function saveProgress() {
+            if (!activeStoryData) return;
+            const saveState = {
+                currentSceneId: currentSceneId || 'start',
                 memory: activeStoryData.memory || "",
                 timestamp: Date.now()
             };
-            localStorage.setItem(SAVE_STORAGE, JSON.stringify(save));
-            if (showMsg) showToast("✅ 存档成功");
+            localStorage.setItem('infinite.save', JSON.stringify(saveState));
+            // console.log("已自动存档:", saveState);
         }
 
         async function loadScene(sceneId) {
+            // 更新全局进度并自动存档
             currentSceneId = sceneId;
-            saveProgress(); // 自动存档
+            saveProgress();
 
             let scene = activeStoryData[sceneId];
-            
-            // 构造临时 AI 节点
+            const bgEl = document.getElementById('gameBg');
+            const optionsEl = document.getElementById('gameOptions');
+
+            // 容错：如果是 AI 生成的临时后续 ID，但本地没有数据，我们需要在这里构造一个临时的 AI 请求
             if (!scene && sceneId.startsWith('ai_')) {
                 scene = {
                     type: 'ai',
-                    prompt: `（接续剧情）请继续刚才的故事。`,
+                    prompt: `（接续剧情）请继续刚才的故事。场景ID: ${sceneId}。`,
                     bg: ''
                 };
             }
 
-            if (!scene) { alert('剧本结束'); exitGame(); return; }
+            if (!scene) {
+                alert('剧本结束或场景丢失：' + sceneId);
+                exitGame();
+                return;
+            }
 
-            const bgEl = document.getElementById('gameBg');
-            const optEl = document.getElementById('gameOptions');
-            const textEl = document.getElementById('gameTextBox');
+            if (bgEl && scene.bg) {
+                bgEl.style.backgroundImage = `url(${scene.bg})`;
+            }
 
-            if(bgEl && scene.bg) bgEl.style.backgroundImage = `url('${scene.bg}')`;
-            optEl.innerHTML = '';
+            if (optionsEl) optionsEl.innerHTML = '';
 
-            if (scene.type === 'fixed') {
-                typeWriter(scene.text);
-                renderOptions(scene.options);
-                updateMemory(scene.text); // 固定剧情也要记入记忆
-            } else if (scene.type === 'ai') {
-                textEl.innerHTML = '⚡ 正在生成剧情...';
-                const res = await generateAiSceneText(sceneId, scene);
+            // fixed 文本：直接打字机
+            if (!scene.type || scene.type === 'fixed') {
+                typeWriter(scene.text || '');
+                // 渲染固定选项
+                if (scene.options && scene.options.length) {
+                    scene.options.forEach(opt => {
+                        const btn = document.createElement('button');
+                        btn.className = 'game-option-btn';
+                        btn.textContent = opt.text || opt.label; 
+                        btn.onclick = () => {
+                            if (opt.nextScene) {
+                                loadScene(opt.nextScene);
+                            } else {
+                                exitGame();
+                            }
+                        };
+                        optionsEl.appendChild(btn);
+                    });
+                }
+                return;
+            }
+
+            // ai 文本：先显示 loading，再请求 OpenAI
+            if (scene.type === 'ai') {
+                const textEl = document.getElementById('gameText');
+                if (textEl) {
+                    textEl.innerHTML = '⚡ 正在连接神经元...<br><span style="font-size:12px;opacity:0.6;">正在生成剧情...</span>';
+                }
+
+                const generated = await generateAiSceneText(sceneId, scene);
                 
-                if (typeof res === 'string' && res.startsWith('❌')) {
-                    typeWriter(res);
-                    renderOptions([{text:"重试", nextScene: sceneId}]);
+                // 如果生成失败，generated 会是错误信息的字符串
+                if (typeof generated === 'string' && generated.startsWith('❌')) {
+                    typeWriter(generated); // 显示错误信息
+                    // 给个重试按钮
+                    const btn = document.createElement('button');
+                    btn.className = 'game-option-btn';
+                    btn.textContent = '重试';
+                    btn.onclick = () => loadScene(sceneId);
+                    optionsEl.appendChild(btn);
+                    return;
+                }
+
+                const finalText = generated.text || (typeof generated === 'string' ? generated : 'AI 生成了空内容');
+
+                typeWriter(finalText);
+
+                // 如果 AI 返回了新的选项，替换当前 options
+                if (generated.options && Array.isArray(generated.options) && generated.options.length) {
+                    optionsEl.innerHTML = '';
+                    generated.options.forEach(opt => {
+                        const btn = document.createElement('button');
+                        btn.className = 'game-option-btn';
+                        btn.textContent = opt.text;
+                        btn.onclick = () => {
+                            // 这里 AI 生成的 nextScene 可能是 null 或者一个新的 ID
+                            // 如果是 null，我们假设它是一个新的 AI 节点
+                            let nextId = opt.nextScene;
+                            if (!nextId || nextId === 'null') {
+                                nextId = 'ai_next_' + Date.now();
+                                // 临时存入 activeStoryData 以便 loadScene 能找到上下文（这里简化处理，只传 prompt）
+                                activeStoryData[nextId] = {
+                                    type: 'ai',
+                                    bg: scene.bg, // 沿用背景
+                                    prompt: `用户选择了：${opt.text}。请根据这个选择继续剧情。`
+                                };
+                            }
+                            loadScene(nextId);
+                        };
+                        optionsEl.appendChild(btn);
+                    });
                 } else {
-                    typeWriter(res.text);
-                    renderOptions(res.options);
-                    updateMemory(res.text); // 记入记忆
+                    // AI 没返回选项，给默认
+                    const btn = document.createElement('button');
+                    btn.className = 'game-option-btn';
+                    btn.textContent = '继续';
+                    btn.onclick = () => loadScene('ai_next_' + Date.now());
+                    optionsEl.appendChild(btn);
                 }
             }
-        }
-
-        function updateMemory(text) {
-            let mem = activeStoryData.memory || "";
-            mem += "\n" + text;
-            if (mem.length > 2000) mem = "..." + mem.slice(-2000); // 简单的记忆窗口
-            activeStoryData.memory = mem;
-            saveProgress();
         }
 
         function typeWriter(text) {
-            const el = document.getElementById('gameTextBox');
-            el.innerHTML = '';
-            let i = 0;
-            const timer = setInterval(() => {
-                el.innerHTML += text.charAt(i);
-                i++;
-                if(i >= text.length) clearInterval(timer);
-            }, 20);
-            el.onclick = () => { clearInterval(timer); el.innerHTML = text; };
+            const textEl = document.getElementById('gameText');
+            if (!textEl) return;
+
+            if (typingTimer) clearTimeout(typingTimer);
+            typingText = text;
+            typingIndex = 0;
+            isTyping = true;
+            textEl.textContent = '';
+
+            const step = () => {
+                if (!isTyping) return;
+                if (typingIndex >= typingText.length) {
+                    textEl.textContent = typingText;
+                    isTyping = false;
+                    return;
+                }
+                textEl.textContent += typingText.charAt(typingIndex);
+                typingIndex += 1;
+                typingTimer = setTimeout(step, 30);
+            };
+
+            step();
         }
 
-        function renderOptions(opts) {
-            const box = document.getElementById('gameOptions');
-            box.innerHTML = '';
-            if(!opts) return;
-            opts.forEach(opt => {
-                const btn = document.createElement('button');
-                btn.className = 'game-option-btn';
-                btn.innerText = opt.text || opt.label;
-                btn.onclick = () => {
-                    // 处理 AI 生成的 nextScene
-                    let next = opt.nextScene;
-                    if (!next || next === 'null') {
-                        next = 'ai_next_' + Date.now();
-                        // 预存 Prompt
-                        activeStoryData[next] = {
-                            type: 'ai',
-                            prompt: `玩家选择了：${opt.text}。请继续剧情。`
-                        };
+        function skipTyping() {
+            if (!isTyping) return;
+            const textEl = document.getElementById('gameText');
+            if (!textEl) return;
+            if (typingTimer) clearTimeout(typingTimer);
+            isTyping = false;
+            textEl.textContent = typingText;
+        }
+        
+        // API 配置保存
+        function saveApiConfig() {
+            const apiName = document.getElementById('apiName').value.trim();
+            const apiUrl = document.getElementById('apiUrl').value.trim();
+            const apiKey = document.getElementById('settingsApiKey').value.trim();
+            const apiModel = document.getElementById('apiModel').value.trim();
+            
+            if (!apiName || !apiUrl || !apiKey) {
+                alert('⚠️ 请填写完整的 API 配置信息');
+                return;
+            }
+            
+            const config = {
+                name: apiName,
+                url: apiUrl,
+                key: apiKey,
+                model: apiModel || 'gpt-3.5-turbo'
+            };
+            
+            localStorage.setItem('apiConfig', JSON.stringify(config));
+            
+            // 保存成功反馈
+            const btn = event.target;
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '✅ 配置已保存';
+            btn.style.background = '#10b981';
+            setTimeout(() => {
+                btn.innerHTML = originalText;
+                btn.style.background = '';
+            }, 2000);
+        }
+
+        // 加载 API 配置
+        function loadApiConfig() {
+            const savedConfig = localStorage.getItem('apiConfig');
+            if (savedConfig) {
+                try {
+                    const config = JSON.parse(savedConfig);
+                    document.getElementById('apiName').value = config.name || '';
+                    document.getElementById('apiUrl').value = config.url || '';
+                    document.getElementById('settingsApiKey').value = config.key || '';
+                    
+                    // 如果有保存的模型，添加到下拉框
+                    if (config.model) {
+                        const modelSelect = document.getElementById('apiModel');
+                        // 如果列表里没有这个选项，动态加一个
+                        if (!Array.from(modelSelect.options).some(opt => opt.value === config.model)) {
+                             const option = document.createElement('option');
+                             option.value = config.model;
+                             option.textContent = config.model;
+                             modelSelect.appendChild(option);
+                        }
+                        modelSelect.value = config.model;
                     }
-                    loadScene(next);
-                };
-                box.appendChild(btn);
+                } catch (e) {
+                    console.error('Config load failed', e);
+                }
+            }
+        }
+        // 测试 API 连接并获取模型列表
+        async function testApiConnection() {
+            const apiUrl = document.getElementById('apiUrl').value.trim();
+            const apiKey = document.getElementById('settingsApiKey').value.trim();
+            const resultDiv = document.getElementById('apiTestResult');
+            const modelSelect = document.getElementById('apiModel');
+
+            if (!apiUrl || !apiKey) {
+                showApiTestResult('⚠️ 请先填写 API URL 和 Key', 'error');
+                return;
+            }
+
+            showApiTestResult('🔄 正在测试连接...', 'loading');
+
+            try {
+                // 尝试获取模型列表
+                // 兼容：有些代理需要 /v1/models，有些是 /models
+                let modelsUrl = apiUrl.replace(/\/$/, '');
+                if (modelsUrl.endsWith('/v1')) modelsUrl = modelsUrl.replace(/\/v1$/, '');
+                if (modelsUrl.endsWith('/chat/completions')) modelsUrl = modelsUrl.replace(/\/chat\/completions$/, '');
+                modelsUrl += '/models';
+                
+                const res = await fetch(modelsUrl, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': 'Bearer ' + apiKey,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (!res.ok) {
+                    const errorText = await res.text();
+                    showApiTestResult(`❌ 连接失败: ${res.status} ${res.statusText}`, 'error');
+                    console.error('API Error:', errorText);
+                    return;
+                }
+
+                const data = await res.json();
+                
+                if (data.data && Array.isArray(data.data)) {
+                    // 成功获取模型列表
+                    const models = data.data;
+                    showApiTestResult(`✅ 连接成功！找到 ${models.length} 个可用模型`, 'success');
+                    
+                    // 填充模型下拉框
+                    modelSelect.innerHTML = '<option value="">-- 请选择模型 --</option>';
+                    models.forEach(model => {
+                        const option = document.createElement('option');
+                        option.value = model.id;
+                        option.textContent = model.id;
+                        modelSelect.appendChild(option);
+                    });
+
+                    // 如果之前保存过模型，自动选中
+                    const savedConfig = localStorage.getItem('apiConfig');
+                    if (savedConfig) {
+                        try {
+                            const config = JSON.parse(savedConfig);
+                            if (config.model) {
+                                modelSelect.value = config.model;
+                            }
+                        } catch (e) {}
+                    }
+                } else {
+                    showApiTestResult('✅ 连接成功！但未能获取模型列表，请手动输入模型名', 'warning');
+                }
+            } catch (error) {
+                showApiTestResult(`❌ 网络错误: ${error.message}`, 'error');
+                console.error('Fetch error:', error);
+            }
+        }
+
+        function showApiTestResult(message, type) {
+            const resultDiv = document.getElementById('apiTestResult');
+            if (!resultDiv) return;
+
+            const colors = {
+                success: 'background: rgba(16, 185, 129, 0.2); border: 1px solid rgba(16, 185, 129, 0.4); color: #10b981;',
+                error: 'background: rgba(239, 68, 68, 0.2); border: 1px solid rgba(239, 68, 68, 0.4); color: #ef4444;',
+                warning: 'background: rgba(245, 158, 11, 0.2); border: 1px solid rgba(245, 158, 11, 0.4); color: #f59e0b;',
+                loading: 'background: rgba(59, 130, 246, 0.2); border: 1px solid rgba(59, 130, 246, 0.4); color: #3b82f6;'
+            };
+
+            resultDiv.style.cssText = colors[type] || colors.loading;
+            resultDiv.textContent = message;
+            resultDiv.style.display = 'block';
+        }
+
+        // 主题切换（v20 版本的主题系统）
+        function changeTheme(theme) {
+            document.body.setAttribute('data-theme', theme);
+            localStorage.setItem('theme', theme);
+            
+            // 更新主题按钮状态
+            document.querySelectorAll('.theme-btn').forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.getAttribute('data-theme') === theme) {
+                    btn.classList.add('active');
+                }
             });
         }
 
-        // === AI 生成 (带记忆) ===
-        async function generateAiSceneText(sceneId, scene) {
-            const configRaw = localStorage.getItem('apiConfig');
-            if(!configRaw) return '❌ 未配置 API';
-            const config = JSON.parse(configRaw);
-            
-            // URL 修正
-            let url = config.url || "https://api.openai.com/v1";
-            url = url.replace(/\/$/, "");
-            if(!url.includes("chat/completions")) url = url.endsWith("/v1") ? url+"/chat/completions" : url+"/v1/chat/completions";
+        // 加载主题
+        function loadTheme() {
+            const savedTheme = localStorage.getItem('theme') || 'purple';
+            changeTheme(savedTheme);
+        }
 
-            // 构造记忆 Prompt
-            const memory = activeStoryData.memory || "";
-            const systemPrompt = `你是一个文字游戏AI。
-【前情提要】：${memory}
-【指令】：接续剧情，200字以内。
-返回格式：纯JSON {"text":"...", "options":[{"text":"...", "nextScene":"null"}]}`;
-
+        // ===== 个人设定：本地多档位 + 头像上传 =====
+        function loadPersonas() {
             try {
-                const res = await fetch(url, {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer '+config.key},
-                    body: JSON.stringify({
-                        model: 'gpt-3.5-turbo',
-                        stream: false,
-                        messages: [
-                            {role:'system', content: systemPrompt},
-                            {role:'user', content: scene.prompt || "继续"}
-                        ]
-                    })
+                const raw = localStorage.getItem(PERSONA_STORAGE);
+                if (!raw) return [];
+                const list = JSON.parse(raw);
+                return Array.isArray(list) ? list : [];
+            } catch (e) {
+                return [];
+            }
+        }
+
+        function savePersonas(list) {
+            localStorage.setItem(PERSONA_STORAGE, JSON.stringify(list));
+        }
+
+        function initPersonas() {
+            renderPersonaStrip();
+            
+            // 游戏文本区域点击：正在打字时跳过动画
+            const box = document.getElementById('gameTextBox');
+            if (box) {
+                box.addEventListener('click', () => {
+                    if (isTyping) {
+                        skipTyping();
+                    }
                 });
-                
-                const data = await res.json();
-                if(data.error) return `❌ API错误: ${data.error.message}`;
-                
-                let content = data.choices?.[0]?.message?.content;
-                if(!content) return `❌ 返回空`;
-                
-                try {
-                    return JSON.parse(content.replace(/```json/g,'').replace(/```/g,'').trim());
-                } catch {
-                    return { text: content, options: [{text:"继续", nextScene:"ai_next"}] };
-                }
-            } catch(e) { return `❌ 网络错误: ${e.message}`; }
-        }
-
-        // === 记忆回廊逻辑 ===
-        function refreshStoryLog() {
-            const box = document.getElementById('storyLog');
-            const mem = localStorage.getItem(SAVE_STORAGE);
-            if (mem) {
-                const data = JSON.parse(mem);
-                box.innerText = data.memory || "暂无记忆";
-            } else {
-                box.innerText = "暂无记录";
-            }
-        }
-        function clearMemory() {
-            if(confirm('确定清空记忆？')) {
-                localStorage.removeItem(SAVE_STORAGE);
-                if(activeStoryData) activeStoryData.memory = "";
-                refreshStoryLog();
             }
         }
 
-        // === 设定与API配置函数 ===
-        function saveApi() {
-            const url = document.getElementById('apiUrl').value;
-            const key = document.getElementById('apiKey').value;
-            localStorage.setItem('apiConfig', JSON.stringify({url, key}));
-            showToast('API 已保存');
-        }
-        function loadApiConfig() {
-            const c = JSON.parse(localStorage.getItem('apiConfig') || '{}');
-            if(c.url) document.getElementById('apiUrl').value = c.url;
-            if(c.key) document.getElementById('apiKey').value = c.key;
-        }
-        
-        // 剧本加载
+        // ===== 剧本管理：从 localStorage 读取 / 写入 =====
+        // 核心修改：适配编辑器导出的多层级结构
         function loadCustomStory() {
             const raw = localStorage.getItem(STORY_STORAGE);
-            if(raw) {
-                try {
-                    const d = JSON.parse(raw);
-                    activeStoryData = d.main_story || d;
-                } catch {}
-            } else {
-                activeStoryData = storyData;
+            if (!raw) return;
+            try {
+                const parsed = JSON.parse(raw);
+                if (parsed && typeof parsed === 'object') {
+                    // 兼容编辑器导出的结构：提取 main_story
+                    if (parsed.main_story) {
+                        activeStoryData = parsed.main_story;
+                        // 这里可以顺便把 side_stories 合并进去，或者按需加载
+                        // 为了简单，我们先把 main_story 作为主剧本
+                    } else {
+                        // 如果是旧格式（扁平的），直接用
+                        activeStoryData = parsed;
+                    }
+                }
+            } catch (e) {
+                console.warn('自定义剧本解析失败，已忽略：', e);
             }
         }
-        function handleStoryUpload(e) {
-            const file = e.target.files[0];
+        
+        // 剧本上传处理
+        function handleStoryUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
             const reader = new FileReader();
-            reader.onload = (ev) => {
-                localStorage.setItem(STORY_STORAGE, ev.target.result);
-                loadCustomStory();
-                document.getElementById('storyMsg').innerText = "✅ 已加载 " + file.name;
+            reader.onload = function(e) {
+                try {
+                    const json = JSON.parse(e.target.result);
+                    // 验证一下是不是有效的剧本包
+                    if (!json.main_story && !json.start) {
+                        throw new Error("格式不对，必须包含 main_story 或 start 节点");
+                    }
+                    
+                    // 保存到 LocalStorage
+                    localStorage.setItem(STORY_STORAGE, JSON.stringify(json));
+                    
+                    // 立即生效
+                    loadCustomStory();
+                    
+                    document.getElementById('storyUploadMsg').textContent = `✅ 成功加载: ${file.name}`;
+                    alert("剧本上传成功！请点击副本开始游戏。");
+                    
+                } catch (err) {
+                    alert("剧本文件格式错误: " + err.message);
+                }
             };
             reader.readAsText(file);
         }
+
         function resetStory() {
-            localStorage.removeItem(STORY_STORAGE);
             activeStoryData = storyData;
-            document.getElementById('storyMsg').innerText = "已恢复默认";
+            localStorage.removeItem(STORY_STORAGE);
+            document.getElementById('storyUploadMsg').textContent = "";
+            alert('已恢复默认剧本');
         }
 
-        // 个人设定逻辑 (修复版)
-        function initPersonas() { renderPersonaStrip(); }
-        function loadPersonas() { return JSON.parse(localStorage.getItem(PERSONA_STORAGE) || '[]'); }
-        function renderPersonaStrip() {
-            const list = loadPersonas();
-            const strip = document.getElementById('persona-strip');
-            strip.innerHTML = '<div class="persona-chip" onclick="selectPersona(null)"><div class="persona-avatar" style="background:#444;">+</div><div class="persona-name">新建</div></div>';
-            list.forEach(p => {
-                const div = document.createElement('div');
-                div.className = 'persona-chip';
-                div.innerHTML = `<div class="persona-avatar">${p.avatar ? `<img src="${p.avatar}">` : p.name[0]}</div><div class="persona-name">${p.name}</div>`;
-                div.onclick = () => selectPersona(p.id);
-                strip.appendChild(div);
-            });
-        }
-        function selectPersona(id) {
-            currentPersonaId = id;
-            const p = loadPersonas().find(x => x.id === id) || {name:'', desc:'', avatar:''};
-            document.getElementById('persona-name').value = p.name;
-            document.getElementById('persona-desc').value = p.desc;
-            const preview = document.getElementById('persona-avatar-preview');
-            const holder = document.getElementById('persona-placeholder');
-            if(p.avatar) { preview.src = p.avatar; preview.style.display='block'; holder.style.display='none'; }
-            else { preview.style.display='none'; holder.style.display='block'; }
-        }
-        function savePersona() {
-            const name = document.getElementById('persona-name').value;
-            const desc = document.getElementById('persona-desc').value;
-            const preview = document.getElementById('persona-avatar-preview');
-            const avatar = preview.style.display === 'block' ? preview.src : '';
-            if(!name) return alert('请输入名字');
+        // ===== 终极整合版 AI 生成函数 (含记忆+存档+防报错) =====
+        async function generateAiSceneText(sceneId, scene) {
+            // 1. 读取配置
+            const configRaw = localStorage.getItem('apiConfig');
+            if (!configRaw) return '⚠️ 未配置 API';
+            const config = JSON.parse(configRaw);
+            if (!config.key) return '⚠️ API Key 为空';
+
+            // 2. URL 智能修正 (保留之前的修复逻辑)
+            let baseUrl = config.url || 'https://api.openai.com/v1';
+            baseUrl = baseUrl.replace(/\/+$/, '');
+            if (baseUrl.endsWith('/chat/completions')) baseUrl = baseUrl.replace(/\/chat\/completions$/, '');
+            if (!baseUrl.endsWith('/v1')) baseUrl += '/v1';
+            const finalUrl = baseUrl + '/chat/completions';
+
+            // 3. 构造带记忆的 Prompt (新增功能)
+            // 如果没有记忆，就默认是空
+            const memory = activeStoryData.memory || "";
             
-            let list = loadPersonas();
-            if(currentPersonaId) {
-                const idx = list.findIndex(x => x.id === currentPersonaId);
-                if(idx >= 0) list[idx] = { ...list[idx], name, desc, avatar };
-            } else {
-                list.push({ id: Date.now(), name, desc, avatar });
+            // 把记忆塞给 AI，告诉它这是前情提要
+            const systemInstruction = `
+你是一个无限流文字游戏的 AI 导演。
+【前情提要】：
+${memory}
+
+【指令】：
+请接续剧情。
+1. 剧情必须连贯，严禁与前情冲突。
+2. 输出纯 JSON 格式：{"text": "剧情内容...", "options": [{"text":"选项A", "nextScene":"null"}]}。
+`.trim();
+
+            const userPrompt = scene.prompt || `当前进展到节点 ${sceneId}。请继续发展剧情。`;
+
+            try {
+                const res = await fetch(finalUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + config.key
+                    },
+                    body: JSON.stringify({
+                        model: config.model || 'gpt-3.5-turbo',
+                        stream: false, // 必须关闭流式，否则你的 API 会返回空！
+                        messages: [
+                            { role: 'system', content: systemInstruction },
+                            { role: 'user', content: userPrompt }
+                        ],
+                        temperature: 0.85
+                    })
+                });
+
+                if (!res.ok) {
+                    const err = await res.text();
+                    return `❌ API 报错 (${res.status}): ${err}`;
+                }
+
+                const data = await res.json();
+                
+                // 兼容各种奇葩 API 的返回格式
+                const content = data.choices?.[0]?.message?.content || data.data?.content;
+                
+                if (!content) return '❌ API 返回结构异常:\n' + JSON.stringify(data, null, 2);
+
+                let parsed;
+                try {
+                    const clean = content.replace(/```json/g, '').replace(/```/g, '').trim();
+                    parsed = JSON.parse(clean);
+                } catch {
+                    parsed = { text: content, options: [{text:"继续", nextScene:"next"}] };
+                }
+
+                // 4. 成功后，自动追加记忆并存档 (新增功能)
+                if (parsed.text) {
+                    let newMem = memory + "\n" + parsed.text;
+                    // 只保留最近 2000 字，防止记忆太长撑爆 API
+                    if (newMem.length > 2000) newMem = "..." + newMem.slice(-2000);
+                    activeStoryData.memory = newMem;
+                    
+                    // 如果有 saveProgress 函数就调用它
+                    if (typeof saveProgress === 'function') saveProgress();
+                }
+
+                return parsed;
+
+            } catch (e) {
+                return `❌ 网络错误: ${e.message}`;
             }
-            localStorage.setItem(PERSONA_STORAGE, JSON.stringify(list));
-            renderPersonaStrip();
-            showToast('设定已保存');
         }
+
+        // 其他辅助函数
+        function changeTheme(theme) { document.body.setAttribute('data-theme', theme); localStorage.setItem('theme', theme); }
+        function loadTheme() { changeTheme(localStorage.getItem('theme') || 'purple'); }
         function triggerAvatarUpload() { document.getElementById('persona-avatar-input').click(); }
-        function onAvatarFileChange(e) {
-            const f = e.target.files[0];
-            const reader = new FileReader();
-            reader.onload = (ev) => {
-                const img = document.getElementById('persona-avatar-preview');
-                img.src = ev.target.result;
-                img.style.display = 'block';
-                document.getElementById('persona-placeholder').style.display = 'none';
-            };
-            reader.readAsDataURL(f);
-        }
+        
+        // 启动
+        window.onload = init;
     </script>
 </body>
 </html>

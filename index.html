@@ -843,7 +843,7 @@
     <!-- 登录页面 -->
     <div class="login-page" id="loginPage">
         <div class="login-card glass-panel">
-            <h1 class="login-title">Utopia note</h1>
+            <h1 class="login-title">INFINITE LOVE</h1>
             <p class="login-subtitle">Utopia note · 乌托邦手记</p>
             
             <div class="input-wrapper">
@@ -945,15 +945,16 @@
                         </div>
                     </div>
                     <div>
-                        <button class="btn-glow" onclick="startGame()" style="margin-bottom: 10px;">
-                            开始命运之旅
-                        </button>
-                        <div style="display:flex; gap:15px;">
-    <button class="btn-glow" style="flex:1" onclick="startGame('start')">🆕 新旅程</button>
-    <!-- 新增的继续按钮 -->
-    <button class="btn-glow" style="flex:1; background:rgba(16, 185, 129, 0.2);" onclick="startGame('continue')">📂 继续剧情</button>
-                        </div>                        <button class="btn-glow" onclick="startGame('endless')" style="background: rgba(255,255,255,0.1);">
-                            无尽模式
+                        <div style="display:flex; gap:10px;">
+                            <button class="btn-glow" style="flex:1" onclick="startGame('start')">
+                                📖 开始剧情
+                            </button>
+                            <button class="btn-glow" style="flex:1; background: rgba(16, 185, 129, 0.2);" onclick="startGame('continue')">
+                                📂 继续剧情
+                            </button>
+                        </div>
+                        <button class="btn-glow" onclick="startGame('endless')" style="width:100%; margin-top:10px; background: rgba(255,255,255,0.1);">
+                            ♾️ 无尽模式
                         </button>
                     </div>
                 </div>
@@ -1155,7 +1156,7 @@
                 <svg class="icon dock-icon" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
             </div>
             <div class="dock-item" onclick="switchView('settings')" title="系统设置">
-                <svg class="icon dock-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 .33-1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+                <svg class="icon dock-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
             </div>
         </div>
     </div>
@@ -1178,6 +1179,7 @@
         const STORY_STORAGE = 'infinite.customStory';
 
         let currentPersonaId = null;
+        let currentSceneId = null; // 全局记录当前场景 ID
 
         // 打字机状态
         let typingTimer = null;
@@ -1251,19 +1253,6 @@
 
         // 初始化
         function init() {
-            // 自动清除脏数据，防止旧的非AI剧本干扰
-            try {
-                // 如果发现旧的 customStory 结构不对（没有 main_story 字段且不是标准对象），清除它
-                const raw = localStorage.getItem(STORY_STORAGE);
-                if (raw) {
-                    const parsed = JSON.parse(raw);
-                    if (!parsed.main_story && !parsed.start) {
-                        localStorage.removeItem(STORY_STORAGE);
-                        console.log('Cleaned dirty story data');
-                    }
-                }
-            } catch(e) {}
-
             loadApiConfig();
             loadTheme();
             loadCustomStory(); // 这里会自动加载你上传的剧本
@@ -1344,7 +1333,7 @@
             switchView('detail');
         }
 
-        // ===== 增强版：开始游戏逻辑 =====
+        // ===== 游戏流程 =====
         function startGame(mode) {
             const mainHub = document.getElementById('mainHub');
             const game = document.getElementById('gameContainer');
@@ -1372,11 +1361,12 @@
             activeStoryData.memory = "故事开端。"; // 初始化记忆
             localStorage.removeItem('infinite.save'); // 清除旧档
 
-            // ... 原有的找起始节点逻辑 ...
+            // 尝试从 main_story 获取起始节点
             let firstScene = 'start';
             if (mode === 'endless' && activeStoryData['plotBeginAi']) {
                 firstScene = 'plotBeginAi';
             } else if (!activeStoryData[firstScene]) {
+                // 如果没有 'start'，尝试找第一个Key
                 const keys = Object.keys(activeStoryData);
                 if (keys.length > 0) firstScene = keys[0];
             }
@@ -1396,38 +1386,27 @@
             // 返回副本详情
             switchView('detail');
         }
-            
-        // ===== 核心存档功能 =====
+
         function saveProgress() {
-    if (!activeStoryData) return;
-    
-    const saveState = {
-        sceneId: currentSceneId, // 当前在哪一节
-        memory: activeStoryData.memory || "", // 此时此刻的剧情记忆
-        timestamp: Date.now()
-    };
-    
-    localStorage.setItem('infinite.save', JSON.stringify(saveState));
-    console.log("已自动存档:", saveState);
-    
-    // 给个视觉反馈
-    const btn = document.getElementById('btnSave');
-    if(btn) {
-        const oldText = btn.innerText;
-        btn.innerText = "✅ 已存";
-        setTimeout(() => btn.innerText = oldText, 1000);
-    }
-}
+            if (!activeStoryData) return;
+            const saveState = {
+                currentSceneId: currentSceneId || 'start',
+                memory: activeStoryData.memory || "",
+                timestamp: Date.now()
+            };
+            localStorage.setItem('infinite.save', JSON.stringify(saveState));
+            // console.log("已自动存档:", saveState);
+        }
+
         async function loadScene(sceneId) {
-             // 1. 更新全局变量，标记当前位置
-    currentSceneId = sceneId; 
-            // 2. 只要进新剧情，立马自动存！
-    saveProgress(); 
+            // 更新全局进度并自动存档
+            currentSceneId = sceneId;
+            saveProgress();
+
             let scene = activeStoryData[sceneId];
             const bgEl = document.getElementById('gameBg');
             const optionsEl = document.getElementById('gameOptions');
-            async function loadScene(sceneId) {
-    
+
             // 容错：如果是 AI 生成的临时后续 ID，但本地没有数据，我们需要在这里构造一个临时的 AI 请求
             if (!scene && sceneId.startsWith('ai_')) {
                 scene = {
@@ -1498,11 +1477,6 @@
 
                 // 如果 AI 返回了新的选项，替换当前 options
                 if (generated.options && Array.isArray(generated.options) && generated.options.length) {
-                    // 更新当前场景数据，防止下次还要生成
-                    // activeStoryData[sceneId].text = finalText;
-                    // activeStoryData[sceneId].options = generated.options;
-                    // activeStoryData[sceneId].type = 'fixed'; // 可选：变固定
-
                     optionsEl.innerHTML = '';
                     generated.options.forEach(opt => {
                         const btn = document.createElement('button');
@@ -1612,8 +1586,10 @@
                     document.getElementById('apiUrl').value = config.url || '';
                     document.getElementById('settingsApiKey').value = config.key || '';
                     
+                    // 如果有保存的模型，添加到下拉框
                     if (config.model) {
                         const modelSelect = document.getElementById('apiModel');
+                        // 如果列表里没有这个选项，动态加一个
                         if (!Array.from(modelSelect.options).some(opt => opt.value === config.model)) {
                              const option = document.createElement('option');
                              option.value = config.model;
@@ -1627,12 +1603,13 @@
                 }
             }
         }
-
-        // 测试 API 连接
+        // 测试 API 连接并获取模型列表
         async function testApiConnection() {
             const apiUrl = document.getElementById('apiUrl').value.trim();
             const apiKey = document.getElementById('settingsApiKey').value.trim();
-            
+            const resultDiv = document.getElementById('apiTestResult');
+            const modelSelect = document.getElementById('apiModel');
+
             if (!apiUrl || !apiKey) {
                 showApiTestResult('⚠️ 请先填写 API URL 和 Key', 'error');
                 return;
@@ -1641,6 +1618,8 @@
             showApiTestResult('🔄 正在测试连接...', 'loading');
 
             try {
+                // 尝试获取模型列表
+                // 兼容：有些代理需要 /v1/models，有些是 /models
                 let modelsUrl = apiUrl.replace(/\/$/, '');
                 if (modelsUrl.endsWith('/v1')) modelsUrl = modelsUrl.replace(/\/v1$/, '');
                 if (modelsUrl.endsWith('/chat/completions')) modelsUrl = modelsUrl.replace(/\/chat\/completions$/, '');
@@ -1657,70 +1636,159 @@
                 if (!res.ok) {
                     const errorText = await res.text();
                     showApiTestResult(`❌ 连接失败: ${res.status} ${res.statusText}`, 'error');
+                    console.error('API Error:', errorText);
                     return;
                 }
 
                 const data = await res.json();
                 
                 if (data.data && Array.isArray(data.data)) {
-                    showApiTestResult(`✅ 连接成功！找到 ${data.data.length} 个可用模型`, 'success');
-                    const modelSelect = document.getElementById('apiModel');
+                    // 成功获取模型列表
+                    const models = data.data;
+                    showApiTestResult(`✅ 连接成功！找到 ${models.length} 个可用模型`, 'success');
+                    
+                    // 填充模型下拉框
                     modelSelect.innerHTML = '<option value="">-- 请选择模型 --</option>';
-                    data.data.forEach(model => {
+                    models.forEach(model => {
                         const option = document.createElement('option');
                         option.value = model.id;
                         option.textContent = model.id;
                         modelSelect.appendChild(option);
                     });
+
+                    // 如果之前保存过模型，自动选中
+                    const savedConfig = localStorage.getItem('apiConfig');
+                    if (savedConfig) {
+                        try {
+                            const config = JSON.parse(savedConfig);
+                            if (config.model) {
+                                modelSelect.value = config.model;
+                            }
+                        } catch (e) {}
+                    }
                 } else {
-                    showApiTestResult('✅ 连接成功！但未能获取模型列表', 'warning');
+                    showApiTestResult('✅ 连接成功！但未能获取模型列表，请手动输入模型名', 'warning');
                 }
             } catch (error) {
                 showApiTestResult(`❌ 网络错误: ${error.message}`, 'error');
+                console.error('Fetch error:', error);
             }
         }
 
         function showApiTestResult(message, type) {
             const resultDiv = document.getElementById('apiTestResult');
             if (!resultDiv) return;
-            const colors = { success: '#10b981', error: '#ef4444', warning: '#f59e0b', loading: '#3b82f6' };
-            resultDiv.style.color = colors[type] || colors.loading;
+
+            const colors = {
+                success: 'background: rgba(16, 185, 129, 0.2); border: 1px solid rgba(16, 185, 129, 0.4); color: #10b981;',
+                error: 'background: rgba(239, 68, 68, 0.2); border: 1px solid rgba(239, 68, 68, 0.4); color: #ef4444;',
+                warning: 'background: rgba(245, 158, 11, 0.2); border: 1px solid rgba(245, 158, 11, 0.4); color: #f59e0b;',
+                loading: 'background: rgba(59, 130, 246, 0.2); border: 1px solid rgba(59, 130, 246, 0.4); color: #3b82f6;'
+            };
+
+            resultDiv.style.cssText = colors[type] || colors.loading;
             resultDiv.textContent = message;
             resultDiv.style.display = 'block';
         }
 
-        // 剧本管理：从 localStorage 读取 / 写入
+        // 主题切换（v20 版本的主题系统）
+        function changeTheme(theme) {
+            document.body.setAttribute('data-theme', theme);
+            localStorage.setItem('theme', theme);
+            
+            // 更新主题按钮状态
+            document.querySelectorAll('.theme-btn').forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.getAttribute('data-theme') === theme) {
+                    btn.classList.add('active');
+                }
+            });
+        }
+
+        // 加载主题
+        function loadTheme() {
+            const savedTheme = localStorage.getItem('theme') || 'purple';
+            changeTheme(savedTheme);
+        }
+
+        // ===== 个人设定：本地多档位 + 头像上传 =====
+        function loadPersonas() {
+            try {
+                const raw = localStorage.getItem(PERSONA_STORAGE);
+                if (!raw) return [];
+                const list = JSON.parse(raw);
+                return Array.isArray(list) ? list : [];
+            } catch (e) {
+                return [];
+            }
+        }
+
+        function savePersonas(list) {
+            localStorage.setItem(PERSONA_STORAGE, JSON.stringify(list));
+        }
+
+        function initPersonas() {
+            renderPersonaStrip();
+            
+            // 游戏文本区域点击：正在打字时跳过动画
+            const box = document.getElementById('gameTextBox');
+            if (box) {
+                box.addEventListener('click', () => {
+                    if (isTyping) {
+                        skipTyping();
+                    }
+                });
+            }
+        }
+
+        // ===== 剧本管理：从 localStorage 读取 / 写入 =====
+        // 核心修改：适配编辑器导出的多层级结构
         function loadCustomStory() {
             const raw = localStorage.getItem(STORY_STORAGE);
             if (!raw) return;
             try {
                 const parsed = JSON.parse(raw);
                 if (parsed && typeof parsed === 'object') {
-                    // 兼容编辑器导出的结构
+                    // 兼容编辑器导出的结构：提取 main_story
                     if (parsed.main_story) {
                         activeStoryData = parsed.main_story;
+                        // 这里可以顺便把 side_stories 合并进去，或者按需加载
+                        // 为了简单，我们先把 main_story 作为主剧本
                     } else {
+                        // 如果是旧格式（扁平的），直接用
                         activeStoryData = parsed;
                     }
                 }
             } catch (e) {
-                console.warn('自定义剧本解析失败', e);
+                console.warn('自定义剧本解析失败，已忽略：', e);
             }
         }
         
+        // 剧本上传处理
         function handleStoryUpload(event) {
             const file = event.target.files[0];
             if (!file) return;
+            
             const reader = new FileReader();
             reader.onload = function(e) {
                 try {
                     const json = JSON.parse(e.target.result);
+                    // 验证一下是不是有效的剧本包
+                    if (!json.main_story && !json.start) {
+                        throw new Error("格式不对，必须包含 main_story 或 start 节点");
+                    }
+                    
+                    // 保存到 LocalStorage
                     localStorage.setItem(STORY_STORAGE, JSON.stringify(json));
+                    
+                    // 立即生效
                     loadCustomStory();
+                    
                     document.getElementById('storyUploadMsg').textContent = `✅ 成功加载: ${file.name}`;
-                    alert("剧本上传成功！");
+                    alert("剧本上传成功！请点击副本开始游戏。");
+                    
                 } catch (err) {
-                    alert("文件错误: " + err.message);
+                    alert("剧本文件格式错误: " + err.message);
                 }
             };
             reader.readAsText(file);
@@ -1754,7 +1822,7 @@
             
             // 把记忆塞给 AI，告诉它这是前情提要
             const systemInstruction = `
-你是一个文字游戏的 AI 导演。
+你是一个无限流文字游戏的 AI 导演。
 【前情提要】：
 ${memory}
 
@@ -1821,6 +1889,11 @@ ${memory}
                 return `❌ 网络错误: ${e.message}`;
             }
         }
+
+        // 其他辅助函数
+        function changeTheme(theme) { document.body.setAttribute('data-theme', theme); localStorage.setItem('theme', theme); }
+        function loadTheme() { changeTheme(localStorage.getItem('theme') || 'purple'); }
+        function triggerAvatarUpload() { document.getElementById('persona-avatar-input').click(); }
         
         // 启动
         window.onload = init;

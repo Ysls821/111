@@ -1151,7 +1151,7 @@
                 <svg class="icon dock-icon" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
             </div>
             <div class="dock-item" onclick="switchView('settings')" title="系统设置">
-                <svg class="icon dock-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0-1.51 1z"></path></svg>
+                <svg class="icon dock-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 .33-1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
             </div>
         </div>
     </div>
@@ -1247,6 +1247,19 @@
 
         // 初始化
         function init() {
+            // 自动清除脏数据，防止旧的非AI剧本干扰
+            try {
+                // 如果发现旧的 customStory 结构不对（没有 main_story 字段且不是标准对象），清除它
+                const raw = localStorage.getItem(STORY_STORAGE);
+                if (raw) {
+                    const parsed = JSON.parse(raw);
+                    if (!parsed.main_story && !parsed.start) {
+                        localStorage.removeItem(STORY_STORAGE);
+                        console.log('Cleaned dirty story data');
+                    }
+                }
+            } catch(e) {}
+
             loadApiConfig();
             loadTheme();
             loadCustomStory(); // 这里会自动加载你上传的剧本
@@ -1338,19 +1351,15 @@
             if (game) game.style.display = 'block';
 
             // 尝试从 main_story 获取起始节点
-            // 如果是新版分板块JSON，场景可能不在顶层，而是在 main_story 里
-            // 如果没有 'start'，就找 JSON 里的第一个 key
             let firstScene = 'start';
-            if (!activeStoryData[firstScene]) {
-                // 尝试找第一个Key
+            if (mode === 'endless' && activeStoryData['plotBeginAi']) {
+                firstScene = 'plotBeginAi';
+            } else if (!activeStoryData[firstScene]) {
+                // 如果没有 'start'，尝试找第一个Key
                 const keys = Object.keys(activeStoryData);
                 if (keys.length > 0) firstScene = keys[0];
             }
             
-            if (mode === 'endless' && activeStoryData['plotBeginAi']) {
-                firstScene = 'plotBeginAi';
-            }
-
             loadScene(firstScene);
         }
 
@@ -1368,9 +1377,18 @@
         }
 
         async function loadScene(sceneId) {
-            const scene = activeStoryData[sceneId];
+            let scene = activeStoryData[sceneId];
             const bgEl = document.getElementById('gameBg');
             const optionsEl = document.getElementById('gameOptions');
+
+            // 容错：如果是 AI 生成的临时后续 ID，但本地没有数据，我们需要在这里构造一个临时的 AI 请求
+            if (!scene && sceneId.startsWith('ai_')) {
+                scene = {
+                    type: 'ai',
+                    prompt: `（接续剧情）请继续刚才的故事。场景ID: ${sceneId}。`,
+                    bg: ''
+                };
+            }
 
             if (!scene) {
                 alert('剧本结束或场景丢失：' + sceneId);
@@ -1378,17 +1396,20 @@
                 return;
             }
 
-            if (bgEl) {
-                bgEl.style.backgroundImage = scene.bg || scene.background ? `url(${scene.bg || scene.background})` : 'none';
+            if (bgEl && scene.bg) {
+                bgEl.style.backgroundImage = `url(${scene.bg})`;
             }
 
-            if (optionsEl) {
-                optionsEl.innerHTML = '';
+            if (optionsEl) optionsEl.innerHTML = '';
+
+            // fixed 文本：直接打字机
+            if (!scene.type || scene.type === 'fixed') {
+                typeWriter(scene.text || '');
+                // 渲染固定选项
                 if (scene.options && scene.options.length) {
                     scene.options.forEach(opt => {
                         const btn = document.createElement('button');
                         btn.className = 'game-option-btn';
-                        // 兼容编辑器字段 label / text，nextScene / nextScene
                         btn.textContent = opt.text || opt.label; 
                         btn.onclick = () => {
                             if (opt.nextScene) {
@@ -1400,11 +1421,6 @@
                         optionsEl.appendChild(btn);
                     });
                 }
-            }
-
-            // fixed 文本：直接打字机
-            if (!scene.type || scene.type === 'fixed') {
-                typeWriter(scene.text || '');
                 return;
             }
 
@@ -1412,34 +1428,64 @@
             if (scene.type === 'ai') {
                 const textEl = document.getElementById('gameText');
                 if (textEl) {
-                    textEl.textContent = '⚡ 正在连接主神网络生成剧情...';
+                    textEl.innerHTML = '⚡ 正在连接神经元...<br><span style="font-size:12px;opacity:0.6;">正在生成剧情...</span>';
                 }
 
                 const generated = await generateAiSceneText(sceneId, scene);
-                const finalText = generated && generated.text ? generated.text : (typeof generated === 'string' ? generated : '');
-
-                // 如果 AI 返回了新的选项，替换当前 options
-                if (generated && Array.isArray(generated.options) && generated.options.length) {
-                    activeStoryData[sceneId].options = generated.options;
-                    if (optionsEl) {
-                        optionsEl.innerHTML = '';
-                        generated.options.forEach(opt => {
-                            const btn = document.createElement('button');
-                            btn.className = 'game-option-btn';
-                            btn.textContent = opt.text || opt.label;
-                            btn.onclick = () => {
-                                if (opt.nextScene) {
-                                    loadScene(opt.nextScene);
-                                } else {
-                                    exitGame();
-                                }
-                            };
-                            optionsEl.appendChild(btn);
-                        });
-                    }
+                
+                // 如果生成失败，generated 会是错误信息的字符串
+                if (typeof generated === 'string' && generated.startsWith('❌')) {
+                    typeWriter(generated); // 显示错误信息
+                    // 给个重试按钮
+                    const btn = document.createElement('button');
+                    btn.className = 'game-option-btn';
+                    btn.textContent = '重试';
+                    btn.onclick = () => loadScene(sceneId);
+                    optionsEl.appendChild(btn);
+                    return;
                 }
 
-                typeWriter(finalText || (scene.text || '（AI 暂时没有返回内容）'));
+                const finalText = generated.text || (typeof generated === 'string' ? generated : 'AI 生成了空内容');
+
+                typeWriter(finalText);
+
+                // 如果 AI 返回了新的选项，替换当前 options
+                if (generated.options && Array.isArray(generated.options) && generated.options.length) {
+                    // 更新当前场景数据，防止下次还要生成
+                    // activeStoryData[sceneId].text = finalText;
+                    // activeStoryData[sceneId].options = generated.options;
+                    // activeStoryData[sceneId].type = 'fixed'; // 可选：变固定
+
+                    optionsEl.innerHTML = '';
+                    generated.options.forEach(opt => {
+                        const btn = document.createElement('button');
+                        btn.className = 'game-option-btn';
+                        btn.textContent = opt.text;
+                        btn.onclick = () => {
+                            // 这里 AI 生成的 nextScene 可能是 null 或者一个新的 ID
+                            // 如果是 null，我们假设它是一个新的 AI 节点
+                            let nextId = opt.nextScene;
+                            if (!nextId || nextId === 'null') {
+                                nextId = 'ai_next_' + Date.now();
+                                // 临时存入 activeStoryData 以便 loadScene 能找到上下文（这里简化处理，只传 prompt）
+                                activeStoryData[nextId] = {
+                                    type: 'ai',
+                                    bg: scene.bg, // 沿用背景
+                                    prompt: `用户选择了：${opt.text}。请根据这个选择继续剧情。`
+                                };
+                            }
+                            loadScene(nextId);
+                        };
+                        optionsEl.appendChild(btn);
+                    });
+                } else {
+                    // AI 没返回选项，给默认
+                    const btn = document.createElement('button');
+                    btn.className = 'game-option-btn';
+                    btn.textContent = '继续';
+                    btn.onclick = () => loadScene('ai_next_' + Date.now());
+                    optionsEl.appendChild(btn);
+                }
             }
         }
 
@@ -1519,10 +1565,8 @@
                     document.getElementById('apiUrl').value = config.url || '';
                     document.getElementById('settingsApiKey').value = config.key || '';
                     
-                    // 如果有保存的模型，添加到下拉框
                     if (config.model) {
                         const modelSelect = document.getElementById('apiModel');
-                        // 如果列表里没有这个选项，动态加一个
                         if (!Array.from(modelSelect.options).some(opt => opt.value === config.model)) {
                              const option = document.createElement('option');
                              option.value = config.model;
@@ -1536,13 +1580,12 @@
                 }
             }
         }
-        // 测试 API 连接并获取模型列表
+
+        // 测试 API 连接
         async function testApiConnection() {
             const apiUrl = document.getElementById('apiUrl').value.trim();
             const apiKey = document.getElementById('settingsApiKey').value.trim();
-            const resultDiv = document.getElementById('apiTestResult');
-            const modelSelect = document.getElementById('apiModel');
-
+            
             if (!apiUrl || !apiKey) {
                 showApiTestResult('⚠️ 请先填写 API URL 和 Key', 'error');
                 return;
@@ -1551,8 +1594,6 @@
             showApiTestResult('🔄 正在测试连接...', 'loading');
 
             try {
-                // 尝试获取模型列表
-                // 兼容：有些代理需要 /v1/models，有些是 /models
                 let modelsUrl = apiUrl.replace(/\/$/, '');
                 if (modelsUrl.endsWith('/v1')) modelsUrl = modelsUrl.replace(/\/v1$/, '');
                 if (modelsUrl.endsWith('/chat/completions')) modelsUrl = modelsUrl.replace(/\/chat\/completions$/, '');
@@ -1569,159 +1610,70 @@
                 if (!res.ok) {
                     const errorText = await res.text();
                     showApiTestResult(`❌ 连接失败: ${res.status} ${res.statusText}`, 'error');
-                    console.error('API Error:', errorText);
                     return;
                 }
 
                 const data = await res.json();
                 
                 if (data.data && Array.isArray(data.data)) {
-                    // 成功获取模型列表
-                    const models = data.data;
-                    showApiTestResult(`✅ 连接成功！找到 ${models.length} 个可用模型`, 'success');
-                    
-                    // 填充模型下拉框
+                    showApiTestResult(`✅ 连接成功！找到 ${data.data.length} 个可用模型`, 'success');
+                    const modelSelect = document.getElementById('apiModel');
                     modelSelect.innerHTML = '<option value="">-- 请选择模型 --</option>';
-                    models.forEach(model => {
+                    data.data.forEach(model => {
                         const option = document.createElement('option');
                         option.value = model.id;
                         option.textContent = model.id;
                         modelSelect.appendChild(option);
                     });
-
-                    // 如果之前保存过模型，自动选中
-                    const savedConfig = localStorage.getItem('apiConfig');
-                    if (savedConfig) {
-                        try {
-                            const config = JSON.parse(savedConfig);
-                            if (config.model) {
-                                modelSelect.value = config.model;
-                            }
-                        } catch (e) {}
-                    }
                 } else {
-                    showApiTestResult('✅ 连接成功！但未能获取模型列表，请手动输入模型名', 'warning');
+                    showApiTestResult('✅ 连接成功！但未能获取模型列表', 'warning');
                 }
             } catch (error) {
                 showApiTestResult(`❌ 网络错误: ${error.message}`, 'error');
-                console.error('Fetch error:', error);
             }
         }
 
         function showApiTestResult(message, type) {
             const resultDiv = document.getElementById('apiTestResult');
             if (!resultDiv) return;
-
-            const colors = {
-                success: 'background: rgba(16, 185, 129, 0.2); border: 1px solid rgba(16, 185, 129, 0.4); color: #10b981;',
-                error: 'background: rgba(239, 68, 68, 0.2); border: 1px solid rgba(239, 68, 68, 0.4); color: #ef4444;',
-                warning: 'background: rgba(245, 158, 11, 0.2); border: 1px solid rgba(245, 158, 11, 0.4); color: #f59e0b;',
-                loading: 'background: rgba(59, 130, 246, 0.2); border: 1px solid rgba(59, 130, 246, 0.4); color: #3b82f6;'
-            };
-
-            resultDiv.style.cssText = colors[type] || colors.loading;
+            const colors = { success: '#10b981', error: '#ef4444', warning: '#f59e0b', loading: '#3b82f6' };
+            resultDiv.style.color = colors[type] || colors.loading;
             resultDiv.textContent = message;
             resultDiv.style.display = 'block';
         }
 
-        // 主题切换（v20 版本的主题系统）
-        function changeTheme(theme) {
-            document.body.setAttribute('data-theme', theme);
-            localStorage.setItem('theme', theme);
-            
-            // 更新主题按钮状态
-            document.querySelectorAll('.theme-btn').forEach(btn => {
-                btn.classList.remove('active');
-                if (btn.getAttribute('data-theme') === theme) {
-                    btn.classList.add('active');
-                }
-            });
-        }
-
-        // 加载主题
-        function loadTheme() {
-            const savedTheme = localStorage.getItem('theme') || 'purple';
-            changeTheme(savedTheme);
-        }
-
-        // ===== 个人设定：本地多档位 + 头像上传 =====
-        function loadPersonas() {
-            try {
-                const raw = localStorage.getItem(PERSONA_STORAGE);
-                if (!raw) return [];
-                const list = JSON.parse(raw);
-                return Array.isArray(list) ? list : [];
-            } catch (e) {
-                return [];
-            }
-        }
-
-        function savePersonas(list) {
-            localStorage.setItem(PERSONA_STORAGE, JSON.stringify(list));
-        }
-
-        function initPersonas() {
-            renderPersonaStrip();
-            
-            // 游戏文本区域点击：正在打字时跳过动画
-            const box = document.getElementById('gameTextBox');
-            if (box) {
-                box.addEventListener('click', () => {
-                    if (isTyping) {
-                        skipTyping();
-                    }
-                });
-            }
-        }
-
-        // ===== 剧本管理：从 localStorage 读取 / 写入 =====
-        // 核心修改：适配编辑器导出的多层级结构
+        // 剧本管理：从 localStorage 读取 / 写入
         function loadCustomStory() {
             const raw = localStorage.getItem(STORY_STORAGE);
             if (!raw) return;
             try {
                 const parsed = JSON.parse(raw);
                 if (parsed && typeof parsed === 'object') {
-                    // 兼容编辑器导出的结构：提取 main_story
+                    // 兼容编辑器导出的结构
                     if (parsed.main_story) {
                         activeStoryData = parsed.main_story;
-                        // 这里可以顺便把 side_stories 合并进去，或者按需加载
-                        // 为了简单，我们先把 main_story 作为主剧本
                     } else {
-                        // 如果是旧格式（扁平的），直接用
                         activeStoryData = parsed;
                     }
                 }
             } catch (e) {
-                console.warn('自定义剧本解析失败，已忽略：', e);
+                console.warn('自定义剧本解析失败', e);
             }
         }
         
-        // 剧本上传处理
         function handleStoryUpload(event) {
             const file = event.target.files[0];
             if (!file) return;
-            
             const reader = new FileReader();
             reader.onload = function(e) {
                 try {
                     const json = JSON.parse(e.target.result);
-                    // 验证一下是不是有效的剧本包
-                    if (!json.main_story && !json.start) {
-                        throw new Error("格式不对，必须包含 main_story 或 start 节点");
-                    }
-                    
-                    // 保存到 LocalStorage
                     localStorage.setItem(STORY_STORAGE, JSON.stringify(json));
-                    
-                    // 立即生效
                     loadCustomStory();
-                    
                     document.getElementById('storyUploadMsg').textContent = `✅ 成功加载: ${file.name}`;
-                    alert("剧本上传成功！请点击副本开始游戏。");
-                    
+                    alert("剧本上传成功！");
                 } catch (err) {
-                    alert("剧本文件格式错误: " + err.message);
+                    alert("文件错误: " + err.message);
                 }
             };
             reader.readAsText(file);
@@ -1734,37 +1686,33 @@
             alert('已恢复默认剧本');
         }
 
-        // ===== AI 场景生成 =====
+        // ===== 核心 AI 生成函数 (修复版) =====
         async function generateAiSceneText(sceneId, scene) {
+            // 1. 读取配置
             const configRaw = localStorage.getItem('apiConfig');
-            if (!configRaw) {
-                return '（未配置 API，无法生成 AI 剧情，请先在系统设置中填写 API 信息）';
-            }
+            if (!configRaw) return '⚠️ 未配置 API，请先在系统设置中保存。';
+            
             let config;
-            try {
-                config = JSON.parse(configRaw);
-            } catch {
-                return '（API 配置解析失败，请在系统设置中重新保存一次）';
+            try { config = JSON.parse(configRaw); } catch { return '⚠️ API 配置损坏。'; }
+            if (!config.key) return '⚠️ API Key 为空。';
+
+            // 2. 构造 URL (自动修正)
+            let baseUrl = config.url || 'https://api.openai.com/v1';
+            baseUrl = baseUrl.replace(/\/+$/, '');
+            if (baseUrl.endsWith('/chat/completions')) {
+                baseUrl = baseUrl.replace(/\/chat\/completions$/, '');
             }
-
-            if (!config.key) {
-                return '（API Key 为空，请在系统设置中填写后再试）';
+            if (!baseUrl.endsWith('/v1')) {
+                baseUrl += '/v1';
             }
+            const finalUrl = baseUrl + '/chat/completions';
 
-            // 处理 URL 结尾
-            let apiUrl = config.url || 'https://api.openai.com/v1';
-            if (apiUrl.endsWith('/')) apiUrl = apiUrl.slice(0, -1);
-            if (!apiUrl.endsWith('/chat/completions')) {
-                if (apiUrl.endsWith('/v1')) apiUrl += '/chat/completions';
-                else apiUrl += '/v1/chat/completions';
-            }
-
-            const baseSystemPrompt = '你是一个无限流恋爱文字游戏的文案引擎。根据提示生成中文剧情片段和后续选项，输出纯 JSON 格式：{"text": "...", "options":[{"text":"选项文案","nextScene":"下一个场景 id 或 null"}]}。请不要输出 markdown 标记，只输出 json 字符串。';
-
-            const userPrompt = scene.prompt || `为场景 ${sceneId} 续写一段 200-300 字的剧情，并给出 2 个后续行为选项。`;
+            // 3. 提示词
+            const baseSystemPrompt = '你是一个无限流恋爱文字游戏的文案引擎。请根据提示生成剧情片段和后续选项。必须返回纯 JSON 格式：{"text": "你的剧情描写...", "options":[{"text":"选项A","nextScene":"null"},{"text":"选项B","nextScene":"null"}]}。';
+            const userPrompt = scene.prompt || `续写剧情...`;
 
             try {
-                const res = await fetch(apiUrl, {
+                const res = await fetch(finalUrl, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -1781,207 +1729,6 @@
                 });
 
                 if (!res.ok) {
-                    console.error('OpenAI API error', await res.text());
-                    return '（调用 AI 接口失败，请检查 API 地址和 Key 是否正确）';
-                }
-
-                const data = await res.json();
-                const content = data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content;
-                if (!content) return '（AI 没有返回任何内容）';
-
-                // 期望是 JSON，如果解析失败就把原文当作纯文本
-                try {
-                    // 有时候 AI 会带 ```json ```，需要去掉
-                    let cleanContent = content.replace(/```json/g, '').replace(/```/g, '').trim();
-                    const parsed = JSON.parse(cleanContent);
-                    return parsed;
-                } catch {
-                    return content;
-                }
-            } catch (e) {
-                console.error('fetch error', e);
-                return '（网络错误或浏览器阻止了请求，无法连接到 AI 接口）';
-            }
-        }
-
-        function renderPersonaStrip() {
-            const strip = document.getElementById('persona-strip');
-            if (!strip) return;
-
-            const list = loadPersonas();
-            strip.innerHTML = '';
-
-            // “新建”按钮
-            const addChip = document.createElement('div');
-            addChip.className = 'persona-chip';
-            addChip.innerHTML = `
-                <div class="persona-avatar">+</div>
-                <div class="persona-name">新建</div>
-            `;
-            addChip.onclick = () => selectPersona(null);
-            strip.appendChild(addChip);
-
-            list.forEach(p => {
-                const chip = document.createElement('div');
-                chip.className = 'persona-chip' + (p.id === currentPersonaId ? ' active' : '');
-
-                const avatar = document.createElement('div');
-                avatar.className = 'persona-avatar';
-                if (p.avatarData) {
-                    const img = document.createElement('img');
-                    img.src = p.avatarData;
-                    img.style.width = '100%';
-                    img.style.height = '100%';
-                    img.style.objectFit = 'cover';
-                    avatar.innerHTML = '';
-                    avatar.appendChild(img);
-                } else {
-                    avatar.textContent = (p.name || '你').slice(0, 1);
-                }
-
-                const name = document.createElement('div');
-                name.className = 'persona-name';
-                name.textContent = p.name || '未命名';
-
-                chip.appendChild(avatar);
-                chip.appendChild(name);
-                chip.onclick = () => selectPersona(p.id);
-
-                strip.appendChild(chip);
-            });
-        }
-
-        function selectPersona(id) {
-            currentPersonaId = id;
-            const list = loadPersonas();
-            const found = list.find(p => p.id === id);
-
-            const nameInput = document.getElementById('persona-name');
-            const descInput = document.getElementById('persona-desc');
-            const slot = document.getElementById('persona-avatar-slot');
-            const preview = document.getElementById('persona-avatar-preview');
-            const placeholder = document.getElementById('persona-avatar-placeholder');
-
-            if (!found) {
-                nameInput.value = '';
-                descInput.value = '';
-                preview.style.display = 'none';
-                placeholder.style.display = 'block';
-            } else {
-                nameInput.value = found.name || '';
-                descInput.value = found.desc || '';
-                if (found.avatarData) {
-                    preview.src = found.avatarData;
-                    preview.style.display = 'block';
-                    placeholder.style.display = 'none';
-                } else {
-                    preview.style.display = 'none';
-                    placeholder.style.display = 'block';
-                }
-            }
-
-            renderPersonaStrip();
-        }
-
-        function triggerAvatarUpload() {
-            const input = document.getElementById('persona-avatar-input');
-            if (input) input.click();
-        }
-
-        function onAvatarFileChange(e) {
-            const file = e.target.files && e.target.files[0];
-            if (!file) return;
-
-            const reader = new FileReader();
-            reader.onload = () => {
-                const dataUrl = reader.result;
-                const preview = document.getElementById('persona-avatar-preview');
-                const placeholder = document.getElementById('persona-avatar-placeholder');
-                preview.src = dataUrl;
-                preview.style.display = 'block';
-                placeholder.style.display = 'none';
-
-                // 先把数据挂到当前 persona 对象上，保存时写入 localStorage
-                preview.dataset.avatarData = dataUrl;
-            };
-            reader.readAsDataURL(file);
-        }
-
-        function savePersona() {
-            const name = document.getElementById('persona-name').value.trim();
-            const desc = document.getElementById('persona-desc').value.trim();
-            const preview = document.getElementById('persona-avatar-preview');
-            const avatarData = preview.dataset.avatarData || preview.src || '';
-
-            if (!name) {
-                alert('请先填写姓名');
-                return;
-            }
-
-            const list = loadPersonas();
-            const now = Date.now();
-
-            if (currentPersonaId) {
-                const idx = list.findIndex(p => p.id === currentPersonaId);
-                if (idx >= 0) {
-                    list[idx] = { ...list[idx], name, desc, avatarData, updatedAt: now };
-                }
-            } else {
-                const id = 'persona_' + now;
-                currentPersonaId = id;
-                list.push({ id, name, desc, avatarData, createdAt: now, updatedAt: now });
-            }
-
-            savePersonas(list);
-            renderPersonaStrip();
-            alert('设定已保存');
-        }
-        // ===== 强制覆盖/新增的 AI 生成函数 =====
-        async function generateAiSceneText(sceneId, scene) {
-            const textEl = document.getElementById('gameText');
-            
-            // 1. 读取配置
-            const configRaw = localStorage.getItem('apiConfig');
-            if (!configRaw) return '⚠️ 未配置 API，请先在【系统设置】中保存 API Key。';
-            
-            let config;
-            try { config = JSON.parse(configRaw); } catch { return '⚠️ API 配置损坏。'; }
-            if (!config.key) return '⚠️ API Key 为空。';
-
-            // 2. 构造 URL (自动修正 /v1/chat/completions)
-            let baseUrl = config.url || 'https://api.openai.com/v1';
-            baseUrl = baseUrl.replace(/\/+$/, ''); // 去掉末尾斜杠
-            if (baseUrl.endsWith('/chat/completions')) {
-                baseUrl = baseUrl.replace(/\/chat\/completions$/, '');
-            }
-            if (!baseUrl.endsWith('/v1')) {
-                baseUrl += '/v1';
-            }
-            const finalUrl = baseUrl + '/chat/completions';
-
-            // 3. 提示词
-            const baseSystemPrompt = '你是一个无限流恋爱文字游戏的文案引擎。请根据提示生成剧情片段和后续选项。必须返回纯 JSON 格式：{"text": "你的剧情描写...", "options":[{"text":"选项A","nextScene":"null"},{"text":"选项B","nextScene":"null"}]}。';
-            const userPrompt = scene.prompt || `续写剧情...`;
-
-            if (textEl) textEl.innerHTML = `⚡ 正在连接...<br><span style="font-size:12px;opacity:0.6">${finalUrl}</span>`;
-
-            try {
-                const res = await fetch(finalUrl, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': 'Bearer ' + config.key
-                    },
-                    body: JSON.stringify({
-                        model: config.model || 'gpt-3.5-turbo',
-                        messages: [
-                            { role: 'system', content: baseSystemPrompt },
-                            { role: 'user', content: userPrompt }
-                        ]
-                    })
-                });
-
-                if (!res.ok) {
                     const err = await res.text();
                     return `❌ API 报错 (${res.status}): ${err}`;
                 }
@@ -1991,23 +1738,25 @@
                 if (!content) return '❌ AI 返回空内容';
 
                 try {
-                    // 尝试清洗 markdown 标记
+                    // 清洗 JSON
                     const clean = content.replace(/```json/g, '').replace(/```/g, '').trim();
                     return JSON.parse(clean);
                 } catch {
-                    return content; // 解析失败就直接显示原文
+                    return content; // 解析失败直接显示原文
                 }
 
             } catch (e) {
                 return `❌ 网络错误: ${e.message}`;
             }
         }
+
+        // 其他辅助函数
+        function changeTheme(theme) { document.body.setAttribute('data-theme', theme); localStorage.setItem('theme', theme); }
+        function loadTheme() { changeTheme(localStorage.getItem('theme') || 'purple'); }
+        function triggerAvatarUpload() { document.getElementById('persona-avatar-input').click(); }
         
         // 启动
         window.onload = init;
     </script>
 </body>
 </html>
-          
-          
-                  

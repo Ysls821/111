@@ -755,11 +755,19 @@
             }
         }
 
+        /* 新增：记忆回放框样式 */
+        .log-container { background: rgba(0,0,0,0.3); border-radius: 12px; padding: 20px; height: 300px; overflow-y: auto; font-size: 14px; line-height: 1.8; white-space: pre-wrap; color: #ddd; margin-top: 10px; }
+        
+        /* 新增：Toast 提示框样式 */
+        #toast { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(0,0,0,0.85); color: #fff; padding: 12px 24px; border-radius: 50px; display: none; z-index: 300; backdrop-filter: blur(10px); border: 1px solid var(--primary); font-weight: bold; animation: popIn 0.3s; }
+        @keyframes popIn { from { transform: translate(-50%, -40%); opacity: 0; } to { transform: translate(-50%, -50%); opacity: 1; }}
+        
     </style>
 </head>
 <body data-theme="purple">
     <div class="aurora-bg"></div>
-
+    <div id="toast">✅ 操作成功</div>
+    
     <!-- 登录页面 -->
     <div class="login-page" id="loginPage">
         <div class="login-card glass-panel">
@@ -931,10 +939,14 @@
             <h2 class="section-header">记忆回廊</h2>
             <div class="settings-container glass-panel setting-group">
                 <p style="color: var(--text-muted); line-height: 1.8;">
-                    CG相册、剧情回放、结局树功能开发中...
-                </p>
+<div style="padding:20px;">
+                <h2 class="section-header">记忆回廊</h2>
+                <div class="glass-panel" style="padding:20px; border-radius:20px;">
+                    <p style="color:var(--text-muted); font-size:12px; margin-bottom:10px;">记录所有经历过的剧情片段</p>
+                    <div id="storyLog" class="log-container">暂无记忆</div>
+                    <button class="btn-glow" onclick="clearMemory()" style="margin-top:15px; background:rgba(239,68,68,0.5);">🗑️ 清空记忆</button>
+                </div>
             </div>
-        </div>
 
         <!-- 4. 道具商店视图 -->
         <div class="view-section" id="view-shop">
@@ -947,47 +959,39 @@
         </div>
 
         <!-- 5. 我的设定视图 -->
-        <div class="view-section" id="view-persona">
-            <h2 class="section-header">我的设定</h2>
-            <div class="persona-container">
-                <!-- 顶部头像一排 -->
-                <div class="glass-panel" style="border-radius: 20px; padding: 12px 16px 4px;">
-                    <div class="persona-strip" id="persona-strip">
-                        <!-- 动态插入头像 chip -->
-                    </div>
+        <div class="persona-container">
+                <!-- 修复：头像条容器 -->
+                <div class="glass-panel" style="border-radius: 20px; padding: 12px 16px; margin-bottom: 20px;">
+                    <div class="persona-strip" id="persona-strip" style="display:flex; gap:15px; overflow-x:auto; min-height:80px; padding:5px;"></div>
                 </div>
 
-                <!-- 当前设定表单 -->
+                <!-- 编辑表单 -->
                 <div class="glass-panel persona-form" style="margin-top: 16px;">
                     <div class="persona-row">
                         <span class="persona-label">姓名</span>
-                        <input id="persona-name" class="input-modern" placeholder="如：沈如意 / 玩家代号">
+                        <input id="persona-name" class="input-modern" placeholder="角色名">
                     </div>
                     <div class="persona-row">
                         <span class="persona-label">设定</span>
-                        <textarea id="persona-desc" class="persona-textarea" placeholder="人物背景、性格、小秘密……"></textarea>
+                        <textarea id="persona-desc" class="persona-textarea" placeholder="人物小传..."></textarea>
                     </div>
                     <div class="persona-row">
                         <span class="persona-label">头像</span>
                         <div style="display:flex; align-items:center; gap:16px;">
                             <div class="persona-avatar-slot" id="persona-avatar-slot" onclick="triggerAvatarUpload()">
-                                <span id="persona-avatar-placeholder">点击上传头像</span>
-                                <img id="persona-avatar-preview" style="display:none;" alt="自定义头像预览">
+                                <img id="persona-avatar-preview" style="display:none; width:100%; height:100%; object-fit:cover;">
+                                <span id="persona-placeholder">点击上传</span>
                             </div>
-                            <div style="font-size: 12px; color: var(--text-muted); line-height: 1.6;">
-                                头像仅保存在本地浏览器，不会上传到服务器。<br>
-                                建议使用方形图片以获得更好效果。
-                            </div>
+                            <span style="font-size:12px; color:var(--text-muted);">仅本地保存</span>
                         </div>
                         <input type="file" id="persona-avatar-input" accept="image/*" style="display:none;" onchange="onAvatarFileChange(event)">
                     </div>
                     <div class="persona-actions">
-                        <button class="btn-glow" style="flex:1;" onclick="savePersona()">保存此设定</button>
+                        <button class="btn-glow" style="flex:1;" onclick="savePersona()">保存设定</button>
                     </div>
                 </div>
             </div>
-        </div>
-
+        
         <!-- 6. 系统设置视图 -->
         <div class="view-section" id="view-settings">
             <h2 class="section-header">系统设置</h2>
@@ -1052,11 +1056,11 @@
             <div class="settings-container glass-panel setting-group" style="margin-top: 24px;">
                 <h3 style="margin-bottom: 20px; font-size: 18px;">主题风格</h3>
                 <div class="theme-grid">
-                    <button class="theme-btn active" data-theme="purple" onclick="changeTheme('purple')">💜 紫色</button>
-                    <button class="theme-btn" data-theme="black" onclick="changeTheme('black')">🖤 黑色</button>
-                    <button class="theme-btn" data-theme="white" onclick="changeTheme('white')">🤍 白色</button>
-                    <button class="theme-btn" data-theme="green" onclick="changeTheme('green')">💚 绿色</button>
-                    <button class="theme-btn" data-theme="blue" onclick="changeTheme('blue')">💙 蓝色</button>
+                    <button class="theme-btn active" data-theme="purple" onclick="changeTheme('purple')">紫色</button>
+                    <button class="theme-btn" data-theme="black" onclick="changeTheme('black')"> 黑色</button>
+                    <button class="theme-btn" data-theme="white" onclick="changeTheme('white')"> 白色</button>
+                    <button class="theme-btn" data-theme="green" onclick="changeTheme('green')"> 绿色</button>
+                    <button class="theme-btn" data-theme="blue" onclick="changeTheme('blue')"> 蓝色</button>
                 </div>
             </div>
         </div>
@@ -1084,6 +1088,7 @@
     <!-- 游戏界面 -->
     <div id="gameContainer" class="game-container">
         <div id="gameBg" class="game-bg"></div>
+        <button class="game-exit-btn" onclick="saveProgress(true)" style="right: 80px; background: rgba(16, 185, 129, 0.6);"> 存档</button>       
         <button class="game-exit-btn" onclick="exitGame()">退出</button>
         <div class="game-content">
             <div id="gameTextBox" class="game-text-box">

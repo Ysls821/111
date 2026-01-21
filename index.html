@@ -1686,29 +1686,23 @@
             alert('已恢复默认剧本');
         }
 
-        // ===== 核心 AI 生成函数 (修复版) =====
+        // ===== 最终调试版 AI 生成函数 =====
         async function generateAiSceneText(sceneId, scene) {
             // 1. 读取配置
             const configRaw = localStorage.getItem('apiConfig');
-            if (!configRaw) return '⚠️ 未配置 API，请先在系统设置中保存。';
-            
-            let config;
-            try { config = JSON.parse(configRaw); } catch { return '⚠️ API 配置损坏。'; }
-            if (!config.key) return '⚠️ API Key 为空。';
+            if (!configRaw) return '⚠️ 未配置 API';
+            const config = JSON.parse(configRaw);
+            if (!config.key) return '⚠️ API Key 为空';
 
-            // 2. 构造 URL (自动修正)
+            // 2. 构造 URL
             let baseUrl = config.url || 'https://api.openai.com/v1';
             baseUrl = baseUrl.replace(/\/+$/, '');
-            if (baseUrl.endsWith('/chat/completions')) {
-                baseUrl = baseUrl.replace(/\/chat\/completions$/, '');
-            }
-            if (!baseUrl.endsWith('/v1')) {
-                baseUrl += '/v1';
-            }
+            if (baseUrl.endsWith('/chat/completions')) baseUrl = baseUrl.replace(/\/chat\/completions$/, '');
+            if (!baseUrl.endsWith('/v1')) baseUrl += '/v1';
             const finalUrl = baseUrl + '/chat/completions';
 
             // 3. 提示词
-            const baseSystemPrompt = '你是一个无限流恋爱文字游戏的文案引擎。请根据提示生成剧情片段和后续选项。必须返回纯 JSON 格式：{"text": "你的剧情描写...", "options":[{"text":"选项A","nextScene":"null"},{"text":"选项B","nextScene":"null"}]}。';
+            const baseSystemPrompt = '你是一个无限流恋爱文字游戏的文案引擎。请根据提示生成剧情片段和后续选项。必须返回纯 JSON 格式：{"text": "...", "options":[{"text":"...","nextScene":"null"}]}。';
             const userPrompt = scene.prompt || `续写剧情...`;
 
             try {
@@ -1720,11 +1714,10 @@
                     },
                     body: JSON.stringify({
                         model: config.model || 'gpt-3.5-turbo',
+                        stream: false, // 👈 关键：强制关闭流式传输
                         messages: [
-                            { role: 'system', content: baseSystemPrompt },
-                            { role: 'user', content: userPrompt }
-                        ],
-                        temperature: 0.9
+                            { role: 'user', content: baseSystemPrompt + "\n\n" + userPrompt } // 👈 关键：有些模型不支持 system，我把 system 拼到了 user 里
+                        ]
                     })
                 });
 
@@ -1734,15 +1727,23 @@
                 }
 
                 const data = await res.json();
-                const content = data.choices?.[0]?.message?.content;
-                if (!content) return '❌ AI 返回空内容';
+                
+                // 👇 这里是抓鬼的关键！
+                console.log("API 原始返回:", data); 
+
+                // 尝试各种非标格式
+                const content = data.choices?.[0]?.message?.content || data.data?.content || data.content;
+                
+                if (!content) {
+                    // 把整个返回结果打印在屏幕上给你看
+                    return '❌ API 返回结构异常:\n' + JSON.stringify(data, null, 2);
+                }
 
                 try {
-                    // 清洗 JSON
                     const clean = content.replace(/```json/g, '').replace(/```/g, '').trim();
                     return JSON.parse(clean);
                 } catch {
-                    return content; // 解析失败直接显示原文
+                    return content;
                 }
 
             } catch (e) {

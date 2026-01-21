@@ -1936,7 +1936,73 @@
             renderPersonaStrip();
             alert('设定已保存');
         }
+        // ===== 强制覆盖/新增的 AI 生成函数 =====
+        async function generateAiSceneText(sceneId, scene) {
+            const textEl = document.getElementById('gameText');
+            
+            // 1. 读取配置
+            const configRaw = localStorage.getItem('apiConfig');
+            if (!configRaw) return '⚠️ 未配置 API，请先在【系统设置】中保存 API Key。';
+            
+            let config;
+            try { config = JSON.parse(configRaw); } catch { return '⚠️ API 配置损坏。'; }
+            if (!config.key) return '⚠️ API Key 为空。';
 
+            // 2. 构造 URL (自动修正 /v1/chat/completions)
+            let baseUrl = config.url || 'https://api.openai.com/v1';
+            baseUrl = baseUrl.replace(/\/+$/, ''); // 去掉末尾斜杠
+            if (baseUrl.endsWith('/chat/completions')) {
+                baseUrl = baseUrl.replace(/\/chat\/completions$/, '');
+            }
+            if (!baseUrl.endsWith('/v1')) {
+                baseUrl += '/v1';
+            }
+            const finalUrl = baseUrl + '/chat/completions';
+
+            // 3. 提示词
+            const baseSystemPrompt = '你是一个无限流恋爱文字游戏的文案引擎。请根据提示生成剧情片段和后续选项。必须返回纯 JSON 格式：{"text": "你的剧情描写...", "options":[{"text":"选项A","nextScene":"null"},{"text":"选项B","nextScene":"null"}]}。';
+            const userPrompt = scene.prompt || `续写剧情...`;
+
+            if (textEl) textEl.innerHTML = `⚡ 正在连接...<br><span style="font-size:12px;opacity:0.6">${finalUrl}</span>`;
+
+            try {
+                const res = await fetch(finalUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + config.key
+                    },
+                    body: JSON.stringify({
+                        model: config.model || 'gpt-3.5-turbo',
+                        messages: [
+                            { role: 'system', content: baseSystemPrompt },
+                            { role: 'user', content: userPrompt }
+                        ]
+                    })
+                });
+
+                if (!res.ok) {
+                    const err = await res.text();
+                    return `❌ API 报错 (${res.status}): ${err}`;
+                }
+
+                const data = await res.json();
+                const content = data.choices?.[0]?.message?.content;
+                if (!content) return '❌ AI 返回空内容';
+
+                try {
+                    // 尝试清洗 markdown 标记
+                    const clean = content.replace(/```json/g, '').replace(/```/g, '').trim();
+                    return JSON.parse(clean);
+                } catch {
+                    return content; // 解析失败就直接显示原文
+                }
+
+            } catch (e) {
+                return `❌ 网络错误: ${e.message}`;
+            }
+        }
+        
         // 启动
         window.onload = init;
     </script>

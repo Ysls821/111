@@ -1987,16 +1987,10 @@
                 }
 
                 const data = await res.json();
-console.log("API返回原始数据:", data); // 打开控制台能看到详细的
+                const content = data.choices?.[0]?.message?.content;
+                if (!content) return '❌ AI 返回空内容';
 
-// 这里的 ?. 是防止报错的关键
-const content = data.choices?.[0]?.message?.content;
-
-if (!content) {
-    // 把 API 到底返回了什么，直接印在屏幕上给你看！
-    return '❌ AI 返回数据格式异常：\n' + JSON.stringify(data, null, 2);
-} data = await res.json();
-                
+                try {
                     // 尝试清洗 markdown 标记
                     const clean = content.replace(/```json/g, '').replace(/```/g, '').trim();
                     return JSON.parse(clean);

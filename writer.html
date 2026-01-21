@@ -2,231 +2,395 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>剧本生成器 v2.0 - 全模块</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>乌托邦·剧本工坊 v3.0</title>
     <style>
-        /* 复用之前的深色主题 CSS */
-        :root { --bg-dark: #1e1e1e; --bg-panel: #252526; --border: #3e3e42; --accent: #007acc; --text: #cccccc; }
-        * { box-sizing: border-box; }
-        body { margin: 0; font-family: 'Segoe UI', sans-serif; background: var(--bg-dark); color: var(--text); height: 100vh; display: flex; overflow: hidden; }
+        :root {
+            --bg-dark: #0f0720;
+            --bg-panel: rgba(30, 30, 35, 0.9);
+            --primary: #d946ef;
+            --secondary: #8b5cf6;
+            --text: #ffffff;
+            --text-muted: rgba(255,255,255,0.6);
+            --border: rgba(255,255,255,0.1);
+        }
+        
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        
+        body { 
+            margin: 0; 
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; 
+            background: var(--bg-dark); 
+            color: var(--text); 
+            height: 100vh; 
+            display: flex; 
+            flex-direction: column;
+            overflow: hidden;
+        }
 
-        /* 左侧导航栏 (新) */
-        .nav-bar {
+        /* === 布局系统 === */
+        .app-container {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* 1. 左侧导航 (PC端) */
+        .pc-nav {
             width: 60px;
-            background: #333333;
+            background: #000;
             display: flex;
             flex-direction: column;
             align-items: center;
             padding-top: 20px;
             border-right: 1px solid var(--border);
+            z-index: 10;
         }
-        .nav-btn {
-            width: 40px;
-            height: 40px;
-            margin-bottom: 15px;
-            border-radius: 8px;
-            border: none;
-            background: #444;
-            color: #aaa;
-            cursor: pointer;
-            font-size: 20px;
+
+        /* 2. 列表栏 (Sidebar) */
+        .sidebar {
+            width: 240px;
+            background: var(--bg-panel);
+            border-right: 1px solid var(--border);
             display: flex;
+            flex-direction: column;
+        }
+
+        /* 3. 编辑区 (Main) */
+        .main-editor {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            background: #1a1a1e;
+            position: relative;
+        }
+
+        /* 4. 预览区 (Preview) */
+        .preview-panel {
+            width: 360px; /* 模拟手机宽度 */
+            background: #000;
+            border-left: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
             align-items: center;
             justify-content: center;
+            padding: 20px;
+            position: relative;
         }
-        .nav-btn.active { background: var(--accent); color: white; }
-        .nav-btn:hover { background: #555; }
 
-        /* 二级侧边栏 */
-        .sidebar { width: 220px; background: var(--bg-panel); border-right: 1px solid var(--border); display: flex; flex-direction: column; }
-        .scene-list { flex: 1; overflow-y: auto; list-style: none; padding: 0; margin: 0; }
-        .scene-item { padding: 10px 15px; cursor: pointer; border-bottom: 1px solid var(--border); font-size: 13px; }
-        .scene-item:hover { background: #2a2d2e; }
-        .scene-item.active { background: #37373d; border-left: 3px solid var(--accent); }
-        .sidebar-header { padding: 10px; border-bottom: 1px solid var(--border); display: flex; gap: 5px; }
+        /* === 移动端底部导航 (仅手机显示) === */
+        .mobile-tab-bar {
+            display: none; /* PC隐藏 */
+            height: 60px;
+            background: rgba(20, 20, 20, 0.95);
+            backdrop-filter: blur(10px);
+            border-top: 1px solid var(--border);
+            justify-content: space-around;
+            align-items: center;
+            z-index: 100;
+        }
+        .tab-item {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-muted);
+            font-size: 10px;
+            gap: 4px;
+            height: 100%;
+        }
+        .tab-item.active { color: var(--primary); }
+        .tab-icon { font-size: 20px; }
 
-        /* 主编辑区 */
-        .main-editor { flex: 1; padding: 20px; overflow-y: auto; background: var(--bg-dark); }
-        .preview-panel { width: 300px; background: var(--bg-panel); border-left: 1px solid var(--border); padding: 10px; display: flex; flex-direction: column; }
-
-        /* 通用表单控件 */
-        .form-group { margin-bottom: 15px; }
-        label { display: block; margin-bottom: 5px; font-weight: bold; font-size: 12px; color: #888; }
-        input, textarea, select { width: 100%; padding: 8px; background: #3c3c3c; border: 1px solid #3c3c3c; color: white; border-radius: 4px; }
-        input:focus, textarea:focus { outline: 1px solid var(--accent); }
-        textarea { min-height: 100px; resize: vertical; }
-        .btn { padding: 6px 12px; border: none; border-radius: 4px; cursor: pointer; font-size: 12px; color: white; }
-        .btn-primary { background: var(--accent); }
-        .btn-danger { background: #d9534f; }
-        .btn-success { background: #4caf50; }
-        pre { background: #1e1e1e; padding: 10px; border-radius: 4px; flex: 1; overflow: auto; font-size: 12px; color: #9cdcfe; }
+        /* === 组件样式 === */
+        .nav-btn {
+            width: 40px; height: 40px; margin-bottom: 10px;
+            border-radius: 10px; border: 1px solid transparent;
+            background: rgba(255,255,255,0.05); color: #aaa;
+            cursor: pointer; font-size: 18px;
+            display: flex; align-items: center; justify-content: center;
+            transition: all 0.2s;
+        }
+        .nav-btn.active { background: var(--primary); color: white; box-shadow: 0 0 10px var(--primary); }
         
-        .section-title { font-size: 18px; margin-bottom: 20px; color: white; border-bottom: 1px solid #444; padding-bottom: 10px; }
-        .option-card { background: #2d2d30; padding: 10px; margin-bottom: 10px; border: 1px solid var(--border); }
-        .char-card { background: #2d2d30; padding: 15px; margin-bottom: 15px; border-radius: 8px; border: 1px solid var(--border); }
+        .scene-list { flex: 1; overflow-y: auto; list-style: none; padding: 0; margin: 0; }
+        .scene-item { padding: 12px 15px; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 13px; cursor: pointer; display: flex; justify-content: space-between; }
+        .scene-item:active { background: rgba(255,255,255,0.1); }
+        .scene-item.active { background: rgba(217, 70, 239, 0.1); border-left: 3px solid var(--primary); }
+
+        /* 表单控件美化 */
+        .form-group { margin-bottom: 16px; }
+        label { display: block; margin-bottom: 6px; font-size: 12px; color: var(--primary); font-weight: 600; }
+        input, textarea, select {
+            width: 100%; padding: 12px;
+            background: rgba(0,0,0,0.3);
+            border: 1px solid var(--border);
+            color: white; border-radius: 8px;
+            font-size: 14px; outline: none;
+            transition: border 0.3s;
+        }
+        input:focus, textarea:focus, select:focus { border-color: var(--secondary); }
+        
+        .btn { padding: 8px 16px; border: none; border-radius: 8px; cursor: pointer; font-size: 13px; color: white; font-weight: 600; }
+        .btn-primary { background: linear-gradient(135deg, var(--primary), var(--secondary)); }
+        .btn-danger { background: #ef4444; }
+        .btn-full { width: 100%; padding: 12px; margin-top: 10px; }
+
+        .option-card { background: rgba(255,255,255,0.05); padding: 10px; margin-bottom: 10px; border-radius: 8px; border: 1px solid var(--border); }
+
+        /* === 虚拟手机预览器 (核心视觉) === */
+        .phone-frame {
+            width: 100%; height: 100%;
+            max-width: 320px; max-height: 600px;
+            border-radius: 24px;
+            border: 4px solid #333;
+            position: relative;
+            overflow: hidden;
+            background: #000;
+            box-shadow: 0 0 30px rgba(0,0,0,0.5);
+        }
+        .phone-bg {
+            position: absolute; inset: 0;
+            background-size: cover; background-position: center;
+            filter: brightness(0.6);
+            transition: background-image 0.5s;
+        }
+        .phone-ui {
+            position: absolute; bottom: 0; left: 0; right: 0;
+            padding: 20px;
+            display: flex; flex-direction: column; gap: 10px;
+        }
+        .phone-text-box {
+            background: rgba(0,0,0,0.7);
+            backdrop-filter: blur(10px);
+            padding: 15px; border-radius: 16px;
+            font-size: 13px; line-height: 1.6; color: #fff;
+            border: 1px solid rgba(255,255,255,0.1);
+            min-height: 80px;
+        }
+        .phone-btn {
+            background: rgba(0,0,0,0.8);
+            color: white; border: 1px solid rgba(255,255,255,0.2);
+            padding: 8px 12px; border-radius: 20px;
+            font-size: 12px; text-align: center;
+            margin-right: 6px; margin-bottom: 6px; display: inline-block;
+        }
+
+        /* === 响应式核心适配 === */
+        @media (max-width: 768px) {
+            /* 1. 隐藏 PC 布局 */
+            .pc-nav { display: none; }
+            
+            /* 2. 移动端 Tab 切换机制 */
+            .app-container > div { display: none; width: 100%; } /* 默认隐藏所有面板 */
+            .app-container > div.active-mobile-view { display: flex; } /* 只显示当前激活的 Tab */
+
+            .sidebar { width: 100%; border: none; }
+            .preview-panel { width: 100%; border: none; padding: 0; }
+            .phone-frame { width: 100%; height: 100%; max-width: none; max-height: none; border: none; border-radius: 0; }
+            
+            /* 3. 显示底部导航 */
+            .mobile-tab-bar { display: flex; }
+            
+            /* 4. 顶部导航改为横向滚动条 */
+            .mobile-top-nav {
+                display: flex; overflow-x: auto; gap: 10px; padding: 10px;
+                background: #000; border-bottom: 1px solid var(--border);
+            }
+            .mobile-top-nav .nav-btn { flex: 0 0 auto; margin: 0; width: auto; padding: 0 16px; font-size: 14px; }
+        }
+
+        @media (min-width: 769px) {
+            .mobile-top-nav { display: none; }
+        }
     </style>
 </head>
 <body>
 
-    <!-- 1. 最左侧大导航 (板块切换) -->
-    <div class="nav-bar">
-        <button class="nav-btn active" onclick="switchSection('world')" title="世界观">🌍</button>
-        <button class="nav-btn" onclick="switchSection('main')" title="主线剧情">📖</button>
-        <button class="nav-btn" onclick="switchSection('branch')" title="普通支线">🌿</button>
-        <button class="nav-btn" onclick="switchSection('char_route')" title="角色专属线">❤️</button>
-        <button class="nav-btn" onclick="switchSection('chars')" title="角色设定">👤</button>
+    <div class="mobile-top-nav" id="mobileTopNav">
+        <button class="nav-btn active" onclick="switchSection('world')">🌍 世界</button>
+        <button class="nav-btn" onclick="switchSection('main')">📖 主线</button>
+        <button class="nav-btn" onclick="switchSection('branch')">🌿 支线</button>
+        <button class="nav-btn" onclick="switchSection('chars')">👤 角色</button>
     </div>
 
-    <!-- 2. 二级列表栏 (仅在剧情板块显示) -->
-    <div class="sidebar" id="sidebarPanel">
-        <div class="sidebar-header">
-            <button class="btn btn-primary" onclick="addItem()" style="width:100%">+ 新建条目</button>
+    <div class="app-container">
+        <div class="pc-nav">
+            <button class="nav-btn active" onclick="switchSection('world')" title="世界观">🌍</button>
+            <button class="nav-btn" onclick="switchSection('main')" title="主线剧情">📖</button>
+            <button class="nav-btn" onclick="switchSection('branch')" title="普通支线">🌿</button>
+            <button class="nav-btn" onclick="switchSection('chars')" title="角色设定">👤</button>
+            <div style="flex:1"></div>
+            <button class="nav-btn" onclick="exportJson()" title="导出" style="background:#10b981; color:white;">💾</button>
+            <button class="nav-btn" onclick="document.getElementById('importFile').click()" title="导入" style="background:#3b82f6; color:white;">📂</button>
         </div>
-        <ul class="scene-list" id="itemList">
-            <!-- JS 生成 -->
-        </ul>
+
+        <div class="sidebar active-mobile-view" id="panel-list">
+            <div style="padding: 15px; border-bottom: 1px solid var(--border); display:flex; justify-content:space-between; align-items:center;">
+                <h3 id="sectionTitle" style="margin:0; font-size:16px;">世界观</h3>
+                <button class="btn btn-primary" style="padding:6px 12px;" onclick="addItem()">+ 新建</button>
+            </div>
+            <ul class="scene-list" id="itemList">
+                </ul>
+        </div>
+
+        <div class="main-editor" id="panel-edit">
+            <div id="formWorld" class="editor-form">
+                <div class="form-group">
+                    <label>剧本名称</label>
+                    <input type="text" id="worldName" oninput="saveWorld()">
+                </div>
+                <div class="form-group">
+                    <label>背景故事简介</label>
+                    <textarea id="worldDesc" style="height: 300px;" oninput="saveWorld()"></textarea>
+                </div>
+            </div>
+
+            <div id="formChar" class="editor-form" style="display:none;">
+                <div id="charEditorContainer">
+                    <div class="form-group"><label>姓名</label><input type="text" id="charName" oninput="saveCurrentItem()"></div>
+                    <div class="form-group"><label>人设 (AI 扮演指令)</label><textarea id="charPersona" style="height:120px;" oninput="saveCurrentItem()"></textarea></div>
+                    <div class="form-group"><label>头像 URL</label><input type="text" id="charAvatar" oninput="saveCurrentItem()"></div>
+                    <button class="btn btn-danger btn-full" onclick="deleteCurrentItem()">删除角色</button>
+                </div>
+                <div id="charEmpty" style="text-align:center; padding:50px; color:#666;">👈 请先从列表选择角色</div>
+            </div>
+
+            <div id="formScene" class="editor-form" style="display:none;">
+                <div id="sceneEditorContainer">
+                    <div class="form-group" style="display:flex; gap:10px;">
+                        <div style="flex:1"><label>ID</label><input type="text" id="sceneId" disabled style="opacity:0.6"></div>
+                        <div style="width:100px"><label>类型</label>
+                            <select id="sceneType" onchange="saveCurrentItem()">
+                                <option value="fixed">固定</option>
+                                <option value="ai">AI生成</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>剧情文本 / AI Prompt</label>
+                        <textarea id="sceneContent" style="height: 120px;" oninput="saveCurrentItem()"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>背景图 URL</label>
+                        <input type="text" id="sceneBg" oninput="saveCurrentItem()">
+                    </div>
+                    
+                    <div class="form-group">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                            <label style="margin:0">分支选项</label>
+                            <button class="btn btn-primary" style="padding:4px 8px; font-size:12px;" onclick="addOption()">+ 添加</button>
+                        </div>
+                        <div id="optionsList"></div>
+                    </div>
+                    
+                    <button class="btn btn-danger btn-full" onclick="deleteCurrentItem()">删除此节点</button>
+                </div>
+                <div id="sceneEmpty" style="text-align:center; padding:50px; color:#666;">👈 请先从列表选择剧情节点</div>
+            </div>
+        </div>
+
+        <div class="preview-panel" id="panel-preview">
+            <div class="phone-frame">
+                <div id="previewBg" class="phone-bg" style="background-image: url('https://images.unsplash.com/photo-1599707367072-cd6ad6cb3d2e?auto=format&fit=crop&w=600&q=80');"></div>
+                <div class="phone-ui">
+                    <div id="previewText" class="phone-text-box">
+                        这里是预览区域。当你编辑左侧内容时，这里会实时显示游戏中的效果。
+                    </div>
+                    <div id="previewOptions" style="display:flex; flex-wrap:wrap;">
+                        <span class="phone-btn">选项 A</span>
+                        <span class="phone-btn">选项 B</span>
+                    </div>
+                </div>
+                <div id="previewOverlay" style="position:absolute; inset:0; background:rgba(0,0,0,0.8); display:flex; align-items:center; justify-content:center; flex-direction:column; text-align:center; padding:20px; display:none;">
+                    <div style="font-size:40px; margin-bottom:20px;">🌍</div>
+                    <div>正在编辑世界观/角色<br>无需预览剧情</div>
+                </div>
+            </div>
+            <div style="margin-top:10px; width:100%; text-align:right;">
+                <button class="btn" style="background:#333; font-size:12px;" onclick="toggleJsonView()">🔍 查看源码</button>
+            </div>
+        </div>
     </div>
 
-    <!-- 3. 中间编辑区 -->
-    <div class="main-editor">
-        <h2 id="sectionTitle" class="section-title">世界观设置</h2>
-
-        <!-- A. 世界观表单 -->
-        <div id="formWorld" class="editor-form">
-            <div class="form-group">
-                <label>世界观名称</label>
-                <input type="text" id="worldName" oninput="saveWorld()">
-            </div>
-            <div class="form-group">
-                <label>背景设定 (背景故事、规则、力量体系)</label>
-                <textarea id="worldDesc" style="height: 300px;" oninput="saveWorld()"></textarea>
-            </div>
+    <div class="mobile-tab-bar">
+        <div class="tab-item active" onclick="switchMobileTab('list', this)">
+            <div class="tab-icon">☰</div>
+            <span>列表</span>
         </div>
-
-        <!-- B. 角色设定表单 -->
-        <div id="formChar" class="editor-form" style="display:none;">
-            <div id="charEditorContainer">
-                <div class="form-group">
-                    <label>角色 ID</label>
-                    <input type="text" id="charId" disabled>
-                </div>
-                <div class="form-group">
-                    <label>姓名</label>
-                    <input type="text" id="charName" oninput="saveCurrentItem()">
-                </div>
-                <div class="form-group">
-                    <label>人设 Prompt (性格、外貌、说话风格)</label>
-                    <textarea id="charPersona" style="height: 150px;" oninput="saveCurrentItem()"></textarea>
-                </div>
-                <div class="form-group">
-                    <label>头像 URL</label>
-                    <input type="text" id="charAvatar" oninput="saveCurrentItem()">
-                </div>
-                <button class="btn btn-danger" onclick="deleteCurrentItem()">删除角色</button>
-            </div>
-            <div id="charEmpty" style="display:none; color:#666;">请在左侧选择角色</div>
+        <div class="tab-item" onclick="switchMobileTab('edit', this)">
+            <div class="tab-icon">✎</div>
+            <span>编辑</span>
         </div>
-
-        <!-- C. 剧情节点表单 (主线/支线共用) -->
-        <div id="formScene" class="editor-form" style="display:none;">
-            <div id="sceneEditorContainer">
-                <div class="form-group">
-                    <label>场景 ID</label>
-                    <input type="text" id="sceneId" disabled>
-                </div>
-                <div class="form-group">
-                    <label>类型</label>
-                    <select id="sceneType" onchange="saveCurrentItem()">
-                        <option value="fixed">Fixed (固定剧本)</option>
-                        <option value="ai">AI (AI生成)</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label>内容 / Prompt</label>
-                    <textarea id="sceneContent" style="height: 150px;" oninput="saveCurrentItem()"></textarea>
-                </div>
-                <div class="form-group">
-                    <label>背景图 URL</label>
-                    <input type="text" id="sceneBg" oninput="saveCurrentItem()">
-                </div>
-                <div class="form-group">
-                    <label>选项 (Options)</label>
-                    <button class="btn btn-success btn-sm" onclick="addOption()">+ 加选项</button>
-                    <div id="optionsList" style="margin-top:10px;"></div>
-                </div>
-                <button class="btn btn-danger" onclick="deleteCurrentItem()">删除节点</button>
-            </div>
-            <div id="sceneEmpty" style="display:none; color:#666;">请在左侧选择剧情节点</div>
+        <div class="tab-item" onclick="switchMobileTab('preview', this)">
+            <div class="tab-icon">👁️</div>
+            <span>预览</span>
+        </div>
+        <div class="tab-item" onclick="exportJson()">
+            <div class="tab-icon">💾</div>
+            <span>保存</span>
         </div>
     </div>
 
-    <!-- 4. 右侧预览 -->
-    <div class="preview-panel">
+    <input type="file" id="importFile" style="display:none" onchange="importJson(this)">
+
+    <div id="jsonModal" style="position:fixed; inset:0; background:rgba(0,0,0,0.9); z-index:200; display:none; flex-direction:column; padding:20px;">
         <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
-            <label>整包预览</label>
-            <button class="btn btn-success btn-sm" onclick="exportJson()">📦 打包导出</button>
+            <h3 style="margin:0">剧本源码 (JSON)</h3>
+            <button class="btn btn-danger" onclick="document.getElementById('jsonModal').style.display='none'">关闭</button>
         </div>
-        <pre id="jsonPreview"></pre>
-        <input type="file" id="importFile" style="display:none" onchange="importJson(this)">
-        <button class="btn btn-primary" onclick="document.getElementById('importFile').click()" style="width:100%; margin-top:10px;">📂 导入编辑</button>
+        <textarea id="jsonOutput" style="flex:1; font-family:monospace; font-size:12px;"></textarea>
     </div>
 
     <script>
-        // === 全局数据结构 ===
+        // === 核心数据 ===
         let fullData = {
             worldview: { name: "", description: "" },
-            characters: {},    // map: id -> {name, persona, avatar}
-            main_story: {},    // map: id -> sceneObj
-            side_stories: {},  // map: id -> sceneObj
-            char_routes: {}    // map: id -> sceneObj
+            characters: {},
+            main_story: {},
+            side_stories: {},
+            char_routes: {} 
         };
-
-        let currentSection = 'world'; // world, main, branch, char_route, chars
+        let currentSection = 'world';
         let currentItemId = null;
 
         // === 初始化 ===
         function init() {
             switchSection('world');
-            renderPreview();
         }
 
-        // === 切换板块 ===
+        // === 切换板块 (世界/主线/角色) ===
         function switchSection(section) {
             currentSection = section;
             currentItemId = null;
 
-            // 1. 更新左侧导航高亮
+            // 高亮导航
             document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
-            event.target.closest('.nav-btn')?.classList.add('active');
-
-            // 2. 更新标题
-            const titles = {
-                'world': '世界观设定',
-                'main': '主线剧情 (Main Story)',
-                'branch': '普通支线 (Side Stories)',
-                'char_route': '角色专属线 (Character Routes)',
-                'chars': '角色设定 (Characters)'
-            };
+            // 简单处理：根据点击的文字或图标匹配
+            
+            // 更新标题
+            const titles = { 'world': '世界观', 'main': '主线剧情', 'branch': '普通支线', 'chars': '角色设定' };
             document.getElementById('sectionTitle').textContent = titles[section];
 
-            // 3. 切换编辑器显示
+            // 切换表单显示
             document.querySelectorAll('.editor-form').forEach(el => el.style.display = 'none');
             
-            // 侧边栏逻辑
-            const sidebar = document.getElementById('sidebarPanel');
+            // 重置编辑器状态
+            const isScene = (section === 'main' || section === 'branch');
+            const isChar = (section === 'chars');
             
             if (section === 'world') {
-                sidebar.style.display = 'none'; // 世界观不需要列表
                 document.getElementById('formWorld').style.display = 'block';
-                // 填充数据
                 document.getElementById('worldName').value = fullData.worldview.name || "";
                 document.getElementById('worldDesc').value = fullData.worldview.description || "";
+                updatePreviewVisual(null); // 世界观暂无视觉预览
+                // 移动端体验：世界观直接切到编辑页
+                if(window.innerWidth <= 768) switchMobileTab('edit');
             } else {
-                sidebar.style.display = 'flex'; // 其他都需要列表
-                renderSidebarList(); // 渲染对应板块的列表
-                
-                // 显示对应的右侧空状态
-                if (section === 'chars') {
+                renderSidebarList();
+                if (isChar) {
                     document.getElementById('formChar').style.display = 'block';
                     document.getElementById('charEditorContainer').style.display = 'none';
                     document.getElementById('charEmpty').style.display = 'block';
@@ -235,25 +399,47 @@
                     document.getElementById('sceneEditorContainer').style.display = 'none';
                     document.getElementById('sceneEmpty').style.display = 'block';
                 }
+                // 移动端体验：列表页
+                if(window.innerWidth <= 768) switchMobileTab('list');
             }
         }
 
-        // === 渲染侧边栏列表 ===
+        // === 移动端 Tab 切换 ===
+        function switchMobileTab(tabName, btnEl) {
+            // 1. 切换面板显示
+            document.getElementById('panel-list').classList.remove('active-mobile-view');
+            document.getElementById('panel-edit').classList.remove('active-mobile-view');
+            document.getElementById('panel-preview').classList.remove('active-mobile-view');
+            
+            document.getElementById('panel-' + tabName).classList.add('active-mobile-view');
+
+            // 2. 底部按钮高亮
+            if (btnEl) {
+                document.querySelectorAll('.tab-item').forEach(el => el.classList.remove('active'));
+                btnEl.classList.add('active');
+            }
+        }
+
+        // === 渲染列表 ===
         function renderSidebarList() {
             const listEl = document.getElementById('itemList');
             listEl.innerHTML = '';
             
             let dataMap = getDataMapBySection();
             
+            if (Object.keys(dataMap).length === 0) {
+                listEl.innerHTML = '<div style="padding:20px; text-align:center; color:#666; font-size:12px;">暂无条目，点击右上角新建</div>';
+            }
+
             Object.keys(dataMap).forEach(key => {
                 const li = document.createElement('li');
                 li.className = `scene-item ${key === currentItemId ? 'active' : ''}`;
                 
-                // 显示名字（角色显示name，剧情显示ID）
                 let label = key;
-                if (currentSection === 'chars') label = dataMap[key].name || key;
+                if (currentSection === 'chars') label = dataMap[key].name || "未命名角色";
+                else if (dataMap[key].text) label = dataMap[key].text.substring(0, 15) + "...";
                 
-                li.innerText = label;
+                li.innerHTML = `<span>${label}</span> <span style="font-size:10px;opacity:0.5">${key}</span>`;
                 li.onclick = () => loadItem(key);
                 listEl.appendChild(li);
             });
@@ -263,27 +449,27 @@
             if (currentSection === 'chars') return fullData.characters;
             if (currentSection === 'main') return fullData.main_story;
             if (currentSection === 'branch') return fullData.side_stories;
-            if (currentSection === 'char_route') return fullData.char_routes;
             return {};
         }
 
-        // === 加载条目详情 ===
+        // === 加载条目 & 实时预览 ===
         function loadItem(id) {
             currentItemId = id;
-            const dataMap = getDataMapBySection();
-            const data = dataMap[id];
+            const data = getDataMapBySection()[id];
             renderSidebarList(); // 更新高亮
+
+            // 移动端体验：选中后自动跳去编辑
+            if(window.innerWidth <= 768) switchMobileTab('edit');
 
             if (currentSection === 'chars') {
                 document.getElementById('charEditorContainer').style.display = 'block';
                 document.getElementById('charEmpty').style.display = 'none';
                 
-                document.getElementById('charId').value = id;
                 document.getElementById('charName').value = data.name || "";
                 document.getElementById('charPersona').value = data.persona || "";
                 document.getElementById('charAvatar').value = data.avatar || "";
+                updatePreviewVisual(null); // 角色页不预览剧情
             } else {
-                // 剧情类
                 document.getElementById('sceneEditorContainer').style.display = 'block';
                 document.getElementById('sceneEmpty').style.display = 'none';
                 
@@ -291,121 +477,165 @@
                 document.getElementById('sceneType').value = data.type || 'fixed';
                 document.getElementById('sceneContent').value = data.text || data.prompt || "";
                 document.getElementById('sceneBg').value = data.background || "";
-                renderOptions(data.options || []);
+                renderOptionsForm(data.options || []);
+                
+                updatePreviewVisual(data); // 核心：更新右侧手机画面
             }
         }
 
-        // === 新建条目 ===
+        // === 核心：更新右侧虚拟手机画面 ===
+        function updatePreviewVisual(data) {
+            const overlay = document.getElementById('previewOverlay');
+            const bg = document.getElementById('previewBg');
+            const text = document.getElementById('previewText');
+            const opts = document.getElementById('previewOptions');
+
+            if (!data) {
+                overlay.style.display = 'flex'; // 显示遮罩
+                return;
+            }
+            overlay.style.display = 'none';
+
+            // 1. 背景
+            if (data.background) bg.style.backgroundImage = `url('${data.background}')`;
+            
+            // 2. 文本
+            text.textContent = data.text || data.prompt || "(空文本)";
+            if (data.type === 'ai') text.innerHTML = "⚡ [AI 模式] <br>" + text.textContent;
+
+            // 3. 选项
+            opts.innerHTML = '';
+            if (data.options) {
+                data.options.forEach(o => {
+                    const btn = document.createElement('span');
+                    btn.className = 'phone-btn';
+                    btn.textContent = o.label || '跳转';
+                    opts.appendChild(btn);
+                });
+            }
+        }
+
+        // === 增删改查逻辑 ===
         function addItem() {
             const ts = Date.now().toString().slice(-4);
-            let newId = "";
-            let newObj = {};
-
-            if (currentSection === 'chars') {
-                newId = "char_" + ts;
-                newObj = { name: "新角色", persona: "", avatar: "" };
-            } else {
-                newId = currentSection + "_" + ts;
-                newObj = { type: "fixed", text: "", options: [] };
-            }
+            let newId = currentSection === 'chars' ? "char_" + ts : currentSection + "_" + ts;
+            let newObj = currentSection === 'chars' ? { name: "新角色", persona: "" } : { type: "fixed", text: "新剧情片段...", options: [] };
 
             getDataMapBySection()[newId] = newObj;
             loadItem(newId);
-            renderSidebarList();
-            renderPreview();
         }
 
-        // === 保存数据 ===
         function saveWorld() {
             fullData.worldview.name = document.getElementById('worldName').value;
             fullData.worldview.description = document.getElementById('worldDesc').value;
-            renderPreview();
         }
 
         function saveCurrentItem() {
             if (!currentItemId) return;
             const map = getDataMapBySection();
+            const item = map[currentItemId];
             
             if (currentSection === 'chars') {
-                map[currentItemId].name = document.getElementById('charName').value;
-                map[currentItemId].persona = document.getElementById('charPersona').value;
-                map[currentItemId].avatar = document.getElementById('charAvatar').value;
-                // 更新列表上的名字
-                renderSidebarList();
+                item.name = document.getElementById('charName').value;
+                item.persona = document.getElementById('charPersona').value;
+                item.avatar = document.getElementById('charAvatar').value;
+                renderSidebarList(); // 更新列表名
             } else {
-                map[currentItemId].type = document.getElementById('sceneType').value;
+                item.type = document.getElementById('sceneType').value;
                 const content = document.getElementById('sceneContent').value;
-                if (map[currentItemId].type === 'ai') {
-                    map[currentItemId].prompt = content;
-                    delete map[currentItemId].text;
-                } else {
-                    map[currentItemId].text = content;
-                    delete map[currentItemId].prompt;
-                }
-                map[currentItemId].background = document.getElementById('sceneBg').value;
+                if (item.type === 'ai') { item.prompt = content; delete item.text; }
+                else { item.text = content; delete item.prompt; }
+                item.background = document.getElementById('sceneBg').value;
+                
+                updatePreviewVisual(item); // 实时刷新预览
             }
-            renderPreview();
         }
 
         function deleteCurrentItem() {
-            if(confirm('确定删除吗？')) {
+            if(confirm('删除后无法恢复，确定吗？')) {
                 delete getDataMapBySection()[currentItemId];
                 currentItemId = null;
-                // 隐藏表单
-                if(currentSection === 'chars') document.getElementById('charEditorContainer').style.display = 'none';
-                else document.getElementById('sceneEditorContainer').style.display = 'none';
-                
+                document.getElementById('sceneEditorContainer').style.display = 'none';
+                document.getElementById('charEditorContainer').style.display = 'none';
+                document.getElementById('sceneEmpty').style.display = 'block';
+                document.getElementById('charEmpty').style.display = 'block';
                 renderSidebarList();
-                renderPreview();
+                if(window.innerWidth <= 768) switchMobileTab('list');
             }
         }
 
-        // === 选项逻辑 (复用) ===
-        function renderOptions(opts) {
+        // === 选项表单逻辑 ===
+        function renderOptionsForm(opts) {
             const list = document.getElementById('optionsList');
             list.innerHTML = '';
+            
+            // 获取所有可能的跳转ID
+            const allIds = [];
+            if(fullData.main_story) allIds.push(...Object.keys(fullData.main_story));
+            if(fullData.side_stories) allIds.push(...Object.keys(fullData.side_stories));
+
             opts.forEach((opt, idx) => {
                 const div = document.createElement('div');
                 div.className = 'option-card';
+                
+                // 下拉框 HTML
+                let selectHtml = `<select onchange="updateOpt(${idx}, 'nextScene', this.value)" style="flex:1; margin-top:5px;">`;
+                selectHtml += `<option value="">-- 选择跳转 --</option>`;
+                selectHtml += `<option value="END" ${opt.nextScene==='END'?'selected':''}>[END] 结束</option>`;
+                allIds.forEach(id => {
+                    selectHtml += `<option value="${id}" ${opt.nextScene===id?'selected':''}>${id}</option>`;
+                });
+                selectHtml += `</select>`;
+
                 div.innerHTML = `
-                    <div style="display:flex; gap:5px; margin-bottom:5px;">
-                        <input placeholder="按钮文案" value="${opt.label||''}" oninput="updateOpt(${idx}, 'label', this.value)">
-                        <input placeholder="跳转ID" value="${opt.nextScene||''}" oninput="updateOpt(${idx}, 'nextScene', this.value)">
+                    <input placeholder="选项文案" value="${opt.label||''}" oninput="updateOpt(${idx}, 'label', this.value)">
+                    <div style="display:flex; gap:5px;">
+                        ${selectHtml}
+                        <button class="btn btn-danger" onclick="delOpt(${idx})" style="margin-top:5px;">🗑️</button>
                     </div>
-                    <button class="btn btn-danger btn-sm" onclick="delOpt(${idx})">删</button>
                 `;
                 list.appendChild(div);
             });
         }
+
         function addOption() {
             const map = getDataMapBySection();
             if(!map[currentItemId].options) map[currentItemId].options = [];
             map[currentItemId].options.push({label:"", nextScene:""});
-            loadItem(currentItemId); // 刷新
-            renderPreview();
+            // 重新渲染表单和预览
+            renderOptionsForm(map[currentItemId].options);
+            updatePreviewVisual(map[currentItemId]);
         }
+
         function updateOpt(idx, key, val) {
-            getDataMapBySection()[currentItemId].options[idx][key] = val;
-            renderPreview();
+            const item = getDataMapBySection()[currentItemId];
+            item.options[idx][key] = val;
+            updatePreviewVisual(item); // 实时刷新预览
         }
+
         function delOpt(idx) {
-            getDataMapBySection()[currentItemId].options.splice(idx, 1);
-            loadItem(currentItemId);
-            renderPreview();
+            const item = getDataMapBySection()[currentItemId];
+            item.options.splice(idx, 1);
+            renderOptionsForm(item.options);
+            updatePreviewVisual(item);
         }
 
         // === 导入导出 ===
-        function renderPreview() {
-            document.getElementById('jsonPreview').innerText = JSON.stringify(fullData, null, 2);
+        function toggleJsonView() {
+            const modal = document.getElementById('jsonModal');
+            document.getElementById('jsonOutput').value = JSON.stringify(fullData, null, 2);
+            modal.style.display = 'flex';
         }
+
         function exportJson() {
             const blob = new Blob([JSON.stringify(fullData, null, 2)], {type: "application/json"});
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = "full_script.json";
+            a.download = (fullData.worldview.name || "script") + ".json";
             a.click();
         }
+
         function importJson(input) {
             const file = input.files[0];
             if(!file) return;
@@ -413,17 +643,13 @@
             reader.onload = e => {
                 try {
                     fullData = JSON.parse(e.target.result);
-                    // 补全结构防报错
-                    if(!fullData.worldview) fullData.worldview = {};
-                    if(!fullData.characters) fullData.characters = {};
-                    if(!fullData.main_story) fullData.main_story = {};
-                    if(!fullData.side_stories) fullData.side_stories = {};
-                    if(!fullData.char_routes) fullData.char_routes = {};
-                    
+                    // 补全结构
+                    ['worldview','characters','main_story','side_stories'].forEach(k => {
+                        if(!fullData[k]) fullData[k] = {};
+                    });
                     switchSection('world');
-                    renderPreview();
                     alert('导入成功！');
-                } catch(err) { alert('JSON 格式错误'); }
+                } catch(err) { alert('文件格式错误'); }
             };
             reader.readAsText(file);
         }

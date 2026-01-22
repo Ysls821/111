@@ -482,8 +482,13 @@
                         </div>
                         <input type="file" id="persona-avatar-input" accept="image/*" style="display:none;" onchange="onAvatarFileChange(event)">
                     </div>
-        
-        <div class="view-section" id="view-settings">
+                    <div class="persona-actions" style="margin-top: 20px;">
+                        <button class="btn-glow" style="flex:1;" onclick="savePersona()">保存设定</button>
+                    </div>
+                </div>
+            </div>
+            
+        </div> <div class="view-section" id="view-settings">
             <h2 class="section-header">系统设置</h2>
             
             <div class="settings-container glass-panel setting-group">
@@ -545,22 +550,21 @@
                 <div class="theme-grid">
                     <button class="theme-btn active" data-theme="purple" onclick="changeTheme('purple')">霓虹紫</button>
                     <button class="theme-btn" data-theme="reader" onclick="changeTheme('reader')" style="background:#fdfbf7; color:#263238; border:1px solid #b0bec5;">纸间黛蓝</button>
+                    <button class="theme-btn" data-theme="black" onclick="changeTheme('black')"> 黑色</button>
+                    <button class="theme-btn" data-theme="white" onclick="changeTheme('white')"> 白色</button>
+                    <button class="theme-btn" data-theme="green" onclick="changeTheme('green')"> 绿色</button>
+                    <button class="theme-btn" data-theme="blue" onclick="changeTheme('blue')"> 蓝色</button>
                 </div>
             </div>
-        </div>
 
-        <div class="input-wrapper" style="margin-top:24px; padding-top:20px; border-top:1px solid rgba(255,255,255,0.1);">
-                        <label class="input-label">字体美化 (输入字体链接)</label>
-                        <div style="display:flex; gap:10px;">
-                            <input id="customFontUrl" class="input-modern" placeholder="粘贴 .woff2 或 .ttf 链接">
-                            <button class="btn-glow" style="width:auto; padding:0 20px;" onclick="applyCustomFont()">应用</button>
-                        </div>
-                        <p style="font-size:12px; color:var(--text-muted); margin-top:5px;">支持 Google Fonts 链接或直接文件地址。</p>
-                    </div>
-
-                    <div class="persona-actions" style="margin-top: 20px;">
-                        <button class="btn-glow" style="flex:1;" onclick="savePersona()">保存设定</button>
-                    </div>
+            <div class="settings-container glass-panel setting-group" style="margin-top: 24px;">
+                <h3 style="margin-bottom: 20px; font-size: 18px;">✨ 字体美化</h3>
+                <div style="margin-bottom:10px; font-size:12px; color:var(--text-muted);">
+                    输入 .woff2 / .ttf 文件链接或 Google Fonts CSS 链接
+                </div>
+                <div style="display:flex; gap:10px;">
+                    <input id="customFontUrl" class="input-modern" placeholder="https://example.com/font.woff2">
+                    <button class="btn-glow" style="width:auto; padding:0 20px;" onclick="applyCustomFont()">应用</button>
                 </div>
             </div>
         </div>
@@ -580,11 +584,12 @@
             </div>
             <div class="dock-item" onclick="switchView('settings')" title="系统设置">
                 <svg class="icon dock-icon" viewBox="0 0 24 24">
-                    <circle cx="12" cy="12" r="3"></circle>
-                    <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+                    <path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z"/>
+                    <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
                 </svg>
-            </div>
-    <div id="gameContainer" class="game-container">
+            </div>  
+            
+        <div id="gameContainer" class="game-container">
         <div id="gameBg" class="game-bg"></div>
         <button class="game-exit-btn" onclick="saveProgress(true)" style="right: 80px; background: rgba(16, 185, 129, 0.6);"> 存档</button>       
         <button class="game-exit-btn" onclick="exitGame()">退出</button>

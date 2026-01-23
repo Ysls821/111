@@ -651,8 +651,22 @@
                     <button class="btn-glow" style="width:auto; padding:0 20px;" onclick="applyCustomFont()">应用</button>
                 </div>
             </div>
-        </div>
 
+    <!-- === 新增：自定义 CSS 功能区域 (插入在 view-settings 底部) === -->
+            <div class="settings-container glass-panel setting-group" style="margin-top: 24px;">
+                <h3 style="margin-bottom: 20px; font-size: 18px;">🎨 自定义样式 (CSS)</h3>
+                <div style="margin-bottom:10px; font-size:12px; color:var(--text-muted);">
+                    在此输入 CSS 代码可覆盖系统默认样式。例如：<br>
+                    <code style="background:rgba(255,255,255,0.1); padding:2px 4px; border-radius:4px;">.btn-glow { background: red; }</code>
+                </div>
+                <textarea id="customCssInput" class="input-modern" style="min-height: 150px; font-family: 'Menlo', 'Monaco', 'Courier New', monospace; font-size: 13px; line-height: 1.5;" placeholder="/* 在此处输入 CSS 代码 */"></textarea>
+                <div style="display:flex; gap:10px; margin-top:16px;">
+                    <button class="btn-glow" style="flex:1;" onclick="applyCustomCss()">应用并保存</button>
+                    <button class="btn-glow" style="background: rgba(239, 68, 68, 0.5); width: auto;" onclick="clearCustomCss()">清空</button>
+                </div>
+            </div>
+         </div>
+        
         <div class="dock-nav glass-panel">
             <div class="dock-item active" onclick="switchView('hub')" title="副本中心">
                 <svg class="icon dock-icon" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
@@ -1853,6 +1867,51 @@ ${memory}
                 toast.style.display = 'none';
             }, 2000);
         }
+
+        // ==========================================
+        //  新增功能：自定义 CSS 逻辑
+        // ==========================================
+        const CUSTOM_CSS_STORAGE = 'infinite.custom_css';
+
+        function applyCustomCss() {
+            const css = document.getElementById('customCssInput').value;
+            localStorage.setItem(CUSTOM_CSS_STORAGE, css);
+            injectCustomStyle(css);
+            showToastMsg("🎨 样式已应用");
+        }
+
+        function clearCustomCss() {
+            if(confirm("确定要清空自定义样式吗？")) {
+                document.getElementById('customCssInput').value = '';
+                localStorage.removeItem(CUSTOM_CSS_STORAGE);
+                injectCustomStyle(''); // 移除样式
+                showToastMsg("🗑️ 样式已重置");
+            }
+        }
+
+        function injectCustomStyle(css) {
+            let style = document.getElementById('user-custom-style-tag');
+            if (!style) {
+                style = document.createElement('style');
+                style.id = 'user-custom-style-tag';
+                document.head.appendChild(style);
+            }
+            style.textContent = css;
+        }
+
+        function loadCustomCss() {
+            const savedCss = localStorage.getItem(CUSTOM_CSS_STORAGE);
+            if (savedCss) {
+                // 填充输入框
+                const input = document.getElementById('customCssInput');
+                if (input) input.value = savedCss;
+                // 应用样式
+                injectCustomStyle(savedCss);
+            }
+        }
+
+        // 立即执行加载（不修改 init 函数，直接在脚本末尾调用即可生效）
+        loadCustomCss();
         
         // 启动
         window.onload = init;

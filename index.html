@@ -354,6 +354,8 @@
         #toast { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(0,0,0,0.85); color: #fff; padding: 12px 24px; border-radius: 50px; display: none; z-index: 300; backdrop-filter: blur(10px); border: 1px solid var(--primary); font-weight: bold; animation: popIn 0.3s; }
         @keyframes popIn { from { transform: translate(-50%, -40%); opacity: 0; } to { transform: translate(-50%, -50%); opacity: 1; }}
     </style>
+       <!-- 自定义 CSS 注入点 -->
+       <style id="user-custom-css"></style> 
 </head>
 <body data-theme="purple">
     <div class="aurora-bg"></div>
@@ -641,6 +643,16 @@
                 </div>
             </div>
 
+    <!-- 自定义 CSS 面板 -->
+            <div class="settings-container glass-panel setting-group" style="margin-top: 24px;">
+                <h3 style="margin-bottom: 10px; font-size: 18px;">🎨 自定义样式</h3>
+                <textarea id="cssInput" class="input-modern" style="min-height: 100px; font-family: monospace; font-size: 12px;" placeholder="在此输入 CSS 代码..."></textarea>
+                <div style="display:flex; gap:10px; margin-top:10px;">
+                    <button class="btn-glow" onclick="saveCss()">应用</button>
+                    <button class="btn-glow" style="background:rgba(239,68,68,0.5); width:auto;" onclick="clearCss()">清除</button>
+                </div>
+            </div>
+
             <div class="settings-container glass-panel setting-group" style="margin-top: 24px;">
                 <h3 style="margin-bottom: 20px; font-size: 18px;">✨ 字体美化</h3>
                 <div style="margin-bottom:10px; font-size:12px; color:var(--text-muted);">
@@ -787,6 +799,8 @@
             loadTheme();
             loadCustomFont(); // 加载自定义字体
             loadCustomStory(); // 这里会自动加载你上传的剧本
+            loadCss(); // <--- 加上这一行
+    }
 
             // 用户名自动回填 + 自动进入主界面
             const nameInput = document.getElementById('username');
@@ -805,6 +819,29 @@
             });
 
             initPersonas();
+        }
+
+        // ===== 自定义 CSS 逻辑 =====
+        function loadCss() {
+            const css = localStorage.getItem('infinite.css');
+            if (css) {
+                document.getElementById('user-custom-css').innerHTML = css;
+                const input = document.getElementById('cssInput');
+                if (input) input.value = css;
+            }
+        }
+
+        function saveCss() {
+            const css = document.getElementById('cssInput').value;
+            localStorage.setItem('infinite.css', css);
+            document.getElementById('user-custom-css').innerHTML = css;
+            alert('样式已应用！');
+        }
+
+        function clearCss() {
+            localStorage.removeItem('infinite.css');
+            document.getElementById('user-custom-css').innerHTML = '';
+            document.getElementById('cssInput').value = '';
         }
 
         // === 新增：字体美化逻辑 ===

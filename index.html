@@ -1178,6 +1178,9 @@
             }
         }
 
+        // ==========================================
+        //  核心修复：loadScene 智能接管逻辑
+        // ==========================================
         async function loadScene(sceneId) {
             // 更新全局进度并自动存档
             currentSceneId = sceneId;
@@ -1227,10 +1230,23 @@
                         btn.className = 'game-option-btn';
                         btn.textContent = opt.text || opt.label; 
                         btn.onclick = () => {
-                            if (opt.nextScene) {
+                            // === 核心逻辑修复：如果 nextScene 存在且有效，跳转；否则，统统交给 AI ===
+                            if (opt.nextScene && activeScripts[opt.nextScene]) {
                                 loadScene(opt.nextScene);
                             } else {
-                                exitGame();
+                                // 走到这里说明：用户点击了选项，但没有对应的下一张固定剧本
+                                // 以前是直接 exitGame()，现在我们改成让 AI 接管
+                                const nextId = opt.nextScene || ('ai_gen_' + Date.now());
+                                
+                                // 创建一个临时的 AI 场景节点
+                                activeScripts[nextId] = {
+                                    type: 'ai',
+                                    bg: scene.bg, // 继承背景
+                                    prompt: `（接续剧情）玩家做出了选择：“${opt.text}”。请根据这个选择继续撰写后续剧情，保持沉浸感。`
+                                };
+                                
+                                // 播放这个新场景
+                                loadScene(nextId);
                             }
                         };
                         optionsEl.appendChild(btn);
@@ -1241,8 +1257,21 @@
                         const box = document.getElementById('gameTextBox');
                         if(box) {
                              box.onclick = () => {
-                                 if (isTyping) { skipTyping(); return; } // 如果在打字，先跳过
-                                 loadScene(scene.options[0].nextScene);  // 否则直接跳转
+                                 if (isTyping) { skipTyping(); return; } 
+                                 
+                                 // 同样应用上面的智能接管逻辑
+                                 const opt = scene.options[0];
+                                 if (opt.nextScene && activeScripts[opt.nextScene]) {
+                                     loadScene(opt.nextScene);
+                                 } else {
+                                     const nextId = opt.nextScene || ('ai_gen_' + Date.now());
+                                     activeScripts[nextId] = {
+                                         type: 'ai',
+                                         bg: scene.bg,
+                                         prompt: `（接续剧情）继续剧情。`
+                                     };
+                                     loadScene(nextId);
+                                 }
                              };
                         }
                     } else {
@@ -1315,6 +1344,102 @@
                     btn.onclick = () => loadScene('ai_next_' + Date.now());
                     optionsEl.appendChild(btn);
                 }
+            }
+        }
+
+        // ==========================================
+        //  AI 生成逻辑 (占位函数，需确保你的环境中此函数存在)
+        //  注意：由于你之前的代码里没有发给我 generateAiSceneText 的具体实现，
+        //  这里我补充一个标准的 OpenAI 调用实现，确保 AI 功能可用。
+        // ==========================================
+        async function generateAiSceneText(sceneId, sceneData, activeScripts) {
+            const apiConfig = JSON.parse(localStorage.getItem('apiConfig') || '{}');
+            if (!apiConfig.url || !apiConfig.key) {
+                return "❌ 请先在“系统设置”中配置 API Key";
+            }
+
+            // 构建上下文记忆
+            const memory = activeScripts.memory || "故事开始。";
+            const prompt = sceneData.prompt || "继续剧情。";
+            
+            // 系统提示词：定义世界观
+            const systemPrompt = `你是一个文字冒险游戏的 DM (Dungeon Master)。
+            当前世界观：${currentDungeon.meta.desc}
+            玩家设定：${document.getElementById('currentPersonaLabel')?.textContent || '冒险者'}
+            
+            请根据以下要求生成剧情：
+            1. 语言风格：沉浸式、代入感强，小说体。
+            2. 字数：200字左右。
+            3. 格式：请返回纯 JSON 格式，不要包含 Markdown 代码块。
+            JSON 结构如下：
+            {
+                "text": "这里是剧情内容...",
+                "options": [
+                    { "text": "选项A", "nextScene": null },
+                    { "text": "选项B", "nextScene": null }
+                ],
+                "new_memory": "这里是更新后的剧情摘要，用于下一次记忆..."
+            }`;
+
+            try {
+                // 处理 URL 结尾
+                let fetchUrl = apiConfig.url;
+                if (!fetchUrl.endsWith('/chat/completions')) {
+                    fetchUrl = fetchUrl.replace(/\/$/, '') + '/chat/completions';
+                }
+
+                const response = await fetch(fetchUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${apiConfig.key}`
+                    },
+                    body: JSON.stringify({
+                        model: apiConfig.model || "gpt-3.5-turbo",
+                        messages: [
+                            { role: "system", content: systemPrompt },
+                            { role: "assistant", content: `前情提要：${memory}` },
+                            { role: "user", content: prompt }
+                        ],
+                        temperature: 0.8
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`API Error: ${response.status}`);
+                }
+
+                const data = await response.json();
+                const content = data.choices[0].message.content;
+
+                // 尝试解析 JSON
+                try {
+                    // 有时候 AI 会带 ```json ... ```，需要去掉
+                    const cleanContent = content.replace(/```json/g, '').replace(/```/g, '').trim();
+                    const jsonResult = JSON.parse(cleanContent);
+                    
+                    // 更新记忆
+                    if (jsonResult.new_memory) {
+                        activeScripts.memory += "\n" + jsonResult.new_memory;
+                        // 限制记忆长度，防止 token 爆炸
+                        if (activeScripts.memory.length > 2000) {
+                             activeScripts.memory = activeScripts.memory.substring(activeScripts.memory.length - 2000);
+                        }
+                    }
+                    
+                    return jsonResult;
+
+                } catch (e) {
+                    // 如果解析失败，说明 AI 返回了纯文本
+                    return {
+                        text: content,
+                        options: [] // 空选项会让 UI 显示默认“继续”
+                    };
+                }
+
+            } catch (err) {
+                console.error(err);
+                return `❌ 生成失败: ${err.message}`;
             }
         }
 

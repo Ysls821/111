@@ -57,7 +57,6 @@
             color: var(--text-main);
             min-height: 100vh;
             overflow-x: hidden;
-            /* 只有默认主题才有星空背景图，Reader主题会覆盖这个 */
             background-image: 
                 radial-gradient(circle at 10% 20%, rgba(217, 70, 239, 0.15) 0%, transparent 40%),
                 radial-gradient(circle at 90% 80%, rgba(6, 182, 212, 0.15) 0%, transparent 40%),
@@ -66,12 +65,10 @@
             transition: background 0.5s, color 0.5s;
         }
 
-        /* 针对 Reader 主题的背景覆盖 */
         [data-theme="reader"] body {
             background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100' height='100' filter='url(%23noise)' opacity='0.05'/%3E%3C/svg%3E");
         }
 
-        /* SVG 图标通用样式 (新增) */
         .icon {
             width: 20px; height: 20px;
             fill: none; stroke: currentColor; stroke-width: 2;
@@ -84,7 +81,6 @@
             background: conic-gradient(from 0deg at 50% 50%, rgba(139, 92, 246, 0.1), rgba(217, 70, 239, 0.1), rgba(6, 182, 212, 0.1), rgba(139, 92, 246, 0.1));
             filter: blur(80px); animation: rotate 20s linear infinite; z-index: -1; pointer-events: none;
         }
-        /* Reader 主题隐藏极光 */
         [data-theme="reader"] .aurora-bg { display: none; }
 
         @keyframes rotate { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
@@ -97,7 +93,6 @@
             border-top: 1px solid rgba(255,255,255,0.2);
             box-shadow: var(--shadow-card);
         }
-        /* Reader 主题去除玻璃高光 */
         [data-theme="reader"] .glass-panel { border-top: 1px solid var(--glass-border); backdrop-filter: none; }
 
         /* 登录页 */
@@ -123,7 +118,7 @@
             width: 100%; padding: 16px; border: none; border-radius: 16px;
             background: var(--gradient-holo); color: white; font-size: 16px; font-weight: 600;
             cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; position: relative; overflow: hidden;
-            display: flex; align-items: center; justify-content: center; gap: 8px; /* 图标文字间距 */
+            display: flex; align-items: center; justify-content: center; gap: 8px;
         }
         .btn-glow:active { transform: scale(0.98); }
         .btn-glow:hover { box-shadow: 0 0 30px rgba(217, 70, 239, 0.4); }
@@ -151,7 +146,7 @@
             color: var(--text-muted); cursor: pointer; transition: all 0.3s;
         }
         .dock-item:hover, .dock-item.active { color: var(--text-main); background: rgba(255,255,255,0.15); transform: translateY(-5px); }
-        .dock-item.active { color: var(--primary); } /* Reader下用主色 */
+        .dock-item.active { color: var(--primary); }
         
         /* 视图容器 */
         .view-section { display: none; animation: fadeIn 0.4s ease; }
@@ -160,7 +155,7 @@
 
         /* 副本卡片 */
         .section-header { font-size: 24px; font-weight: 700; margin-bottom: 20px; background: linear-gradient(to right, var(--text-main), var(--text-muted)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; display: flex; align-items: center; gap: 8px;}
-        .section-header svg { color: var(--text-main); -webkit-text-fill-color: initial; } /* 图标不渐变 */
+        .section-header svg { color: var(--text-main); -webkit-text-fill-color: initial; }
 
         .grid-layout { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 24px; }
         .card-instance { border-radius: 24px; overflow: hidden; transition: transform 0.3s, box-shadow 0.3s; cursor: pointer; position: relative; }
@@ -190,14 +185,14 @@
         .tag-row { display: flex; gap: 10px; margin-top: 8px; }
         .tag { padding: 4px 10px; background: rgba(255,255,255,0.08); border-radius: 999px; font-size: 12px; }
 
-        /* 角色头像 (详情页) */
+        /* 角色头像 */
         .char-scroll { display: flex; gap: 20px; overflow-x: auto; padding-bottom: 20px; scrollbar-width: none; }
         .char-item { flex: 0 0 auto; text-align: center; width: 80px; }
         .char-avatar { width: 80px; height: 80px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.2); padding: 2px; margin-bottom: 8px; position: relative; background: linear-gradient(135deg, var(--primary), var(--secondary)); overflow: hidden; display: flex; align-items: center; justify-content: center; }
         .char-avatar img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; }
         .char-name { font-size: 12px; color: var(--text-muted); }
 
-        /* 身份栏 (Story Style) */
+        /* 身份栏 */
         .persona-strip-container { display: flex; gap: 16px; overflow-x: auto; padding: 10px 4px; scrollbar-width: none; }
         .persona-strip-container::-webkit-scrollbar { display: none; }
         .story-ring { flex: 0 0 auto; display: flex; flex-direction: column; align-items: center; gap: 6px; cursor: pointer; width: 64px; }
@@ -230,109 +225,28 @@
         .story-upload-area { margin-top: 30px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 20px; }
         .file-btn { display: inline-block; padding: 10px 20px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 12px; cursor: pointer; color: var(--text-muted); font-size: 13px; }
 
-        /* === 📱 移动端深度适配 (v4.5 修复版) === */
+        /* === 📱 移动端深度适配 === */
         @media (max-width: 768px) {
-            /* 1. 首页：调整卡片尺寸 (双列布局) */
-            .grid-layout { 
-                grid-template-columns: 1fr 1fr; 
-                gap: 12px;
-            }
-            .card-cover { 
-                height: 140px; 
-                background: #222;
-            }
+            .grid-layout { grid-template-columns: 1fr 1fr; gap: 12px; }
+            .card-cover { height: 140px; background: #222; }
             .card-title { font-size: 15px; margin-bottom: 4px; }
             .card-desc { font-size: 11px; line-height: 1.3; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
             .card-badge { top: 8px; left: 8px; padding: 2px 8px; font-size: 10px; }
-
-            /* 2. 副本详情页：重构为左图右文 */
-            .detail-layout {
-                flex-direction: row; /* 强制横向 */
-                flex-wrap: wrap;
-                padding: 16px;
-                gap: 16px;
-                align-items: flex-start;
-                background: linear-gradient(180deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0) 100%);
-            }
-
-            /* 左侧封面图 (固定小尺寸) */
-            .detail-cover {
-                flex: 0 0 100px;
-                height: 140px;
-                width: 100px;
-                border-radius: 12px;
-                box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-                margin-bottom: 0; /* 修正可能存在的边距 */
-            }
-
-            /* 右侧信息区 */
-            .detail-info {
-                flex: 1;
-                min-width: 0;
-                gap: 6px;
-                display: flex;
-                flex-direction: column;
-            }
-
-            .detail-title { 
-                font-size: 18px; 
-                line-height: 1.2;
-                margin-bottom: 2px; 
-            }
             
-            .detail-meta { 
-                font-size: 11px; 
-                opacity: 0.8;
-            }
-
+            .detail-layout { flex-direction: row; flex-wrap: wrap; padding: 16px; gap: 16px; align-items: flex-start; background: linear-gradient(180deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0) 100%); }
+            .detail-cover { flex: 0 0 100px; height: 140px; width: 100px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.3); margin-bottom: 0; }
+            .detail-info { flex: 1; min-width: 0; gap: 6px; display: flex; flex-direction: column; }
+            .detail-title { font-size: 18px; line-height: 1.2; margin-bottom: 2px; }
+            .detail-meta { font-size: 11px; opacity: 0.8; }
             .tag-row { margin-top: 4px; gap: 6px; }
             .tag { padding: 2px 6px; font-size: 10px; background: rgba(255,255,255,0.1); }
-
-            .detail-desc {
-                font-size: 12px;
-                line-height: 1.4;
-                color: var(--text-muted);
-                margin-top: 6px;
-                display: -webkit-box;
-                -webkit-line-clamp: 4;
-                -webkit-box-orient: vertical;
-                overflow: hidden;
-            }
-
-            /* 按钮区域：强制换行并填满 */
-            .detail-info > div:last-child {
-                margin-top: 12px;
-                width: calc(100% + 116px); /* 延伸宽度 */
-                margin-left: -116px;       /* 向左拉回 */
-                display: flex;
-                gap: 10px;
-            }
-
-            .detail-info .btn-glow {
-                padding: 0;
-                font-size: 13px;
-                border-radius: 10px;
-                height: 40px;
-            }
-
-            /* 无尽模式按钮 */
-            .detail-info + button.btn-glow {
-                margin-top: 0;
-                font-size: 12px;
-                padding: 0;
-                height: 36px;
-                opacity: 0.8;
-            }
-
-            /* 底部导航 Dock */
-            .dock-nav { 
-                width: 94%; 
-                padding: 10px 16px; 
-                justify-content: space-between;
-                bottom: 16px;
-            }
+            .detail-desc { font-size: 12px; line-height: 1.4; color: var(--text-muted); margin-top: 6px; display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden; }
             
-            /* 游戏界面 */
+            .detail-info > div:last-child { margin-top: 12px; width: calc(100% + 116px); margin-left: -116px; display: flex; gap: 10px; }
+            .detail-info .btn-glow { padding: 0; font-size: 13px; border-radius: 10px; height: 40px; }
+            .detail-info + button.btn-glow { margin-top: 0; font-size: 12px; padding: 0; height: 36px; opacity: 0.8; }
+            
+            .dock-nav { width: 94%; padding: 10px 16px; justify-content: space-between; bottom: 16px; }
             .game-content { padding: 16px; }
             .game-text-box { font-size: 15px; padding: 16px; min-height: 100px; }
             .game-exit-btn { top: 12px; right: 12px; padding: 6px 12px; font-size: 12px; }
@@ -347,10 +261,10 @@
         .persona-select-item { display: flex; align-items: center; gap: 12px; padding: 12px; border-radius: 12px; background: rgba(255,255,255,0.05); cursor: pointer; transition: all 0.2s; border: 1px solid transparent; }
         .persona-select-item:hover, .persona-select-item.active { background: rgba(255,255,255,0.1); border-color: var(--primary); }
 
-        /* 新增：记忆回放框样式 */
+        /* 记忆回放框样式 */
         .log-container { background: rgba(0,0,0,0.1); border-radius: 12px; padding: 20px; height: 300px; overflow-y: auto; font-size: 14px; line-height: 1.8; white-space: pre-wrap; color: var(--text-muted); margin-top: 10px; }
         
-        /* 新增：Toast 提示框样式 */
+        /* Toast 提示框样式 */
         #toast { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(0,0,0,0.85); color: #fff; padding: 12px 24px; border-radius: 50px; display: none; z-index: 300; backdrop-filter: blur(10px); border: 1px solid var(--primary); font-weight: bold; animation: popIn 0.3s; }
         @keyframes popIn { from { transform: translate(-50%, -40%); opacity: 0; } to { transform: translate(-50%, -50%); opacity: 1; }}
     </style>
@@ -534,11 +448,11 @@
             <h2 class="section-header">记忆回廊</h2>
             <div class="settings-container glass-panel setting-group">
                 <div style="padding:10px;">
-                    <p style="color:var(--text-muted); font-size:12px; margin-bottom:10px;">记录所有经历过的剧情片段</p>
+                    <p style="color:var(--text-muted); font-size:12px; margin-bottom:10px;">查看和继续你的冒险存档</p>
                     <div id="storyLog" class="log-container">暂无记忆</div>
                     <button class="btn-glow" onclick="clearMemory()" style="margin-top:15px; background:rgba(239,68,68,0.5);">
                         <svg class="icon" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg> 
-                        清空记忆
+                        清空所有存档
                     </button>
                 </div>
             </div>
@@ -652,7 +566,6 @@
                 </div>
             </div>
 
-    <!-- === 新增：自定义 CSS 功能区域 (插入在 view-settings 底部) === -->
             <div class="settings-container glass-panel setting-group" style="margin-top: 24px;">
                 <h3 style="margin-bottom: 20px; font-size: 18px;">🎨 自定义样式 (CSS)</h3>
                 <div style="margin-bottom:10px; font-size:12px; color:var(--text-muted);">
@@ -691,7 +604,7 @@
             
         <div id="gameContainer" class="game-container">
         <div id="gameBg" class="game-bg"></div>
-        <button class="game-exit-btn" onclick="saveProgress(true)" style="right: 80px; background: rgba(16, 185, 129, 0.6);"> 存档</button>       
+        <button class="game-exit-btn" onclick="openSaveSlotModal()" style="right: 80px; background: rgba(16, 185, 129, 0.6);"> 存档</button>       
         <button class="game-exit-btn" onclick="exitGame()">退出</button>
         <div class="game-content">
             <div id="gameTextBox" class="game-text-box">
@@ -723,7 +636,7 @@
         const FONT_STORAGE = 'infinite.customFont';
 
         let currentPersonaId = null;
-        let currentSceneId = null; // 全局记录当前场景 ID
+        let currentSceneId = null; 
 
         // 打字机状态
         let typingTimer = null;
@@ -731,13 +644,11 @@
         let typingText = '';
         let isTyping = false;
 
-        // 默认剧本数据（支持 fixed / ai 混合）
         const storyData = {
             start: {
                 type: 'fixed',
                 bg: 'https://images.unsplash.com/photo-1599707367072-cd6ad6cb3d2e?auto=format&fit=crop&w=1200&q=80',
-                text:
-`夜风从宫墙之上吹过，檐角的金铃被吹得轻轻作响。你随同新入宫的秀女队伍缓缓前行，脚下是被岁月磨得发亮的青石板，仿佛每一步都踩在前人留下的秘密上。\n\n远处乐声隐约，宫灯一盏盏点亮，金碧辉煌却让人心底发寒。你感觉到有目光在暗处注视——是那位传闻冷心冷面的皇子，还是站在阴影里的侍卫？今晚，将是你命运真正开始的时刻。`,
+                text: `夜风从宫墙之上吹过，檐角的金铃被吹得轻轻作响。你随同新入宫的秀女队伍缓缓前行...`,
                 options: [
                     { text: '顺从领路宫女，安静地走完入宫流程', nextScene: 'followMaid' },
                     { text: '偷偷回头，看一眼站在暗处的侍卫', nextScene: 'lookGuard' }
@@ -746,8 +657,7 @@
             followMaid: {
                 type: 'fixed',
                 bg: 'https://images.unsplash.com/photo-1563298723-dcfebaa392e3?auto=format&fit=crop&w=1200&q=80',
-                text:
-`你压下心中所有的好奇，只是低头跟在领路宫女身后。她的步伐轻快却不失规矩，显然已经习惯了把新人送往不同宫院的流程。\n\n路过偏殿时，你听见门后传来压低的争吵声，字句里提到“选秀名单”和“有人动了手脚”。宫女猛地加快了脚步，仿佛害怕你听见更多。你隐约意识到，自己能否留在这座宫城里，早已不是单纯的运气问题。`,
+                text: `你压下心中所有的好奇，只是低头跟在领路宫女身后...`,
                 options: [
                     { text: '假装没听见，先稳住脚跟', nextScene: 'safeEnd' },
                     { text: '记下这些话，暗中查清真相', nextScene: 'plotBeginAi' }
@@ -756,14 +666,12 @@
             lookGuard: {
                 type: 'fixed',
                 bg: 'https://images.unsplash.com/photo-1558985303-38eab1f8e51c?auto=format&fit=crop&w=1200&q=80',
-                text:
-`你不顾宫规，还是回头看了一眼。那名侍卫半隐在宫灯照不到的阴影里，盔甲没有完全扣好，似乎刚刚才从某处急匆匆赶来。\n\n四目相对的一瞬，他明显愣了一下，随即很快低头行礼，仿佛从未与人对视。可你清楚地看到，他默默对你做了一个极轻微的手势——像是在提醒你，今晚不要独自离开人群。`,
+                text: `你不顾宫规，还是回头看了一眼...`,
                 options: [
                     { text: '记住这位侍卫，悄悄跟在队伍中间', nextScene: 'plotBeginAi' },
                     { text: '无视警告，趁人不注意时绕近宫墙', nextScene: 'dangerEnd' }
                 ]
             },
-            // 使用 AI 续写的场景示例
             plotBeginAi: {
                 type: 'ai',
                 bg: 'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1200&q=80',
@@ -775,8 +683,7 @@
             safeEnd: {
                 type: 'fixed',
                 bg: 'https://images.unsplash.com/photo-1578301978018-3005759f48f9?auto=format&fit=crop&w=1200&q=80',
-                text:
-`你选择把所有不安先压在心底，只求在这陌生的宫城安稳活下去。或许这是最安全的做法，但也是最容易被时代遗忘的路径。\n\n当寝宫的门在你身后关上，你忽然有种被世界隔绝的错觉。也许，真正决定命运的机会，已经悄悄从你指缝间溜走。`,
+                text: `你选择把所有不安先压在心底...`,
                 options: [
                     { text: '结束体验，返回主神空间', nextScene: null }
                 ]
@@ -784,25 +691,21 @@
             dangerEnd: {
                 type: 'fixed',
                 bg: 'https://images.unsplash.com/photo-1526498460520-4c246339dccb?auto=format&fit=crop&w=1200&q=80',
-                text:
-`你趁宫女回头点人数的空档，悄悄往宫墙阴影里退去。夜风比想象中更冷，墙角积雪未融，踩上去发出细碎的声响。\n\n还没等你看清前路，一只冰冷的手已经扣在你肩上——那是巡夜的禁军。他没有多问，只是低声提醒你：“今晚第一次犯规，只算你迷路。”你被重新带回队伍，却知道自己已经被这座宫城真正记住了。`,
+                text: `你趁宫女回头点人数的空档，悄悄往宫墙阴影里退去...`,
                 options: [
                     { text: '结束体验，返回主神空间', nextScene: null }
                 ]
             }
         };
 
-        // 当前生效剧本（可被自定义 JSON 覆盖）
         let activeStoryData = storyData;
 
-        // 初始化
         function init() {
             loadApiConfig();
             loadTheme();
-            loadCustomFont(); // 加载自定义字体
-            loadCustomStory(); // 这里会自动加载你上传的剧本
+            loadCustomFont(); 
+            loadCustomStory(); 
 
-            // 用户名自动回填 + 自动进入主界面
             const nameInput = document.getElementById('username');
             const savedName = localStorage.getItem(USERNAME_STORAGE);
             if (savedName) {
@@ -821,12 +724,9 @@
             initPersonas();
         }
 
-        // === 新增：字体美化逻辑 ===
         function applyCustomFont() {
             const url = document.getElementById('customFontUrl').value.trim();
             if(!url) return;
-            
-            // 简单处理：如果是CSS链接或文件链接
             if (url.endsWith('.css') || url.includes('fonts.googleapis.com')) {
                 const link = document.createElement('link');
                 link.rel = 'stylesheet';
@@ -840,7 +740,6 @@
                 `;
                 document.head.appendChild(style);
             }
-            
             localStorage.setItem(FONT_STORAGE, url);
             showToastMsg("✨ 字体已应用");
         }
@@ -850,7 +749,6 @@
             if(url) {
                 document.getElementById('customFontUrl').value = url;
                 const style = document.createElement('style');
-                // 这里做一个通用处理，默认如果是文件就用 UserCustomFont
                 if (url.endsWith('.css') || url.includes('fonts.googleapis.com')) {
                      const link = document.createElement('link');
                      link.rel = 'stylesheet';
@@ -866,24 +764,16 @@
             }
         }
 
-        // 切换视图逻辑
         function switchView(viewName) {
-            // 隐藏所有视图
             document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
-            
-            // 显示目标视图
             const target = document.getElementById('view-' + viewName);
             if (target) target.classList.add('active');
 
-            // 如果是打开相册，加载存档列表
             if (viewName === 'gallery') {
                 renderGallery();
             }
 
-            // 更新底部 Dock 激活状态
             document.querySelectorAll('.dock-item').forEach(el => el.classList.remove('active'));
-            
-            // 根据视图更新激活状态
             const dockItems = document.querySelectorAll('.dock-item');
             const viewMap = {
                 'hub': 0,
@@ -892,18 +782,15 @@
                 'persona': 3,
                 'settings': 4
             };
-            
             const index = viewMap[viewName];
             if (index !== undefined && dockItems[index]) {
                 dockItems[index].classList.add('active');
             }
         }
 
-        // 登录逻辑
         function enterHub() {
             const username = document.getElementById('username').value.trim();
             if (!username) {
-                // 简单的晃动动画
                 const card = document.querySelector('.login-card');
                 card.style.transform = 'translateX(10px)';
                 setTimeout(() => card.style.transform = 'translateX(0)', 100);
@@ -911,30 +798,21 @@
                 setTimeout(() => card.style.transform = 'translateX(0)', 300);
                 return;
             }
-            
             document.getElementById('displayName').textContent = username;
             localStorage.setItem(USERNAME_STORAGE, username);
-            
-            // 切换界面
             document.getElementById('loginPage').style.display = 'none';
             document.getElementById('mainHub').style.display = 'block';
-            
-            // 默认显示副本页
             switchView('hub');
         }
 
-        // 显示副本详情
         function showInstanceDetail() {
             switchView('detail');
         }
 
-        // ===== 游戏流程 =====
         function startGame(mode) {
-            // 如果是无尽模式或新开始，必须检查人设
             if (mode === 'start' || mode === 'endless') {
                 if (!currentPersonaId) {
-                    // 没有选人设，弹出选择框
-                    openPersonaModal(mode); // 把模式传过去，选完后自动开始
+                    openPersonaModal(mode); 
                     return;
                 }
             }
@@ -947,33 +825,29 @@
             if (dock) dock.style.display = 'none';
             if (game) game.style.display = 'block';
             
-            // 更新顶部显示的名字（如果有）
             updateGameDisplayName();
 
-            // 1. 如果是点击“继续游戏”
             if (mode === 'continue') {
                 const saveRaw = localStorage.getItem('infinite.save');
                 if (saveRaw) {
                     const save = JSON.parse(saveRaw);
-                    // 恢复记忆
                     activeStoryData.memory = save.memory || ''; 
                     loadScene(save.currentSceneId);
                     return;
                 } else {
-                    alert("没有找到存档，将开始新游戏");
+                    alert("没有找到自动存档，将开始新游戏");
                 }
             }
 
-            // 2. 如果是新游戏，清空记忆
-            activeStoryData.memory = "故事开端。"; // 初始化记忆
-            localStorage.removeItem('infinite.save'); // 清除旧档
+            if (mode !== 'continue') {
+                activeStoryData.memory = "故事开端。";
+                localStorage.removeItem('infinite.save');
+            }
 
-            // 尝试从 main_story 获取起始节点
             let firstScene = 'start';
             if (mode === 'endless' && activeStoryData['plotBeginAi']) {
                 firstScene = 'plotBeginAi';
             } else if (!activeStoryData[firstScene]) {
-                // 如果没有 'start'，尝试找第一个Key
                 const keys = Object.keys(activeStoryData);
                 if (keys.length > 0) firstScene = keys[0];
             }
@@ -989,12 +863,10 @@
             if (game) game.style.display = 'none';
             if (mainHub) mainHub.style.display = 'block';
             if (dock) dock.style.display = 'flex';
-
-            // 返回副本详情
             switchView('detail');
         }
 
-        // 修改：存档同时保存到历史记录
+        // === 修改：仅用于后台自动保存（继续游戏功能） ===
         function saveProgress(showToast = false) {
             if (!activeStoryData) return;
             const saveState = {
@@ -1002,52 +874,165 @@
                 memory: activeStoryData.memory || "",
                 timestamp: Date.now()
             };
-            
-            // 1. 保存当前进度（用于“继续游戏”）
             localStorage.setItem('infinite.save', JSON.stringify(saveState));
-
-            // 2. 保存到记忆回廊（用于展示列表）
-            const allSaves = JSON.parse(localStorage.getItem('infinite.all_saves') || '{}');
-            // 暂时使用固定 key 'dungeon_forbidden_city'，实际项目可以用动态 ID
-            allSaves['dungeon_forbidden_city'] = {
-                dungeonName: "紫禁城迷梦",
-                lastPlayed: new Date().toLocaleString(),
-                memory: activeStoryData.memory || "暂无记忆...",
-                sceneId: currentSceneId || 'start'
-            };
-            localStorage.setItem('infinite.all_saves', JSON.stringify(allSaves));
-
-            if (showToast) showToastMsg("💾 进度已保存至记忆回廊");
+            if (showToast) showToastMsg("💾 自动存档已更新");
         }
 
-        // 新增：渲染记忆回廊
+        // === 新增：AI剧情总结 ===
+        async function generateSummary(memoryText) {
+            const configRaw = localStorage.getItem('apiConfig');
+            if (!configRaw) return "（未配置API，无法生成总结）";
+            const config = JSON.parse(configRaw);
+            if (!config.key) return "（API Key为空，无法生成总结）";
+
+            const recentContext = memoryText.slice(-4000); // 截取以防超长
+
+            let baseUrl = config.url || 'https://api.openai.com/v1';
+            baseUrl = baseUrl.replace(/\/+$/, '');
+            if (baseUrl.endsWith('/chat/completions')) baseUrl = baseUrl.replace(/\/chat\/completions$/, '');
+            if (!baseUrl.endsWith('/v1')) baseUrl += '/v1';
+            const finalUrl = baseUrl + '/chat/completions';
+
+            const systemPrompt = `你是一个专业的剧情记录员。请根据提供的游戏剧情片段（最后约20轮对话），写一段剧情总结。
+            要求：
+            1. 使用第三人称。
+            2. 重点概括发生的关键事件、主角的选择以及当前的状态。
+            3. 字数控制在600字以内。
+            4. 语气要有代入感，像是一本小说的大纲。`;
+
+            try {
+                const res = await fetch(finalUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + config.key },
+                    body: JSON.stringify({
+                        model: config.model || 'gpt-3.5-turbo',
+                        messages: [
+                            { role: 'system', content: systemPrompt },
+                            { role: 'user', content: "剧情片段：\n" + recentContext }
+                        ],
+                        temperature: 0.7
+                    })
+                });
+
+                const data = await res.json();
+                return data.choices?.[0]?.message?.content || "（AI 总结生成失败）";
+            } catch (e) {
+                console.error(e);
+                return "（网络错误，总结生成失败）";
+            }
+        }
+
+        // === 新增：打开存档槽位窗口 ===
+        function openSaveSlotModal() {
+            const modal = document.getElementById('personaModal');
+            const header = modal.querySelector('.modal-header h3');
+            const list = document.getElementById('modalPersonaList');
+            const empty = document.getElementById('modalEmptyState');
+
+            header.textContent = "选择存档位置";
+            modal.style.display = 'flex';
+            empty.style.display = 'none';
+            list.style.display = 'grid';
+            list.innerHTML = '';
+
+            const dungeonKey = 'dungeon_forbidden_city';
+            const allSaves = JSON.parse(localStorage.getItem('infinite.all_saves') || '{}');
+            const dungeonSaves = Array.isArray(allSaves[dungeonKey]) ? allSaves[dungeonKey] : [null, null, null];
+
+            for (let i = 0; i < 3; i++) {
+                const save = dungeonSaves[i];
+                const slotNum = i + 1;
+                const el = document.createElement('div');
+                el.className = 'persona-select-item';
+                el.onclick = () => performSave(i);
+
+                const statusText = save ? `${save.lastPlayed}` : "空存档位";
+                const summaryText = save ? (save.summary ? save.summary.substring(0, 20) + "..." : "暂无总结") : "点击存档";
+
+                el.innerHTML = `
+                    <div style="width:40px;height:40px;background:rgba(255,255,255,0.1);border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:bold;">${slotNum}</div>
+                    <div style="flex:1;">
+                        <div style="font-weight:bold; font-size:14px; color:var(--text-main);">存档 ${slotNum}</div>
+                        <div style="font-size:12px; color:var(--text-muted);">${statusText}</div>
+                        <div style="font-size:12px; color:var(--primary); margin-top:2px;">${summaryText}</div>
+                    </div>
+                    <div style="font-size:12px; padding:4px 8px; background:var(--primary); border-radius:4px;">覆盖</div>
+                `;
+                list.appendChild(el);
+            }
+        }
+
+        // === 新增：执行保存逻辑 ===
+        async function performSave(slotIndex) {
+            document.getElementById('personaModal').style.display = 'none';
+            showToastMsg("⏳ 正在生成剧情总结并存档...");
+
+            const memory = activeStoryData.memory || "";
+            const summary = await generateSummary(memory);
+
+            const saveObj = {
+                dungeonName: "紫禁城迷梦",
+                lastPlayed: new Date().toLocaleString(),
+                memory: memory,
+                summary: summary,
+                sceneId: currentSceneId || 'start',
+                slotIndex: slotIndex
+            };
+
+            const dungeonKey = 'dungeon_forbidden_city';
+            let allSaves = JSON.parse(localStorage.getItem('infinite.all_saves') || '{}');
+            if (!Array.isArray(allSaves[dungeonKey])) {
+                allSaves[dungeonKey] = [null, null, null];
+            }
+            
+            allSaves[dungeonKey][slotIndex] = saveObj;
+            localStorage.setItem('infinite.all_saves', JSON.stringify(allSaves));
+            
+            // 同时更新自动存档，以便"继续游戏"能用
+            localStorage.setItem('infinite.save', JSON.stringify(saveObj));
+
+            showToastMsg("✅ 存档成功！记忆已更新");
+        }
+
+        // === 修改：记忆回廊渲染 ===
         function renderGallery() {
             const container = document.getElementById('storyLog'); 
             if (!container) return;
 
+            const dungeonKey = 'dungeon_forbidden_city';
             const allSaves = JSON.parse(localStorage.getItem('infinite.all_saves') || '{}');
-            const keys = Object.keys(allSaves);
+            const dungeonSaves = Array.isArray(allSaves[dungeonKey]) ? allSaves[dungeonKey] : [null, null, null];
 
-            if (keys.length === 0) {
-                container.innerHTML = '<div style="text-align:center; color:var(--text-muted); padding:20px;">暂无探索记录</div>';
+            if (dungeonSaves.every(s => s === null)) {
+                container.innerHTML = '<div style="text-align:center; color:var(--text-muted); padding:20px;">暂无探索记录，请在游戏中点击存档。</div>';
                 return;
             }
 
             let html = '';
-            keys.forEach(key => {
-                const save = allSaves[key];
+            dungeonSaves.forEach((save, index) => {
+                if (!save) return;
+
                 html += `
-                    <div style="background:var(--glass-surface); border-radius:12px; padding:16px; margin-bottom:12px; border-left:4px solid var(--primary); box-shadow:var(--shadow-card);">
-                        <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
-                            <span style="font-weight:bold; font-size:16px; color:var(--text-main);">${save.dungeonName || '未知副本'}</span>
+                    <div style="background:var(--glass-surface); border-radius:12px; padding:20px; margin-bottom:16px; border-left:4px solid var(--primary); box-shadow:var(--shadow-card); position:relative;">
+                        <div style="display:flex; justify-content:space-between; margin-bottom:12px; align-items:center;">
+                            <div style="display:flex; align-items:center; gap:10px;">
+                                <span style="background:rgba(255,255,255,0.1); padding:2px 8px; border-radius:6px; font-size:12px;">存档 0${index + 1}</span>
+                                <span style="font-weight:bold; font-size:18px; color:var(--text-main);">${save.dungeonName}</span>
+                            </div>
                             <span style="font-size:12px; color:var(--text-muted);">${save.lastPlayed}</span>
                         </div>
-                        <div style="font-size:13px; color:var(--text-main); line-height:1.6; margin-bottom:12px; max-height:80px; overflow:hidden; text-overflow:ellipsis;">
-                            ${save.memory.slice(-100)}...
+                        
+                        <div style="background:rgba(0,0,0,0.2); padding:12px; border-radius:8px; margin-bottom:16px;">
+                            <div style="font-size:12px; color:var(--primary); margin-bottom:4px; font-weight:bold;">剧情梗概：</div>
+                            <div style="font-size:14px; color:var(--text-muted); line-height:1.6; text-align:justify;">
+                                ${save.summary || "（暂无总结数据）"}
+                            </div>
                         </div>
+
                         <div style="text-align:right;">
-                            <button class="btn-glow" style="padding:6px 16px; font-size:12px; width:auto;" onclick="loadGameFromGallery('${key}')">
-                                ⚡ 继续探索
+                            <button class="btn-glow" style="padding:8px 20px; font-size:13px; width:auto; display:inline-flex;" onclick="loadGameFromSlot(${index})">
+                                <svg class="icon" style="margin-right:4px;" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                                继续探索
                             </button>
                         </div>
                     </div>
@@ -1056,22 +1041,41 @@
             
             container.className = ''; 
             container.style.height = 'auto';
-            container.style.maxHeight = '60vh';
+            container.style.maxHeight = '70vh';
             container.style.overflowY = 'auto';
             container.innerHTML = html;
         }
 
-        // 新增：从回廊加载
+        // === 新增：从槽位加载 ===
+        function loadGameFromSlot(slotIndex) {
+            const dungeonKey = 'dungeon_forbidden_city';
+            const allSaves = JSON.parse(localStorage.getItem('infinite.all_saves') || '{}');
+            const saves = allSaves[dungeonKey];
+            
+            if (saves && saves[slotIndex]) {
+                const save = saves[slotIndex];
+                activeStoryData.memory = save.memory;
+                loadScene(save.sceneId);
+                localStorage.setItem('infinite.save', JSON.stringify(save));
+
+                document.getElementById('mainHub').style.display = 'none';
+                document.querySelector('.dock-nav').style.display = 'none';
+                document.getElementById('gameContainer').style.display = 'block';
+                
+                showToastMsg(`📖 读取存档 0${slotIndex + 1} 成功`);
+            } else {
+                alert("存档数据丢失");
+            }
+        }
+
+        // 新增：从回廊加载 (保留兼容性，虽然可能不再直接用)
         function loadGameFromGallery(saveKey) {
+            // 这个函数保留是为了兼容旧代码调用，实际现在用 loadGameFromSlot
             const allSaves = JSON.parse(localStorage.getItem('infinite.all_saves') || '{}');
             const save = allSaves[saveKey];
             if (save) {
-                // 恢复内存状态
                 activeStoryData.memory = save.memory;
-                // 跳转并开始
                 loadScene(save.sceneId);
-                
-                // 界面切换
                 document.getElementById('mainHub').style.display = 'none';
                 document.querySelector('.dock-nav').style.display = 'none';
                 document.getElementById('gameContainer').style.display = 'block';
@@ -1079,15 +1083,13 @@
         }
 
         async function loadScene(sceneId) {
-            // 更新全局进度并自动存档
             currentSceneId = sceneId;
-            saveProgress(false); // 自动存档不弹提示
+            saveProgress(false); // 自动存档(仅后台)
 
             let scene = activeStoryData[sceneId];
             const bgEl = document.getElementById('gameBg');
             const optionsEl = document.getElementById('gameOptions');
 
-            // 容错：如果是 AI 生成的临时后续 ID，但本地没有数据，我们需要在这里构造一个临时的 AI 请求
             if (!scene && sceneId.startsWith('ai_')) {
                 scene = {
                     type: 'ai',
@@ -1108,10 +1110,8 @@
 
             if (optionsEl) optionsEl.innerHTML = '';
 
-            // fixed 文本：直接打字机
             if (!scene.type || scene.type === 'fixed') {
                 typeWriter(scene.text || '');
-                // 渲染固定选项
                 if (scene.options && scene.options.length) {
                     scene.options.forEach(opt => {
                         const btn = document.createElement('button');
@@ -1130,7 +1130,6 @@
                 return;
             }
 
-            // ai 文本：先显示 loading，再请求 OpenAI
             if (scene.type === 'ai') {
                 const textEl = document.getElementById('gameText');
                 if (textEl) {
@@ -1139,10 +1138,8 @@
 
                 const generated = await generateAiSceneText(sceneId, scene);
                 
-                // 如果生成失败，generated 会是错误信息的字符串
                 if (typeof generated === 'string' && generated.startsWith('❌')) {
-                    typeWriter(generated); // 显示错误信息
-                    // 给个重试按钮
+                    typeWriter(generated); 
                     const btn = document.createElement('button');
                     btn.className = 'game-option-btn';
                     btn.textContent = '重试';
@@ -1152,10 +1149,8 @@
                 }
 
                 const finalText = generated.text || (typeof generated === 'string' ? generated : 'AI 生成了空内容');
-
                 typeWriter(finalText);
 
-                // 如果 AI 返回了新的选项，替换当前 options
                 if (generated.options && Array.isArray(generated.options) && generated.options.length) {
                     optionsEl.innerHTML = '';
                     generated.options.forEach(opt => {
@@ -1163,15 +1158,12 @@
                         btn.className = 'game-option-btn';
                         btn.textContent = opt.text;
                         btn.onclick = () => {
-                            // 这里 AI 生成的 nextScene 可能是 null 或者一个新的 ID
-                            // 如果是 null，我们假设它是一个新的 AI 节点
                             let nextId = opt.nextScene;
                             if (!nextId || nextId === 'null') {
                                 nextId = 'ai_next_' + Date.now();
-                                // 临时存入 activeStoryData 以便 loadScene 能找到上下文（这里简化处理，只传 prompt）
                                 activeStoryData[nextId] = {
                                     type: 'ai',
-                                    bg: scene.bg, // 沿用背景
+                                    bg: scene.bg, 
                                     prompt: `用户选择了：${opt.text}。请根据这个选择继续剧情。`
                                 };
                             }
@@ -1180,7 +1172,6 @@
                         optionsEl.appendChild(btn);
                     });
                 } else {
-                    // AI 没返回选项，给默认
                     const btn = document.createElement('button');
                     btn.className = 'game-option-btn';
                     btn.textContent = '继续';
@@ -1224,7 +1215,6 @@
             textEl.textContent = typingText;
         }
         
-        // API 配置保存
         function saveApiConfig() {
             const apiName = document.getElementById('apiName').value.trim();
             const apiUrl = document.getElementById('apiUrl').value.trim();
@@ -1245,7 +1235,6 @@
             
             localStorage.setItem('apiConfig', JSON.stringify(config));
             
-            // 保存成功反馈
             const btn = event.target;
             const originalText = btn.innerHTML;
             btn.innerHTML = '✅ 配置已保存';
@@ -1256,7 +1245,6 @@
             }, 2000);
         }
 
-        // 加载 API 配置
         function loadApiConfig() {
             const savedConfig = localStorage.getItem('apiConfig');
             if (savedConfig) {
@@ -1266,10 +1254,8 @@
                     document.getElementById('apiUrl').value = config.url || '';
                     document.getElementById('settingsApiKey').value = config.key || '';
                     
-                    // 如果有保存的模型，添加到下拉框
                     if (config.model) {
                         const modelSelect = document.getElementById('apiModel');
-                        // 如果列表里没有这个选项，动态加一个
                         if (!Array.from(modelSelect.options).some(opt => opt.value === config.model)) {
                              const option = document.createElement('option');
                              option.value = config.model;
@@ -1283,7 +1269,7 @@
                 }
             }
         }
-        // 测试 API 连接并获取模型列表
+
         async function testApiConnection() {
             const apiUrl = document.getElementById('apiUrl').value.trim();
             const apiKey = document.getElementById('settingsApiKey').value.trim();
@@ -1298,8 +1284,6 @@
             showApiTestResult('🔄 正在测试连接...', 'loading');
 
             try {
-                // 尝试获取模型列表
-                // 兼容：有些代理需要 /v1/models，有些是 /models
                 let modelsUrl = apiUrl.replace(/\/$/, '');
                 if (modelsUrl.endsWith('/v1')) modelsUrl = modelsUrl.replace(/\/v1$/, '');
                 if (modelsUrl.endsWith('/chat/completions')) modelsUrl = modelsUrl.replace(/\/chat\/completions$/, '');
@@ -1323,11 +1307,9 @@
                 const data = await res.json();
                 
                 if (data.data && Array.isArray(data.data)) {
-                    // 成功获取模型列表
                     const models = data.data;
                     showApiTestResult(` 连接成功！找到 ${models.length} 个可用模型`, 'success');
                     
-                    // 填充模型下拉框
                     modelSelect.innerHTML = '<option value="">-- 请选择模型 --</option>';
                     models.forEach(model => {
                         const option = document.createElement('option');
@@ -1336,7 +1318,6 @@
                         modelSelect.appendChild(option);
                     });
 
-                    // 如果之前保存过模型，自动选中
                     const savedConfig = localStorage.getItem('apiConfig');
                     if (savedConfig) {
                         try {
@@ -1371,12 +1352,9 @@
             resultDiv.style.display = 'block';
         }
 
-        // 主题切换（v20 版本的主题系统）
         function changeTheme(theme) {
             document.body.setAttribute('data-theme', theme);
             localStorage.setItem('theme', theme);
-            
-            // 更新主题按钮状态
             document.querySelectorAll('.theme-btn').forEach(btn => {
                 btn.classList.remove('active');
                 if (btn.getAttribute('data-theme') === theme) {
@@ -1385,13 +1363,11 @@
             });
         }
 
-        // 加载主题
         function loadTheme() {
             const savedTheme = localStorage.getItem('theme') || 'purple';
             changeTheme(savedTheme);
         }
 
-        // ===== 个人设定：本地多档位 + 头像上传 =====
         function loadPersonas() {
             try {
                 const raw = localStorage.getItem(PERSONA_STORAGE);
@@ -1409,8 +1385,6 @@
 
         function initPersonas() {
             renderPersonaStrip();
-            
-            // 游戏文本区域点击：正在打字时跳过动画
             const box = document.getElementById('gameTextBox');
             if (box) {
                 box.addEventListener('click', () => {
@@ -1421,9 +1395,6 @@
             }
         }
         
-        // ==========================================
-        //  修复版：身份栏渲染 (支持高亮 + 新建按钮)
-        // ==========================================
         function renderPersonaStrip() {
             const strip = document.getElementById('persona-strip');
             if (!strip) return;
@@ -1431,11 +1402,9 @@
             strip.className = 'persona-strip-container'; 
             strip.innerHTML = '';
 
-            // 1. 【固定添加】第一个圈圈：“+ 新身份”
             const newBtn = document.createElement('div');
             newBtn.className = 'story-ring';
             newBtn.onclick = () => resetPersonaForm(); 
-            // 如果是新建模式 (currentPersonaId 为 null)，给个高亮
             const newActive = currentPersonaId === null ? 'border: 2px solid var(--primary);' : '';
 
             newBtn.innerHTML = `
@@ -1448,7 +1417,6 @@
             `;
             strip.appendChild(newBtn);
 
-            // 2. 【渲染列表】读取保存的身份
             const list = loadPersonas();
             list.forEach((p) => {
                 const item = document.createElement('div');
@@ -1459,7 +1427,6 @@
                     ? `<img src="${p.avatar}">` 
                     : `<span style="font-size:20px">👤</span>`;
 
-                // 选中高亮逻辑
                 const isSelected = (currentPersonaId === p.id);
                 const activeStyle = isSelected ? 'border: 2px solid var(--primary); transform: scale(1.1); transition: all 0.2s;' : '';
 
@@ -1475,14 +1442,10 @@
             });
         }
 
-        // ==========================================
-        //  修复版：保存逻辑 (含异常处理 + 更新旧档)
-        // ==========================================
         function savePersona() {
             const name = document.getElementById('persona-name').value.trim();
             const desc = document.getElementById('persona-desc').value.trim();
             const imgEl = document.getElementById('persona-avatar-preview');
-            // 只有显示的图片才算有效
             const avatar = (imgEl.style.display !== 'none' && imgEl.src) ? imgEl.src : '';
             
             if (!name) {
@@ -1494,26 +1457,23 @@
 
             try {
                 if (currentPersonaId) {
-                    // --- 情况A：修改已有身份 ---
                     const index = list.findIndex(p => p.id === currentPersonaId);
                     if (index !== -1) {
                         list[index] = { ...list[index], name, desc, avatar };
                         showToastMsg("💾 身份信息已更新");
                     }
                 } else {
-                    // --- 情况B：创建新身份 ---
                     const newId = Date.now();
                     const newP = { id: newId, name, desc, avatar };
                     list.push(newP);
-                    currentPersonaId = newId; // 保存后自动选中它
+                    currentPersonaId = newId; 
                     showToastMsg("✨ 新身份已创建");
                 }
 
                 savePersonas(list);
-                renderPersonaStrip(); // 刷新顶部栏状态
+                renderPersonaStrip(); 
 
             } catch (e) {
-                // 捕获存储满的错误
                 if (e.name === 'QuotaExceededError') {
                     alert(" 保存失败：图片太大了！\n浏览器存不下了，请换张小图或者不传头像。");
                 } else {
@@ -1523,7 +1483,6 @@
             }
         }
 
-        // 切换到：新建模式
         function resetPersonaForm() {
             document.getElementById('persona-name').value = '';
             document.getElementById('persona-desc').value = '';
@@ -1531,13 +1490,12 @@
             document.getElementById('persona-avatar-preview').src = '';
             document.getElementById('persona-placeholder').style.display = 'block';
             
-            currentPersonaId = null; // null 代表新建
+            currentPersonaId = null; 
             
             showToastMsg(" 切换至新建模式");
             renderPersonaStrip();
         }
 
-        // 切换到：查看模式
         function loadPersonaDetail(p) {
             document.getElementById('persona-name').value = p.name || '';
             document.getElementById('persona-desc').value = p.desc || '';
@@ -1552,18 +1510,13 @@
                 document.getElementById('persona-avatar-preview').style.display = 'none';
                 document.getElementById('persona-placeholder').style.display = 'block';
             }
-            
-            renderPersonaStrip(); // 刷新高亮
+            renderPersonaStrip(); 
         }
         
-        // ==========================================
-        //  修复版：图片压缩 (防止存不下)
-        // ==========================================
         function onAvatarFileChange(e) {
              const file = e.target.files[0];
              if(!file) return;
 
-             // 提示一下大文件
              if (file.size > 2 * 1024 * 1024) {
                  showToastMsg(" 图片较大，正在压缩...");
              }
@@ -1573,11 +1526,9 @@
                  const img = new Image();
                  img.src = evt.target.result;
                  img.onload = function() {
-                     // 创建 Canvas 压缩图片
                      const canvas = document.createElement('canvas');
                      const ctx = canvas.getContext('2d');
                      
-                     // 限制最大宽高为 300px (头像够用了)
                      const MAX_SIZE = 300;
                      let width = img.width;
                      let height = img.height;
@@ -1598,7 +1549,6 @@
                      canvas.height = height;
                      ctx.drawImage(img, 0, 0, width, height);
                      
-                     // 压缩为 JPEG，质量 0.7
                      const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.7);
                      
                      const previewEl = document.getElementById('persona-avatar-preview');
@@ -1616,12 +1566,10 @@
                  const container = document.getElementById('storyLog');
                  if(container) container.innerHTML = '<div style="text-align:center; color:#666; padding:20px;">暂无探索记录</div>';
                  
-                 // 清空历史存档
                  localStorage.removeItem('infinite.all_saves');
              }
         }
 
-        // ===== 剧本管理 =====
         function loadCustomStory() {
             const raw = localStorage.getItem(STORY_STORAGE);
             if (!raw) return;
@@ -1668,33 +1616,26 @@
             alert('已恢复默认剧本');
         }
 
-        // ===== AI 生成函数 (含记忆 + 存档 + 人设联动) =====
         async function generateAiSceneText(sceneId, scene) {
-            // 1. 读取配置
             const configRaw = localStorage.getItem('apiConfig');
             if (!configRaw) return ' 未配置 API';
             const config = JSON.parse(configRaw);
             if (!config.key) return ' API Key 为空';
 
-            // URL 修正逻辑
             let baseUrl = config.url || 'https://api.openai.com/v1';
             baseUrl = baseUrl.replace(/\/+$/, '');
             if (baseUrl.endsWith('/chat/completions')) baseUrl = baseUrl.replace(/\/chat\/completions$/, '');
             if (!baseUrl.endsWith('/v1')) baseUrl += '/v1';
             const finalUrl = baseUrl + '/chat/completions';
 
-            // 2. 【新增】获取当前选中的人设信息
             const allPersonas = loadPersonas();
-            // 查找当前高亮的 ID，如果没选，就默认叫“玩家”
             const myPersona = allPersonas.find(p => p.id === currentPersonaId) || { 
                 name: "玩家", 
                 desc: "一个误入此地的普通人，性格未定，试图活下去。" 
             };
 
-            // 3. 构造带记忆 + 人设的 Prompt
             const memory = activeStoryData.memory || "";
             
-            // 核心修改：把人设塞进 systemInstruction
             const systemInstruction = `
 你是一个无限流文字游戏的 AI 导演。
 
@@ -1765,16 +1706,15 @@ ${memory}
             }
         }
 
-        // ==========================================
-        //  新逻辑：人设联动与弹窗检查
-        // ==========================================
-
-        // 打开选择弹窗
-        let pendingGameMode = null; // 暂存用户想玩什么模式
+        let pendingGameMode = null; 
 
         function openPersonaModal(mode = null) {
             pendingGameMode = mode;
             const modal = document.getElementById('personaModal');
+            // 确保弹窗标题是“选择身份”
+            const header = modal.querySelector('.modal-header h3');
+            if (header) header.textContent = "选择你的身份";
+
             const listContainer = document.getElementById('modalPersonaList');
             const emptyState = document.getElementById('modalEmptyState');
             
@@ -1819,39 +1759,29 @@ ${memory}
 
         function goToPersonaCreate() {
             closePersonaModal();
-            switchView('persona'); // 跳转到设定页
-            resetPersonaForm();    // 自动切到新建模式
+            switchView('persona'); 
+            resetPersonaForm();    
         }
 
-        // 选中人设后的逻辑
         function selectPersonaAndStart(p) {
             currentPersonaId = p.id;
-            
-            // 更新界面上的小标签
             const label = document.getElementById('currentPersonaLabel');
             if(label) label.textContent = p.name;
-            
             showToastMsg(` 已切换身份：${p.name}`);
             closePersonaModal();
             
-            // 如果之前是因为点击了“开始游戏”才弹窗的，现在自动继续
             if (pendingGameMode) {
                 startGame(pendingGameMode);
             }
         }
         
-        // 辅助：更新游戏内名字显示
         function updateGameDisplayName() {
             if (!currentPersonaId) return;
             const list = loadPersonas();
             const p = list.find(item => item.id === currentPersonaId);
-            if (p) {
-                // 这里假设游戏界面某个地方显示名字，或者仅仅是Toast提示
-                // document.getElementById('gamePlayerName').textContent = p.name; 
-            }
+            if (p) {}
         }
 
-        // 通用辅助函数
         function triggerAvatarUpload() { document.getElementById('persona-avatar-input').click(); }
         
         function showToastMsg(msg) {
@@ -1868,9 +1798,6 @@ ${memory}
             }, 2000);
         }
 
-        // ==========================================
-        //  新增功能：自定义 CSS 逻辑
-        // ==========================================
         const CUSTOM_CSS_STORAGE = 'infinite.custom_css';
 
         function applyCustomCss() {
@@ -1884,7 +1811,7 @@ ${memory}
             if(confirm("确定要清空自定义样式吗？")) {
                 document.getElementById('customCssInput').value = '';
                 localStorage.removeItem(CUSTOM_CSS_STORAGE);
-                injectCustomStyle(''); // 移除样式
+                injectCustomStyle(''); 
                 showToastMsg("🗑️ 样式已重置");
             }
         }
@@ -1902,18 +1829,13 @@ ${memory}
         function loadCustomCss() {
             const savedCss = localStorage.getItem(CUSTOM_CSS_STORAGE);
             if (savedCss) {
-                // 填充输入框
                 const input = document.getElementById('customCssInput');
                 if (input) input.value = savedCss;
-                // 应用样式
                 injectCustomStyle(savedCss);
             }
         }
 
-        // 立即执行加载（不修改 init 函数，直接在脚本末尾调用即可生效）
         loadCustomCss();
-        
-        // 启动
         window.onload = init;
     </script>
 </body>

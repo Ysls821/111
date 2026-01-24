@@ -1049,50 +1049,69 @@
             if (showToast) showToastMsg("💾 自动存档已更新");
         }
 
-        // 新增：渲染记忆回廊
+        // 修复版：记忆回廊渲染 (带折叠/展开功能)
         function renderGallery() {
             const container = document.getElementById('storyLog'); 
             if (!container) return;
 
-            const dungeonKey = 'dungeon_forbidden_city'; // 默认key
             const allSaves = JSON.parse(localStorage.getItem('infinite.all_saves') || '{}');
-            const dungeonSaves = Array.isArray(allSaves[dungeonKey]) ? allSaves[dungeonKey] : [null, null, null];
+            const keys = Object.keys(allSaves);
 
-            if (dungeonSaves.every(s => s === null)) {
-                container.innerHTML = '<div style="text-align:center; color:var(--text-muted); padding:20px;">暂无探索记录，请在游戏中点击存档。</div>';
+            if (keys.length === 0) {
+                container.innerHTML = '<div style="text-align:center; color:var(--text-muted); padding:20px;">暂无探索记录</div>';
                 return;
             }
 
             let html = '';
-            dungeonSaves.forEach((save, index) => {
-                if (!save) return;
-
+            // 反转数组，让最新的记录显示在最上面
+            keys.reverse().forEach((key, index) => {
+                const save = allSaves[key];
+                // 生成唯一的 ID，用于折叠控制
+                const detailId = `log-detail-${index}`;
+                
                 html += `
-                    <div style="background:var(--glass-surface); border-radius:12px; padding:20px; margin-bottom:16px; border-left:4px solid var(--primary); box-shadow:var(--shadow-card); position:relative;">
-                        <div style="display:flex; justify-content:space-between; margin-bottom:12px; align-items:center;">
-                            <div style="display:flex; align-items:center; gap:10px;">
-                                <span style="background:rgba(255,255,255,0.1); padding:2px 8px; border-radius:6px; font-size:12px;">存档 0${index + 1}</span>
-                                <span style="font-weight:bold; font-size:18px; color:var(--text-main);">${save.dungeonName || '未知副本'}</span>
+                    <div style="background:var(--glass-surface); border-radius:12px; padding:16px; margin-bottom:12px; border-left:4px solid var(--primary); box-shadow:var(--shadow-card);">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+                            <div>
+                                <span style="font-weight:bold; font-size:16px; color:var(--text-main); display:block;">${save.dungeonName || '未知副本'}</span>
+                                <span style="font-size:12px; color:var(--text-muted);">${save.lastPlayed}</span>
                             </div>
-                            <span style="font-size:12px; color:var(--text-muted);">${save.lastPlayed}</span>
-                        </div>
-                        
-                        <div style="background:rgba(0,0,0,0.2); padding:12px; border-radius:8px; margin-bottom:16px;">
-                            <div style="font-size:12px; color:var(--primary); margin-bottom:4px; font-weight:bold;">剧情梗概：</div>
-                            <div style="font-size:14px; color:var(--text-muted); line-height:1.6; text-align:justify;">
-                                ${save.summary || "（暂无总结数据）"}
-                            </div>
+                            <button class="btn-glow" style="padding:4px 10px; font-size:12px; height:auto; width:auto; border-radius:8px;" onclick="toggleLogDetail('${detailId}')">
+                                📜 展开/收起
+                            </button>
                         </div>
 
-                        <div style="text-align:right;">
-                            <button class="btn-glow" style="padding:8px 20px; font-size:13px; width:auto; display:inline-flex;" onclick="loadGameFromSlot(${index})">
-                                <svg class="icon" style="margin-right:4px;" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-                                继续探索
-                            </button>
+                        <div id="${detailId}" style="display:none; margin-top:12px; padding-top:12px; border-top:1px solid rgba(255,255,255,0.1);">
+                            <div style="font-size:13px; color:var(--text-main); line-height:1.8; white-space: pre-wrap;">${save.memory}</div>
+                            
+                            <div style="text-align:right; margin-top:12px;">
+                                <button class="btn-glow" style="padding:6px 16px; font-size:12px; width:auto;" onclick="loadGameFromGallery('${key}')">
+                                    ⚡ 读取存档并继续
+                                </button>
+                            </div>
                         </div>
                     </div>
                 `;
             });
+            
+            container.className = ''; 
+            container.style.height = 'auto';
+            container.style.maxHeight = '65vh'; // 增加高度限制，内部滚动
+            container.style.overflowY = 'auto';
+            container.innerHTML = html;
+        }
+
+        // 新增：折叠切换辅助函数
+        function toggleLogDetail(id) {
+            const el = document.getElementById(id);
+            if (el) {
+                if (el.style.display === 'none') {
+                    el.style.display = 'block';
+                } else {
+                    el.style.display = 'none';
+                }
+            }
+        }
             
             container.className = ''; 
             container.style.height = 'auto';
@@ -1130,25 +1149,108 @@
             }
         }
 
+        // 修复版 loadScene：增强跳转逻辑，防止卡死
         async function loadScene(sceneId) {
-            // 更新全局进度并自动存档
+            // 1. 更新当前进度并存档
             currentSceneId = sceneId;
-            saveProgress(false); // 自动存档不弹提示
+            saveProgress(false); 
 
-            // 总是从 currentDungeon.scripts 读取
-            const activeScripts = currentDungeon.scripts;
-            let scene = activeScripts[sceneId];
+            // 2. 尝试获取场景数据
+            let scene = activeStoryData[sceneId];
+
+            // 容错：如果是 AI 生成的临时后续 ID，但本地没有数据，构造临时请求
+            if (!scene && sceneId.startsWith('ai_')) {
+                scene = { type: 'ai', prompt: `（接续剧情）请继续刚才的故事。场景ID: ${sceneId}。`, bg: '' };
+            }
+
+            // 3. 如果完全找不到场景，提示错误
+            if (!scene) {
+                alert('⚠️ 剧本中断：找不到场景 ID [' + sceneId + ']\n请检查剧本文件是否完整。');
+                // 尝试返回 start 防止死循环
+                if(sceneId !== 'start') loadScene('start');
+                return;
+            }
+
+            // 4. 更新背景和清空选项区
             const bgEl = document.getElementById('gameBg');
             const optionsEl = document.getElementById('gameOptions');
+            const textEl = document.getElementById('gameText');
 
-            // 容错：如果是 AI 生成的临时后续 ID，但本地没有数据，我们需要在这里构造一个临时的 AI 请求
-            if (!scene && sceneId.startsWith('ai_')) {
-                scene = {
-                    type: 'ai',
-                    prompt: `（接续剧情）请继续刚才的故事。场景ID: ${sceneId}。`,
-                    bg: ''
-                };
+            if (bgEl && scene.bg) bgEl.style.backgroundImage = `url(${scene.bg})`;
+            if (optionsEl) optionsEl.innerHTML = '';
+
+            // === 分支 A：固定剧本 (Fixed) ===
+            if (!scene.type || scene.type === 'fixed') {
+                typeWriter(scene.text || '');
+                
+                // 渲染固定选项
+                if (scene.options && scene.options.length > 0) {
+                    scene.options.forEach(opt => {
+                        const btn = document.createElement('button');
+                        btn.className = 'game-option-btn';
+                        btn.textContent = opt.text || opt.label || '继续'; // 兼容不同字段名
+                        
+                        // 核心修复：明确的跳转逻辑
+                        btn.onclick = () => {
+                            // 如果 nextScene 存在且不为空，且不是 END，就跳转
+                            if (opt.nextScene && opt.nextScene !== "" && opt.nextScene !== "END") {
+                                loadScene(opt.nextScene);
+                            } else {
+                                // 否则认为是结束或退出
+                                exitGame();
+                            }
+                        };
+                        optionsEl.appendChild(btn);
+                    });
+                } else {
+                    // 如果没有选项，给一个默认的“结束”按钮，防止卡死
+                    const btn = document.createElement('button');
+                    btn.className = 'game-option-btn';
+                    btn.textContent = '【剧本结束】';
+                    btn.onclick = exitGame;
+                    optionsEl.appendChild(btn);
+                }
+            } 
+            // === 分支 B：AI 生成 (AI) ===
+            else if (scene.type === 'ai') {
+                textEl.innerHTML = '<span style="opacity:0.7">⚡ 正在连接神经元...</span>';
+                
+                const generated = await generateAiSceneText(sceneId, scene);
+                const finalText = generated.text || (typeof generated === 'string' ? generated : 'AI 生成了空内容');
+                
+                typeWriter(finalText);
+
+                if (generated.options && generated.options.length) {
+                    generated.options.forEach(opt => {
+                        const btn = document.createElement('button');
+                        btn.className = 'game-option-btn';
+                        btn.textContent = opt.text;
+                        btn.onclick = () => {
+                            let nextId = opt.nextScene;
+                            // 如果 AI 没返回 ID，或者 ID 是 null，生成一个新的时间戳 ID
+                            if (!nextId || nextId === 'null' || nextId === 'next') {
+                                nextId = 'ai_next_' + Date.now();
+                                // 临时存入 activeStoryData 以便上下文连贯
+                                activeStoryData[nextId] = { 
+                                    type: 'ai', 
+                                    bg: scene.bg, 
+                                    prompt: `用户选择了：${opt.text}。请继续剧情。` 
+                                };
+                            }
+                            loadScene(nextId);
+                        };
+                        optionsEl.appendChild(btn);
+                    });
+                } else {
+                    // 默认继续按钮
+                    const btn = document.createElement('button');
+                    btn.className = 'game-option-btn';
+                    btn.textContent = '继续';
+                    btn.onclick = () => loadScene('ai_next_' + Date.now());
+                    optionsEl.appendChild(btn);
+                }
             }
+        }
 
             if (!scene) {
                 alert('剧本结束或场景丢失：' + sceneId);

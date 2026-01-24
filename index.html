@@ -6,32 +6,44 @@
     <title>Utopia note·乌托邦手记</title>
     <style>
         :root {
+            /* === 你的原始配色系统 (保持不变) === */
             --primary: #d946ef;
             --secondary: #8b5cf6;
             --accent: #06b6d4;
             --bg-deep: #0f0720;
             --gradient-holo: linear-gradient(135deg, rgba(217,70,239,0.8), rgba(139,92,246,0.8), rgba(6,182,212,0.8));
+            --gradient-glass: linear-gradient(145deg, rgba(255,255,255,0.1), rgba(255,255,255,0.05));
+            --gradient-border: linear-gradient(90deg, #d946ef, #8b5cf6, #06b6d4);
             --glass-surface: rgba(20, 10, 35, 0.4);
             --glass-border: rgba(255, 255, 255, 0.1);
             --text-main: #ffffff;
             --text-muted: rgba(255, 255, 255, 0.7);
+            --shadow-glow: 0 0 20px rgba(139, 92, 246, 0.3);
             --shadow-card: 0 8px 32px rgba(0, 0, 0, 0.3);
             --font-main: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Microsoft YaHei', sans-serif;
         }
 
+        /* === 新增主题：纸间黛蓝 (Reader) === */
         [data-theme="reader"] {
-            --primary: #546e7a;
-            --secondary: #78909c;
-            --accent: #b0bec5;
-            --bg-deep: #fdfbf7;
+            --primary: #546e7a;       /* 黛蓝 */
+            --secondary: #78909c;     /* 灰蓝 */
+            --accent: #b0bec5;        /* 浅灰 */
+            --bg-deep: #fdfbf7;       /* 纸张米白 */
+            
+            /* 纸张纹理背景 */
             --gradient-holo: linear-gradient(135deg, #546e7a, #78909c);
-            --glass-surface: rgba(255, 255, 255, 0.6);
+            --gradient-glass: rgba(255, 255, 255, 0.8);
+            --gradient-border: #cfd8dc;
+            
+            --glass-surface: rgba(255, 255, 255, 0.6); /* 磨砂纸感 */
             --glass-border: rgba(0, 0, 0, 0.05);
-            --text-main: #263238;
+            --text-main: #263238;     /* 深墨色 */
             --text-muted: #607d8b;
+            --shadow-glow: none;
             --shadow-card: 0 4px 6px rgba(0,0,0,0.05);
         }
 
+        /* 原有主题变体 (保留) */
         [data-theme="black"] { --primary: #888; --secondary: #666; --accent: #999; --bg-deep: #000000; }
         [data-theme="white"] { --primary: #5b7aef; --secondary: #4461d9; --accent: #2dd4bf; --bg-deep: #f5f7fa; --glass-surface: rgba(255, 255, 255, 0.6); --text-main: #1a1a1a; --text-muted: rgba(0, 0, 0, 0.6); }
         [data-theme="green"] { --primary: #10b981; --secondary: #059669; --accent: #34d399; --bg-deep: #020a06; }
@@ -45,6 +57,7 @@
             color: var(--text-main);
             min-height: 100vh;
             overflow-x: hidden;
+            /* 只有默认主题才有星空背景图，Reader主题会覆盖这个 */
             background-image: 
                 radial-gradient(circle at 10% 20%, rgba(217, 70, 239, 0.15) 0%, transparent 40%),
                 radial-gradient(circle at 90% 80%, rgba(6, 182, 212, 0.15) 0%, transparent 40%),
@@ -53,63 +66,121 @@
             transition: background 0.5s, color 0.5s;
         }
 
+        /* 针对 Reader 主题的背景覆盖 */
         [data-theme="reader"] body {
             background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100' height='100' filter='url(%23noise)' opacity='0.05'/%3E%3C/svg%3E");
         }
 
-        .icon { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; display: inline-block; vertical-align: middle; }
-        .aurora-bg { position: fixed; top: -50%; left: -50%; width: 200%; height: 200%; background: conic-gradient(from 0deg at 50% 50%, rgba(139, 92, 246, 0.1), rgba(217, 70, 239, 0.1), rgba(6, 182, 212, 0.1), rgba(139, 92, 246, 0.1)); filter: blur(80px); animation: rotate 20s linear infinite; z-index: -1; pointer-events: none; }
+        /* SVG 图标通用样式 (新增) */
+        .icon {
+            width: 20px; height: 20px;
+            fill: none; stroke: currentColor; stroke-width: 2;
+            stroke-linecap: round; stroke-linejoin: round;
+            display: inline-block; vertical-align: middle;
+        }
+
+        .aurora-bg {
+            position: fixed; top: -50%; left: -50%; width: 200%; height: 200%;
+            background: conic-gradient(from 0deg at 50% 50%, rgba(139, 92, 246, 0.1), rgba(217, 70, 239, 0.1), rgba(6, 182, 212, 0.1), rgba(139, 92, 246, 0.1));
+            filter: blur(80px); animation: rotate 20s linear infinite; z-index: -1; pointer-events: none;
+        }
+        /* Reader 主题隐藏极光 */
         [data-theme="reader"] .aurora-bg { display: none; }
+
         @keyframes rotate { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 
-        .glass-panel { background: var(--glass-surface); backdrop-filter: blur(24px) saturate(120%); -webkit-backdrop-filter: blur(24px) saturate(120%); border: 1px solid var(--glass-border); border-top: 1px solid rgba(255,255,255,0.2); box-shadow: var(--shadow-card); }
+        .glass-panel {
+            background: var(--glass-surface);
+            backdrop-filter: blur(24px) saturate(120%);
+            -webkit-backdrop-filter: blur(24px) saturate(120%);
+            border: 1px solid var(--glass-border);
+            border-top: 1px solid rgba(255,255,255,0.2);
+            box-shadow: var(--shadow-card);
+        }
+        /* Reader 主题去除玻璃高光 */
         [data-theme="reader"] .glass-panel { border-top: 1px solid var(--glass-border); backdrop-filter: none; }
 
+        /* 登录页 */
         .login-page { display: flex; align-items: center; justify-content: center; min-height: 100vh; padding: 20px; position: relative; z-index: 10; }
         .login-card { width: 100%; max-width: 400px; padding: 40px 30px; border-radius: 24px; text-align: center; position: relative; overflow: hidden; }
-        .login-title { font-size: 36px; font-weight: 800; margin-bottom: 8px; background: linear-gradient(90deg, #d946ef, #8b5cf6, #06b6d4); -webkit-background-clip: text; background-clip: text; color: transparent; }
+        .login-card::after {
+            content: ''; position: absolute; inset: 0; border-radius: 24px; padding: 1px;
+            background: var(--gradient-border); -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0); -webkit-mask-composite: xor; mask-composite: exclude; pointer-events: none;
+        }
+        .login-title { font-size: 36px; font-weight: 800; margin-bottom: 8px; background: var(--gradient-border); -webkit-background-clip: text; background-clip: text; color: transparent; letter-spacing: -1px; }
         .login-subtitle { color: var(--text-muted); font-size: 14px; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 40px; }
+        
         .input-wrapper { position: relative; margin-bottom: 24px; }
-        .input-modern { width: 100%; padding: 16px 20px; background: rgba(0,0,0,0.1); border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; color: var(--text-main); font-size: 16px; outline: none; transition: all 0.3s; }
+        .input-modern {
+            width: 100%; padding: 16px 20px;
+            background: rgba(0,0,0,0.1); border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 16px; color: var(--text-main); font-size: 16px; outline: none; transition: all 0.3s;
+        }
         .input-modern:focus { background: rgba(0,0,0,0.2); border-color: var(--secondary); box-shadow: 0 0 0 4px rgba(139, 92, 246, 0.2); }
-        .btn-glow { width: 100%; padding: 16px; border: none; border-radius: 16px; background: var(--gradient-holo); color: white; font-size: 16px; font-weight: 600; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; position: relative; overflow: hidden; display: flex; align-items: center; justify-content: center; gap: 8px; }
+
+        .btn-glow {
+            width: 100%; padding: 16px; border: none; border-radius: 16px;
+            background: var(--gradient-holo); color: white; font-size: 16px; font-weight: 600;
+            cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; position: relative; overflow: hidden;
+            display: flex; align-items: center; justify-content: center; gap: 8px; /* 图标文字间距 */
+        }
         .btn-glow:active { transform: scale(0.98); }
         .btn-glow:hover { box-shadow: 0 0 30px rgba(217, 70, 239, 0.4); }
 
+        /* 主界面 */
         .main-hub { display: none; padding: 20px 20px 100px 20px; max-width: 1200px; margin: 0 auto; }
         .top-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
+        
         .user-pill { display: flex; align-items: center; gap: 12px; padding: 8px 16px 8px 8px; border-radius: 100px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); }
         .avatar-small { width: 32px; height: 32px; border-radius: 50%; background: var(--gradient-holo); display: flex; align-items: center; justify-content: center; overflow: hidden; color: #fff; }
+        .avatar-small img { width: 100%; height: 100%; object-fit: cover; }
+
         .resource-pill { display: flex; gap: 16px; }
         .res-item { display: flex; align-items: center; gap: 6px; font-size: 14px; font-weight: 600; padding: 6px 12px; border-radius: 12px; }
         .res-icon { color: var(--accent); }
 
-        .dock-nav { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); display: flex; gap: 8px; padding: 10px; border-radius: 24px; z-index: 100; }
-        .dock-item { position: relative; width: 50px; height: 50px; border-radius: 16px; display: flex; align-items: center; justify-content: center; color: var(--text-muted); cursor: pointer; transition: all 0.3s; }
+        /* 底部导航 Dock */
+        .dock-nav {
+            position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+            display: flex; gap: 8px; padding: 10px; border-radius: 24px; z-index: 100;
+        }
+        .dock-item {
+            position: relative; width: 50px; height: 50px; border-radius: 16px;
+            display: flex; align-items: center; justify-content: center;
+            color: var(--text-muted); cursor: pointer; transition: all 0.3s;
+        }
         .dock-item:hover, .dock-item.active { color: var(--text-main); background: rgba(255,255,255,0.15); transform: translateY(-5px); }
-        .dock-item.active { color: var(--primary); }
-
+        .dock-item.active { color: var(--primary); } /* Reader下用主色 */
+        
+        /* 视图容器 */
         .view-section { display: none; animation: fadeIn 0.4s ease; }
         .view-section.active { display: block; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
+        /* 副本卡片 */
         .section-header { font-size: 24px; font-weight: 700; margin-bottom: 20px; background: linear-gradient(to right, var(--text-main), var(--text-muted)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; display: flex; align-items: center; gap: 8px;}
-        .section-header svg { color: var(--text-main); -webkit-text-fill-color: initial; }
+        .section-header svg { color: var(--text-main); -webkit-text-fill-color: initial; } /* 图标不渐变 */
 
         .grid-layout { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 24px; }
         .card-instance { border-radius: 24px; overflow: hidden; transition: transform 0.3s, box-shadow 0.3s; cursor: pointer; position: relative; }
         .card-instance:hover { transform: translateY(-8px); box-shadow: 0 20px 40px rgba(0,0,0,0.4); }
         .card-instance.locked { opacity: 0.6; cursor: not-allowed; }
         .card-instance.locked:hover { transform: none; }
+        
         .card-cover { height: 200px; width: 100%; position: relative; background: linear-gradient(135deg, var(--primary), var(--secondary)); }
         .card-cover img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.5s; }
         .card-instance:not(.locked):hover .card-cover img { transform: scale(1.1); }
+        
         .card-badge { position: absolute; top: 12px; left: 12px; padding: 4px 12px; border-radius: 100px; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); font-size: 12px; font-weight: 600; border: 1px solid rgba(255,255,255,0.2); display: flex; align-items: center; gap: 4px;}
         .card-body { padding: 20px; }
         .card-title { font-size: 18px; font-weight: 700; margin-bottom: 6px; }
         .card-desc { font-size: 13px; color: var(--text-muted); line-height: 1.5; }
+        
         .locked-overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.7); backdrop-filter: blur(5px); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; }
+        .lock-icon { font-size: 32px; opacity: 0.8; color: #fff; }
 
+        /* 详情页 */
         .detail-layout { display: flex; gap: 24px; border-radius: 24px; padding: 24px; margin-bottom: 24px; }
         .detail-cover { flex: 0 0 40%; border-radius: 20px; overflow: hidden; background: #111; }
         .detail-cover img { width: 100%; height: 100%; object-fit: cover; display: block; }
@@ -119,12 +190,14 @@
         .tag-row { display: flex; gap: 10px; margin-top: 8px; }
         .tag { padding: 4px 10px; background: rgba(255,255,255,0.08); border-radius: 999px; font-size: 12px; }
 
+        /* 角色头像 (详情页) */
         .char-scroll { display: flex; gap: 20px; overflow-x: auto; padding-bottom: 20px; scrollbar-width: none; }
         .char-item { flex: 0 0 auto; text-align: center; width: 80px; }
         .char-avatar { width: 80px; height: 80px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.2); padding: 2px; margin-bottom: 8px; position: relative; background: linear-gradient(135deg, var(--primary), var(--secondary)); overflow: hidden; display: flex; align-items: center; justify-content: center; }
         .char-avatar img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; }
         .char-name { font-size: 12px; color: var(--text-muted); }
 
+        /* 身份栏 (Story Style) */
         .persona-strip-container { display: flex; gap: 16px; overflow-x: auto; padding: 10px 4px; scrollbar-width: none; }
         .persona-strip-container::-webkit-scrollbar { display: none; }
         .story-ring { flex: 0 0 auto; display: flex; flex-direction: column; align-items: center; gap: 6px; cursor: pointer; width: 64px; }
@@ -134,6 +207,7 @@
         .story-avatar-inner img { width: 100%; height: 100%; object-fit: cover; }
         .story-name { font-size: 11px; color: var(--text-main); max-width: 60px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
+        /* 系统设置 */
         .settings-container { max-width: 600px; margin: 0 auto; }
         .setting-group { margin-bottom: 24px; padding: 24px; border-radius: 20px; }
         .input-label { display: block; margin-bottom: 8px; font-size: 13px; color: var(--text-muted); font-weight: 600; }
@@ -142,6 +216,7 @@
         .theme-btn:hover { border-color: var(--primary); transform: translateY(-2px); }
         .theme-btn.active { background: var(--gradient-holo); border-color: transparent; color: white; }
 
+        /* 游戏界面 */
         .game-container { position: fixed; inset: 0; z-index: 200; display: none; background-color: #000; overflow: hidden; }
         .game-bg { position: absolute; inset: 0; background-size: cover; background-position: center; filter: brightness(0.65); }
         .game-content { position: relative; z-index: 1; display: flex; flex-direction: column; justify-content: flex-end; height: 100%; padding: 20px 16px 28px; }
@@ -151,32 +226,119 @@
         .game-option-btn:hover { background: rgba(255,255,255,0.2); }
         .game-exit-btn { position: absolute; top: 14px; right: 16px; z-index: 2; padding: 8px 14px; border-radius: 999px; border: none; background: rgba(0,0,0,0.7); color: #fff; font-size: 13px; cursor: pointer; }
 
+        /* 剧本上传 */
         .story-upload-area { margin-top: 30px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 20px; }
         .file-btn { display: inline-block; padding: 10px 20px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 12px; cursor: pointer; color: var(--text-muted); font-size: 13px; }
 
+        /* === 📱 移动端深度适配 (v4.5 修复版) === */
         @media (max-width: 768px) {
-            .grid-layout { grid-template-columns: 1fr 1fr; gap: 12px; }
-            .card-cover { height: 140px; background: #222; }
+            /* 1. 首页：调整卡片尺寸 (双列布局) */
+            .grid-layout { 
+                grid-template-columns: 1fr 1fr; 
+                gap: 12px;
+            }
+            .card-cover { 
+                height: 140px; 
+                background: #222;
+            }
             .card-title { font-size: 15px; margin-bottom: 4px; }
             .card-desc { font-size: 11px; line-height: 1.3; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
             .card-badge { top: 8px; left: 8px; padding: 2px 8px; font-size: 10px; }
-            .detail-layout { flex-direction: row; flex-wrap: wrap; padding: 16px; gap: 16px; align-items: flex-start; background: linear-gradient(180deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0) 100%); }
-            .detail-cover { flex: 0 0 100px; height: 140px; width: 100px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.3); margin-bottom: 0; }
-            .detail-info { flex: 1; min-width: 0; gap: 6px; display: flex; flex-direction: column; }
-            .detail-title { font-size: 18px; line-height: 1.2; margin-bottom: 2px; }
-            .detail-meta { font-size: 11px; opacity: 0.8; }
+
+            /* 2. 副本详情页：重构为左图右文 */
+            .detail-layout {
+                flex-direction: row; /* 强制横向 */
+                flex-wrap: wrap;
+                padding: 16px;
+                gap: 16px;
+                align-items: flex-start;
+                background: linear-gradient(180deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0) 100%);
+            }
+
+            /* 左侧封面图 (固定小尺寸) */
+            .detail-cover {
+                flex: 0 0 100px;
+                height: 140px;
+                width: 100px;
+                border-radius: 12px;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+                margin-bottom: 0; /* 修正可能存在的边距 */
+            }
+
+            /* 右侧信息区 */
+            .detail-info {
+                flex: 1;
+                min-width: 0;
+                gap: 6px;
+                display: flex;
+                flex-direction: column;
+            }
+
+            .detail-title { 
+                font-size: 18px; 
+                line-height: 1.2;
+                margin-bottom: 2px; 
+            }
+            
+            .detail-meta { 
+                font-size: 11px; 
+                opacity: 0.8;
+            }
+
             .tag-row { margin-top: 4px; gap: 6px; }
             .tag { padding: 2px 6px; font-size: 10px; background: rgba(255,255,255,0.1); }
-            .detail-desc { font-size: 12px; line-height: 1.4; color: var(--text-muted); margin-top: 6px; display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden; }
-            .detail-info > div:last-child { margin-top: 12px; width: calc(100% + 116px); margin-left: -116px; display: flex; gap: 10px; }
-            .detail-info .btn-glow { padding: 0; font-size: 13px; border-radius: 10px; height: 40px; }
-            .detail-info + button.btn-glow { margin-top: 0; font-size: 12px; padding: 0; height: 36px; opacity: 0.8; }
-            .dock-nav { width: 94%; padding: 10px 16px; justify-content: space-between; bottom: 16px; }
+
+            .detail-desc {
+                font-size: 12px;
+                line-height: 1.4;
+                color: var(--text-muted);
+                margin-top: 6px;
+                display: -webkit-box;
+                -webkit-line-clamp: 4;
+                -webkit-box-orient: vertical;
+                overflow: hidden;
+            }
+
+            /* 按钮区域：强制换行并填满 */
+            .detail-info > div:last-child {
+                margin-top: 12px;
+                width: calc(100% + 116px); /* 延伸宽度 */
+                margin-left: -116px;       /* 向左拉回 */
+                display: flex;
+                gap: 10px;
+            }
+
+            .detail-info .btn-glow {
+                padding: 0;
+                font-size: 13px;
+                border-radius: 10px;
+                height: 40px;
+            }
+
+            /* 无尽模式按钮 */
+            .detail-info + button.btn-glow {
+                margin-top: 0;
+                font-size: 12px;
+                padding: 0;
+                height: 36px;
+                opacity: 0.8;
+            }
+
+            /* 底部导航 Dock */
+            .dock-nav { 
+                width: 94%; 
+                padding: 10px 16px; 
+                justify-content: space-between;
+                bottom: 16px;
+            }
+            
+            /* 游戏界面 */
             .game-content { padding: 16px; }
             .game-text-box { font-size: 15px; padding: 16px; min-height: 100px; }
             .game-exit-btn { top: 12px; right: 12px; padding: 6px 12px; font-size: 12px; }
         }
         
+        /* 弹窗样式 */
         .modal-overlay { position: fixed; inset: 0; z-index: 999; background: rgba(0,0,0,0.6); backdrop-filter: blur(5px); display: flex; align-items: center; justify-content: center; animation: fadeIn 0.2s; }
         .modal-card { width: 90%; max-width: 400px; padding: 24px; border-radius: 24px; background: var(--bg-deep); border: 1px solid var(--primary); }
         .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
@@ -184,7 +346,11 @@
         .modal-list { display: grid; gap: 12px; max-height: 300px; overflow-y: auto; }
         .persona-select-item { display: flex; align-items: center; gap: 12px; padding: 12px; border-radius: 12px; background: rgba(255,255,255,0.05); cursor: pointer; transition: all 0.2s; border: 1px solid transparent; }
         .persona-select-item:hover, .persona-select-item.active { background: rgba(255,255,255,0.1); border-color: var(--primary); }
+
+        /* 新增：记忆回放框样式 */
         .log-container { background: rgba(0,0,0,0.1); border-radius: 12px; padding: 20px; height: 300px; overflow-y: auto; font-size: 14px; line-height: 1.8; white-space: pre-wrap; color: var(--text-muted); margin-top: 10px; }
+        
+        /* 新增：Toast 提示框样式 */
         #toast { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(0,0,0,0.85); color: #fff; padding: 12px 24px; border-radius: 50px; display: none; z-index: 300; backdrop-filter: blur(10px); border: 1px solid var(--primary); font-weight: bold; animation: popIn 0.3s; }
         @keyframes popIn { from { transform: translate(-50%, -40%); opacity: 0; } to { transform: translate(-50%, -50%); opacity: 1; }}
     </style>
@@ -197,9 +363,11 @@
         <div class="login-card glass-panel">
             <h1 class="login-title">INFINITE LOVE</h1>
             <p class="login-subtitle">Utopia note · 乌托邦手记</p>
+            
             <div class="input-wrapper">
                 <input type="text" class="input-modern" id="username" placeholder="请输入你的代号..." autocomplete="off">
             </div>
+            
             <button class="btn-glow" onclick="enterHub()">
                 <span style="display: flex; align-items: center; justify-content: center; gap: 8px;">
                     连接神经元
@@ -217,6 +385,7 @@
                 </div>
                 <span style="font-weight: 600; font-size: 14px;" id="displayName">旅行者</span>
             </div>
+
             <div class="resource-pill">
                 <div class="res-item glass-panel" style="padding: 6px 12px; border-radius: 12px;">
                     <svg class="icon res-icon" viewBox="0 0 24 24"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
@@ -231,8 +400,9 @@
 
         <div class="view-section active" id="view-hub">
             <h2 class="section-header">探索世界</h2>
+            <!-- 动态渲染容器 -->
             <div class="grid-layout" id="hub-dungeon-list">
-                <!-- 动态内容将通过 JS 渲染 -->
+                <!-- JS将填充内容 -->
             </div>
         </div>
 
@@ -242,14 +412,15 @@
                 返回
             </button>
 
+            <!-- 动态渲染容器 -->
             <div class="detail-layout glass-panel" id="detail-card-container">
-                <!-- 动态内容将通过 JS 渲染 -->
+                <!-- JS将填充内容 -->
             </div>
 
             <div class="glass-panel" style="padding: 24px; border-radius: 24px; margin-bottom: 30px;">
                 <h3 style="margin-bottom: 16px; font-weight: 700;">主要角色</h3>
                 <div class="char-scroll" id="detail-char-list">
-                     <!-- 动态角色列表 -->
+                    <!-- JS将填充内容 -->
                 </div>
             </div>
 
@@ -287,7 +458,7 @@
             </div>
         </div>
 
-        <div class="view-section" id="view-persona">
+<div class="view-section" id="view-persona">
             <h2 class="section-header">我的设定</h2>
             <div class="persona-container">
                 <div class="glass-panel" style="border-radius: 20px; padding: 12px 16px; margin-bottom: 20px;">
@@ -321,8 +492,9 @@
             </div>
         </div> 
         
-        <div class="view-section" id="view-settings">
+<div class="view-section" id="view-settings">
             <h2 class="section-header">系统设置</h2>
+            
             <div class="settings-container glass-panel setting-group">
                 <h3 style="margin-bottom: 20px; font-size: 18px;">API 连接配置</h3>
                 <div class="input-wrapper">
@@ -376,14 +548,22 @@
 
             <div class="settings-container glass-panel setting-group" style="margin-top: 24px;">
                 <h3 style="margin-bottom: 20px; font-size: 18px;">✨ 字体美化</h3>
+                <div style="margin-bottom:10px; font-size:12px; color:var(--text-muted);">
+                    输入 .woff2 / .ttf 文件链接或 Google Fonts CSS 链接
+                </div>
                 <div style="display:flex; gap:10px;">
                     <input id="customFontUrl" class="input-modern" placeholder="https://example.com/font.woff2">
                     <button class="btn-glow" style="width:auto; padding:0 20px;" onclick="applyCustomFont()">应用</button>
                 </div>
             </div>
 
+    <!-- === 新增：自定义 CSS 功能区域 (插入在 view-settings 底部) === -->
             <div class="settings-container glass-panel setting-group" style="margin-top: 24px;">
                 <h3 style="margin-bottom: 20px; font-size: 18px;">🎨 自定义样式 (CSS)</h3>
+                <div style="margin-bottom:10px; font-size:12px; color:var(--text-muted);">
+                    在此输入 CSS 代码可覆盖系统默认样式。例如：<br>
+                    <code style="background:rgba(255,255,255,0.1); padding:2px 4px; border-radius:4px;">.btn-glow { background: red; }</code>
+                </div>
                 <textarea id="customCssInput" class="input-modern" style="min-height: 150px; font-family: 'Menlo', 'Monaco', 'Courier New', monospace; font-size: 13px; line-height: 1.5;" placeholder="/* 在此处输入 CSS 代码 */"></textarea>
                 <div style="display:flex; gap:10px; margin-top:16px;">
                     <button class="btn-glow" style="flex:1;" onclick="applyCustomCss()">应用并保存</button>
@@ -414,7 +594,7 @@
         </div>
     </div> 
             
-    <div id="gameContainer" class="game-container">
+        <div id="gameContainer" class="game-container">
         <div id="gameBg" class="game-bg"></div>
         <button class="game-exit-btn" onclick="openSaveSlotModal()" style="right: 80px; background: rgba(16, 185, 129, 0.6);"> 存档</button>       
         <button class="game-exit-btn" onclick="exitGame()">退出</button>
@@ -432,7 +612,8 @@
                 <h3> 选择你的身份</h3>
                 <button class="close-btn" onclick="closePersonaModal()">×</button>
             </div>
-            <div id="modalPersonaList" class="modal-list"></div>
+            <div id="modalPersonaList" class="modal-list">
+                </div>
             <div id="modalEmptyState" style="display:none; text-align:center; padding:20px;">
                 <p style="color:var(--text-muted); margin-bottom:15px;">暂无可用人设</p>
                 <button class="btn-glow" onclick="goToPersonaCreate()"> 去创建新人设</button>
@@ -447,7 +628,9 @@
         const FONT_STORAGE = 'infinite.customFont';
 
         let currentPersonaId = null;
-        let currentSceneId = null; 
+        let currentSceneId = null; // 全局记录当前场景 ID
+
+        // 打字机状态
         let typingTimer = null;
         let typingIndex = 0;
         let typingText = '';
@@ -497,7 +680,7 @@
                 plotBeginAi: {
                     type: 'ai',
                     bg: 'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1200&q=80',
-                    prompt: '继续这个紫禁城开局故事：主角在夜色中意识到自己被卷入权谋斗争之中，语气偏抒情、第一人称。',
+                    prompt: '继续这个紫禁城开局故事：主角在夜色中意识到自己被卷入权谋斗争之中，语气偏抒情、第一人称，控制在 250 字以内。',
                     options: [{ text: '本章结束，回到主神空间', nextScene: null }]
                 },
                 safeEnd: {
@@ -518,12 +701,14 @@
         // 全局当前副本数据
         let currentDungeon = defaultDungeon;
 
+        // 初始化
         function init() {
             loadApiConfig();
             loadTheme();
             loadCustomFont(); 
-            loadCustomStory(); // 这里会更新 currentDungeon 并调用 renderUI
+            loadCustomStory(); // 这里会自动加载你上传的剧本
 
+            // 用户名自动回填 + 自动进入主界面
             const nameInput = document.getElementById('username');
             const savedName = localStorage.getItem(USERNAME_STORAGE);
             if (savedName) {
@@ -540,7 +725,7 @@
             });
 
             initPersonas();
-            renderUI(); // 初始渲染UI
+            renderUI(); // 渲染UI
         }
 
         // === 核心逻辑：UI动态渲染 ===
@@ -671,72 +856,835 @@
                 });
             }
         }
-        
-        function adaptEditorData(json) {
-    if (json.worldview && json.main_story) {
-        console.log("检测到编辑器格式，正在转换...");
-        
-        let coverImg = "";
-        const firstMain = json.main_story[Object.keys(json.main_story)[0]];
-        if (firstMain && firstMain.background) coverImg = firstMain.background;
-        
-        const newMeta = {
-            title: json.worldview.name || "未知世界",
-            desc: json.worldview.description || "暂无简介",
-            cover: coverImg, 
-            tags: ["编辑器作品", "自定义"]
-        };
 
-        const newChars = [];
-        if (json.characters) {
-            Object.values(json.characters).forEach(c => {
-                newChars.push({
-                    name: c.name,
-                    avatar: c.avatar || "" 
-                });
-            });
+        // === 新增：字体美化逻辑 ===
+        function applyCustomFont() {
+            const url = document.getElementById('customFontUrl').value.trim();
+            if(!url) return;
+            
+            // 简单处理：如果是CSS链接或文件链接
+            if (url.endsWith('.css') || url.includes('fonts.googleapis.com')) {
+                const link = document.createElement('link');
+                link.rel = 'stylesheet';
+                link.href = url;
+                document.head.appendChild(link);
+            } else {
+                const style = document.createElement('style');
+                style.innerHTML = `
+                    @font-face { font-family: 'UserCustomFont'; src: url('${url}'); }
+                    body { font-family: 'UserCustomFont', var(--font-main) !important; }
+                `;
+                document.head.appendChild(style);
+            }
+            
+            localStorage.setItem(FONT_STORAGE, url);
+            showToastMsg("✨ 字体已应用");
         }
 
-        const allScenes = { 
-            ...json.main_story, 
-            ...json.side_stories, 
-            ...json.char_routes 
-        };
-        
-        const newScripts = {};
-        
-        Object.entries(allScenes).forEach(([key, scene]) => {
-            const newOptions = (scene.options || []).map(opt => ({
-                text: opt.label,      
-                nextScene: opt.nextScene 
-            }));
-
-            newScripts[key] = {
-                type: 'fixed', 
-                text: scene.text, 
-                bg: scene.background, 
-                options: newOptions
-            };
-        });
-
-        if (!newScripts['start']) {
-            if (newScripts['main_1']) {
-                newScripts['start'] = newScripts['main_1'];
-            } else {
-                const firstKey = Object.keys(newScripts)[0];
-                if (firstKey) newScripts['start'] = newScripts[firstKey];
+        function loadCustomFont() {
+            const url = localStorage.getItem(FONT_STORAGE);
+            if(url) {
+                document.getElementById('customFontUrl').value = url;
+                const style = document.createElement('style');
+                // 这里做一个通用处理，默认如果是文件就用 UserCustomFont
+                if (url.endsWith('.css') || url.includes('fonts.googleapis.com')) {
+                     const link = document.createElement('link');
+                     link.rel = 'stylesheet';
+                     link.href = url;
+                     document.head.appendChild(link);
+                } else {
+                    style.innerHTML = `
+                        @font-face { font-family: 'UserCustomFont'; src: url('${url}'); }
+                        body { font-family: 'UserCustomFont', var(--font-main) !important; }
+                    `;
+                    document.head.appendChild(style);
+                }
             }
         }
 
-        return {
-            meta: newMeta,
-            characters: newChars,
-            scripts: newScripts
-        };
-    }
-    return json;
-}
+        // 切换视图逻辑
+        function switchView(viewName) {
+            // 隐藏所有视图
+            document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
+            
+            // 显示目标视图
+            const target = document.getElementById('view-' + viewName);
+            if (target) target.classList.add('active');
 
+            // 如果是打开相册，加载存档列表
+            if (viewName === 'gallery') {
+                renderGallery();
+            }
+
+            // 更新底部 Dock 激活状态
+            document.querySelectorAll('.dock-item').forEach(el => el.classList.remove('active'));
+            
+            // 根据视图更新激活状态
+            const dockItems = document.querySelectorAll('.dock-item');
+            const viewMap = {
+                'hub': 0,
+                'gallery': 1,
+                'shop': 2,
+                'persona': 3,
+                'settings': 4
+            };
+            
+            const index = viewMap[viewName];
+            if (index !== undefined && dockItems[index]) {
+                dockItems[index].classList.add('active');
+            }
+        }
+
+        // 登录逻辑
+        function enterHub() {
+            const username = document.getElementById('username').value.trim();
+            if (!username) {
+                // 简单的晃动动画
+                const card = document.querySelector('.login-card');
+                card.style.transform = 'translateX(10px)';
+                setTimeout(() => card.style.transform = 'translateX(0)', 100);
+                setTimeout(() => card.style.transform = 'translateX(-10px)', 200);
+                setTimeout(() => card.style.transform = 'translateX(0)', 300);
+                return;
+            }
+            
+            document.getElementById('displayName').textContent = username;
+            localStorage.setItem(USERNAME_STORAGE, username);
+            
+            // 切换界面
+            document.getElementById('loginPage').style.display = 'none';
+            document.getElementById('mainHub').style.display = 'block';
+            
+            // 默认显示副本页
+            switchView('hub');
+        }
+
+        // 显示副本详情
+        function showInstanceDetail() {
+            switchView('detail');
+        }
+
+        // ===== 游戏流程 =====
+        function startGame(mode) {
+            // 如果是无尽模式或新开始，必须检查人设
+            if (mode === 'start' || mode === 'endless') {
+                if (!currentPersonaId) {
+                    // 没有选人设，弹出选择框
+                    openPersonaModal(mode); // 把模式传过去，选完后自动开始
+                    return;
+                }
+            }
+
+            const mainHub = document.getElementById('mainHub');
+            const game = document.getElementById('gameContainer');
+            const dock = document.querySelector('.dock-nav');
+
+            if (mainHub) mainHub.style.display = 'none';
+            if (dock) dock.style.display = 'none';
+            if (game) game.style.display = 'block';
+            
+            // 更新顶部显示的名字（如果有）
+            updateGameDisplayName();
+
+            // 获取当前生效的脚本
+            const activeScripts = currentDungeon.scripts;
+
+            // 1. 如果是点击“继续游戏”
+            if (mode === 'continue') {
+                const saveRaw = localStorage.getItem('infinite.save');
+                if (saveRaw) {
+                    const save = JSON.parse(saveRaw);
+                    // 恢复记忆
+                    activeScripts.memory = save.memory || ''; 
+                    loadScene(save.currentSceneId);
+                    return;
+                } else {
+                    alert("没有找到自动存档，将开始新游戏");
+                }
+            }
+
+            // 2. 如果是新游戏，清空记忆
+            if (mode !== 'continue') {
+                activeScripts.memory = "故事开端。"; // 初始化记忆
+                localStorage.removeItem('infinite.save'); // 清除旧档
+            }
+
+            // 尝试从 main_story 获取起始节点
+            let firstScene = 'start';
+            if (mode === 'endless' && activeScripts['plotBeginAi']) {
+                firstScene = 'plotBeginAi';
+            } else if (!activeScripts[firstScene]) {
+                // 如果没有 'start'，尝试找第一个Key
+                const keys = Object.keys(activeScripts);
+                if (keys.length > 0) firstScene = keys[0];
+            }
+            
+            loadScene(firstScene);
+        }
+
+        function exitGame() {
+            const mainHub = document.getElementById('mainHub');
+            const game = document.getElementById('gameContainer');
+            const dock = document.querySelector('.dock-nav');
+
+            if (game) game.style.display = 'none';
+            if (mainHub) mainHub.style.display = 'block';
+            if (dock) dock.style.display = 'flex';
+
+            // 返回副本详情
+            switchView('detail');
+        }
+
+        // 修改：存档同时保存到历史记录
+        function saveProgress(showToast = false) {
+            const activeScripts = currentDungeon.scripts;
+            const saveState = {
+                currentSceneId: currentSceneId || 'start',
+                memory: activeScripts.memory || "",
+                timestamp: Date.now()
+            };
+            
+            // 1. 保存当前进度（用于“继续游戏”）
+            localStorage.setItem('infinite.save', JSON.stringify(saveState));
+            if (showToast) showToastMsg("💾 自动存档已更新");
+        }
+
+        // 新增：渲染记忆回廊
+        function renderGallery() {
+            const container = document.getElementById('storyLog'); 
+            if (!container) return;
+
+            const dungeonKey = 'dungeon_forbidden_city'; // 默认key
+            const allSaves = JSON.parse(localStorage.getItem('infinite.all_saves') || '{}');
+            const dungeonSaves = Array.isArray(allSaves[dungeonKey]) ? allSaves[dungeonKey] : [null, null, null];
+
+            if (dungeonSaves.every(s => s === null)) {
+                container.innerHTML = '<div style="text-align:center; color:var(--text-muted); padding:20px;">暂无探索记录，请在游戏中点击存档。</div>';
+                return;
+            }
+
+            let html = '';
+            dungeonSaves.forEach((save, index) => {
+                if (!save) return;
+
+                html += `
+                    <div style="background:var(--glass-surface); border-radius:12px; padding:20px; margin-bottom:16px; border-left:4px solid var(--primary); box-shadow:var(--shadow-card); position:relative;">
+                        <div style="display:flex; justify-content:space-between; margin-bottom:12px; align-items:center;">
+                            <div style="display:flex; align-items:center; gap:10px;">
+                                <span style="background:rgba(255,255,255,0.1); padding:2px 8px; border-radius:6px; font-size:12px;">存档 0${index + 1}</span>
+                                <span style="font-weight:bold; font-size:18px; color:var(--text-main);">${save.dungeonName || '未知副本'}</span>
+                            </div>
+                            <span style="font-size:12px; color:var(--text-muted);">${save.lastPlayed}</span>
+                        </div>
+                        
+                        <div style="background:rgba(0,0,0,0.2); padding:12px; border-radius:8px; margin-bottom:16px;">
+                            <div style="font-size:12px; color:var(--primary); margin-bottom:4px; font-weight:bold;">剧情梗概：</div>
+                            <div style="font-size:14px; color:var(--text-muted); line-height:1.6; text-align:justify;">
+                                ${save.summary || "（暂无总结数据）"}
+                            </div>
+                        </div>
+
+                        <div style="text-align:right;">
+                            <button class="btn-glow" style="padding:8px 20px; font-size:13px; width:auto; display:inline-flex;" onclick="loadGameFromSlot(${index})">
+                                <svg class="icon" style="margin-right:4px;" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                                继续探索
+                            </button>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            container.className = ''; 
+            container.style.height = 'auto';
+            container.style.maxHeight = '60vh';
+            container.style.overflowY = 'auto';
+            container.innerHTML = html;
+        }
+
+        // 新增：从槽位加载
+        function loadGameFromSlot(slotIndex) {
+            const dungeonKey = 'dungeon_forbidden_city'; // 默认key
+            const allSaves = JSON.parse(localStorage.getItem('infinite.all_saves') || '{}');
+            const saves = allSaves[dungeonKey];
+            
+            if (saves && saves[slotIndex]) {
+                const save = saves[slotIndex];
+                
+                // 恢复内存
+                currentDungeon.scripts.memory = save.memory;
+                
+                // 恢复场景
+                loadScene(save.sceneId);
+                
+                // 更新“当前存档”为这个，方便下次快速点“继续游戏”
+                localStorage.setItem('infinite.save', JSON.stringify(save));
+
+                // 界面切换
+                document.getElementById('mainHub').style.display = 'none';
+                document.querySelector('.dock-nav').style.display = 'none';
+                document.getElementById('gameContainer').style.display = 'block';
+                
+                showToastMsg(`📖 读取存档 0${slotIndex + 1} 成功`);
+            } else {
+                alert("存档数据丢失");
+            }
+        }
+
+        async function loadScene(sceneId) {
+            // 更新全局进度并自动存档
+            currentSceneId = sceneId;
+            saveProgress(false); // 自动存档不弹提示
+
+            // 总是从 currentDungeon.scripts 读取
+            const activeScripts = currentDungeon.scripts;
+            let scene = activeScripts[sceneId];
+            const bgEl = document.getElementById('gameBg');
+            const optionsEl = document.getElementById('gameOptions');
+
+            // 容错：如果是 AI 生成的临时后续 ID，但本地没有数据，我们需要在这里构造一个临时的 AI 请求
+            if (!scene && sceneId.startsWith('ai_')) {
+                scene = {
+                    type: 'ai',
+                    prompt: `（接续剧情）请继续刚才的故事。场景ID: ${sceneId}。`,
+                    bg: ''
+                };
+            }
+
+            if (!scene) {
+                alert('剧本结束或场景丢失：' + sceneId);
+                exitGame();
+                return;
+            }
+
+            if (bgEl && scene.bg) {
+                bgEl.style.backgroundImage = `url(${scene.bg})`;
+            }
+
+            if (optionsEl) optionsEl.innerHTML = '';
+
+            // fixed 文本：直接打字机
+            if (!scene.type || scene.type === 'fixed') {
+                // 处理 {{user}} 替换
+                const allPersonas = loadPersonas();
+                const myPersona = allPersonas.find(p => p.id === currentPersonaId);
+                const playerName = myPersona ? myPersona.name : "你";
+                let displayText = scene.text || '';
+                displayText = displayText.replace(/{{user}}/g, playerName);
+                
+                typeWriter(displayText);
+                // 渲染固定选项
+                if (scene.options && scene.options.length) {
+                    scene.options.forEach(opt => {
+                        const btn = document.createElement('button');
+                        btn.className = 'game-option-btn';
+                        btn.textContent = opt.text || opt.label; 
+                        btn.onclick = () => {
+                            if (opt.nextScene) {
+                                loadScene(opt.nextScene);
+                            } else {
+                                exitGame();
+                            }
+                        };
+                        optionsEl.appendChild(btn);
+                    });
+                }
+                return;
+            }
+
+            // ai 文本：先显示 loading，再请求 OpenAI
+            if (scene.type === 'ai') {
+                const textEl = document.getElementById('gameText');
+                if (textEl) {
+                    textEl.innerHTML = '⚡ 正在连接神经元...<br><span style="font-size:12px;opacity:0.6;">正在生成剧情...</span>';
+                }
+
+                // 这里调用 AI 生成，需传入 activeScripts 以便读取 memory
+                const generated = await generateAiSceneText(sceneId, scene, activeScripts);
+                
+                // 如果生成失败，generated 会是错误信息的字符串
+                if (typeof generated === 'string' && generated.startsWith('❌')) {
+                    typeWriter(generated); // 显示错误信息
+                    // 给个重试按钮
+                    const btn = document.createElement('button');
+                    btn.className = 'game-option-btn';
+                    btn.textContent = '重试';
+                    btn.onclick = () => loadScene(sceneId);
+                    optionsEl.appendChild(btn);
+                    return;
+                }
+
+                const finalText = generated.text || (typeof generated === 'string' ? generated : 'AI 生成了空内容');
+
+                typeWriter(finalText);
+
+                // 如果 AI 返回了新的选项，替换当前 options
+                if (generated.options && Array.isArray(generated.options) && generated.options.length) {
+                    optionsEl.innerHTML = '';
+                    generated.options.forEach(opt => {
+                        const btn = document.createElement('button');
+                        btn.className = 'game-option-btn';
+                        btn.textContent = opt.text;
+                        btn.onclick = () => {
+                            // 这里 AI 生成的 nextScene 可能是 null 或者一个新的 ID
+                            // 如果是 null，我们假设它是一个新的 AI 节点
+                            let nextId = opt.nextScene;
+                            if (!nextId || nextId === 'null') {
+                                nextId = 'ai_next_' + Date.now();
+                                // 临时存入 activeScripts 以便 loadScene 能找到上下文
+                                activeScripts[nextId] = {
+                                    type: 'ai',
+                                    bg: scene.bg, // 沿用背景
+                                    prompt: `用户选择了：${opt.text}。请根据这个选择继续剧情。`
+                                };
+                            }
+                            loadScene(nextId);
+                        };
+                        optionsEl.appendChild(btn);
+                    });
+                } else {
+                    // AI 没返回选项，给默认
+                    const btn = document.createElement('button');
+                    btn.className = 'game-option-btn';
+                    btn.textContent = '继续';
+                    btn.onclick = () => loadScene('ai_next_' + Date.now());
+                    optionsEl.appendChild(btn);
+                }
+            }
+        }
+
+        function typeWriter(text) {
+            const textEl = document.getElementById('gameText');
+            if (!textEl) return;
+
+            if (typingTimer) clearTimeout(typingTimer);
+            typingText = text;
+            typingIndex = 0;
+            isTyping = true;
+            textEl.textContent = '';
+
+            const step = () => {
+                if (!isTyping) return;
+                if (typingIndex >= typingText.length) {
+                    textEl.textContent = typingText;
+                    isTyping = false;
+                    return;
+                }
+                textEl.textContent += typingText.charAt(typingIndex);
+                typingIndex += 1;
+                typingTimer = setTimeout(step, 30);
+            };
+
+            step();
+        }
+
+        function skipTyping() {
+            if (!isTyping) return;
+            const textEl = document.getElementById('gameText');
+            if (!textEl) return;
+            if (typingTimer) clearTimeout(typingTimer);
+            isTyping = false;
+            textEl.textContent = typingText;
+        }
+        
+        // API 配置保存
+        function saveApiConfig() {
+            const apiName = document.getElementById('apiName').value.trim();
+            const apiUrl = document.getElementById('apiUrl').value.trim();
+            const apiKey = document.getElementById('settingsApiKey').value.trim();
+            const apiModel = document.getElementById('apiModel').value.trim();
+            
+            if (!apiName || !apiUrl || !apiKey) {
+                alert('⚠️ 请填写完整的 API 配置信息');
+                return;
+            }
+            
+            const config = {
+                name: apiName,
+                url: apiUrl,
+                key: apiKey,
+                model: apiModel || 'gpt-3.5-turbo'
+            };
+            
+            localStorage.setItem('apiConfig', JSON.stringify(config));
+            
+            // 保存成功反馈
+            const btn = event.target;
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '✅ 配置已保存';
+            btn.style.background = '#10b981';
+            setTimeout(() => {
+                btn.innerHTML = originalText;
+                btn.style.background = '';
+            }, 2000);
+        }
+
+        // 加载 API 配置
+        function loadApiConfig() {
+            const savedConfig = localStorage.getItem('apiConfig');
+            if (savedConfig) {
+                try {
+                    const config = JSON.parse(savedConfig);
+                    document.getElementById('apiName').value = config.name || '';
+                    document.getElementById('apiUrl').value = config.url || '';
+                    document.getElementById('settingsApiKey').value = config.key || '';
+                    
+                    // 如果有保存的模型，添加到下拉框
+                    if (config.model) {
+                        const modelSelect = document.getElementById('apiModel');
+                        // 如果列表里没有这个选项，动态加一个
+                        if (!Array.from(modelSelect.options).some(opt => opt.value === config.model)) {
+                             const option = document.createElement('option');
+                             option.value = config.model;
+                             option.textContent = config.model;
+                             modelSelect.appendChild(option);
+                        }
+                        modelSelect.value = config.model;
+                    }
+                } catch (e) {
+                    console.error('Config load failed', e);
+                }
+            }
+        }
+        // 测试 API 连接并获取模型列表
+        async function testApiConnection() {
+            const apiUrl = document.getElementById('apiUrl').value.trim();
+            const apiKey = document.getElementById('settingsApiKey').value.trim();
+            const resultDiv = document.getElementById('apiTestResult');
+            const modelSelect = document.getElementById('apiModel');
+
+            if (!apiUrl || !apiKey) {
+                showApiTestResult(' 请先填写 API URL 和 Key', 'error');
+                return;
+            }
+
+            showApiTestResult('🔄 正在测试连接...', 'loading');
+
+            try {
+                // 尝试获取模型列表
+                // 兼容：有些代理需要 /v1/models，有些是 /models
+                let modelsUrl = apiUrl.replace(/\/$/, '');
+                if (modelsUrl.endsWith('/v1')) modelsUrl = modelsUrl.replace(/\/v1$/, '');
+                if (modelsUrl.endsWith('/chat/completions')) modelsUrl = modelsUrl.replace(/\/chat\/completions$/, '');
+                modelsUrl += '/models';
+                
+                const res = await fetch(modelsUrl, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': 'Bearer ' + apiKey,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (!res.ok) {
+                    const errorText = await res.text();
+                    showApiTestResult(` 连接失败: ${res.status} ${res.statusText}`, 'error');
+                    console.error('API Error:', errorText);
+                    return;
+                }
+
+                const data = await res.json();
+                
+                if (data.data && Array.isArray(data.data)) {
+                    // 成功获取模型列表
+                    const models = data.data;
+                    showApiTestResult(` 连接成功！找到 ${models.length} 个可用模型`, 'success');
+                    
+                    // 填充模型下拉框
+                    modelSelect.innerHTML = '<option value="">-- 请选择模型 --</option>';
+                    models.forEach(model => {
+                        const option = document.createElement('option');
+                        option.value = model.id;
+                        option.textContent = model.id;
+                        modelSelect.appendChild(option);
+                    });
+
+                    // 如果之前保存过模型，自动选中
+                    const savedConfig = localStorage.getItem('apiConfig');
+                    if (savedConfig) {
+                        try {
+                            const config = JSON.parse(savedConfig);
+                            if (config.model) {
+                                modelSelect.value = config.model;
+                            }
+                        } catch (e) {}
+                    }
+                } else {
+                    showApiTestResult('✅ 连接成功！但未能获取模型列表，请手动输入模型名', 'warning');
+                }
+            } catch (error) {
+                showApiTestResult(` 网络错误: ${error.message}`, 'error');
+                console.error('Fetch error:', error);
+            }
+        }
+
+        function showApiTestResult(message, type) {
+            const resultDiv = document.getElementById('apiTestResult');
+            if (!resultDiv) return;
+
+            const colors = {
+                success: 'background: rgba(16, 185, 129, 0.2); border: 1px solid rgba(16, 185, 129, 0.4); color: #10b981;',
+                error: 'background: rgba(239, 68, 68, 0.2); border: 1px solid rgba(239, 68, 68, 0.4); color: #ef4444;',
+                warning: 'background: rgba(245, 158, 11, 0.2); border: 1px solid rgba(245, 158, 11, 0.4); color: #f59e0b;',
+                loading: 'background: rgba(59, 130, 246, 0.2); border: 1px solid rgba(59, 130, 246, 0.4); color: #3b82f6;'
+            };
+
+            resultDiv.style.cssText = colors[type] || colors.loading;
+            resultDiv.textContent = message;
+            resultDiv.style.display = 'block';
+        }
+
+        // 主题切换（v20 版本的主题系统）
+        function changeTheme(theme) {
+            document.body.setAttribute('data-theme', theme);
+            localStorage.setItem('theme', theme);
+            
+            // 更新主题按钮状态
+            document.querySelectorAll('.theme-btn').forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.getAttribute('data-theme') === theme) {
+                    btn.classList.add('active');
+                }
+            });
+        }
+
+        // 加载主题
+        function loadTheme() {
+            const savedTheme = localStorage.getItem('theme') || 'purple';
+            changeTheme(savedTheme);
+        }
+
+        // ===== 个人设定：本地多档位 + 头像上传 =====
+        function loadPersonas() {
+            try {
+                const raw = localStorage.getItem(PERSONA_STORAGE);
+                if (!raw) return [];
+                const list = JSON.parse(raw);
+                return Array.isArray(list) ? list : [];
+            } catch (e) {
+                return [];
+            }
+        }
+
+        function savePersonas(list) {
+            localStorage.setItem(PERSONA_STORAGE, JSON.stringify(list));
+        }
+
+        function initPersonas() {
+            renderPersonaStrip();
+            
+            // 游戏文本区域点击：正在打字时跳过动画
+            const box = document.getElementById('gameTextBox');
+            if (box) {
+                box.addEventListener('click', () => {
+                    if (isTyping) {
+                        skipTyping();
+                    }
+                });
+            }
+        }
+        
+        // ==========================================
+        //  修复版：身份栏渲染 (支持高亮 + 新建按钮)
+        // ==========================================
+        function renderPersonaStrip() {
+            const strip = document.getElementById('persona-strip');
+            if (!strip) return;
+            
+            strip.className = 'persona-strip-container'; 
+            strip.innerHTML = '';
+
+            // 1. 【固定添加】第一个圈圈：“+ 新身份”
+            const newBtn = document.createElement('div');
+            newBtn.className = 'story-ring';
+            newBtn.onclick = () => resetPersonaForm(); 
+            // 如果是新建模式 (currentPersonaId 为 null)，给个高亮
+            const newActive = currentPersonaId === null ? 'border: 2px solid var(--primary);' : '';
+
+            newBtn.innerHTML = `
+                <div class="story-avatar-wrap new-btn" style="${newActive}">
+                    <div class="story-avatar-inner">
+                        <span style="font-size:24px; color:var(--text-main);">+</span>
+                    </div>
+                </div>
+                <div class="story-name">新身份</div>
+            `;
+            strip.appendChild(newBtn);
+
+            // 2. 【渲染列表】读取保存的身份
+            const list = loadPersonas();
+            list.forEach((p) => {
+                const item = document.createElement('div');
+                item.className = 'story-ring';
+                item.onclick = () => loadPersonaDetail(p); 
+                
+                const imgContent = p.avatar 
+                    ? `<img src="${p.avatar}">` 
+                    : `<span style="font-size:20px">👤</span>`;
+
+                // 选中高亮逻辑
+                const isSelected = (currentPersonaId === p.id);
+                const activeStyle = isSelected ? 'border: 2px solid var(--primary); transform: scale(1.1); transition: all 0.2s;' : '';
+
+                item.innerHTML = `
+                    <div class="story-avatar-wrap" style="${activeStyle}">
+                        <div class="story-avatar-inner">
+                            ${imgContent}
+                        </div>
+                    </div>
+                    <div class="story-name">${p.name || '未命名'}</div>
+                `;
+                strip.appendChild(item);
+            });
+        }
+
+        // ==========================================
+        //  修复版：保存逻辑 (含异常处理 + 更新旧档)
+        // ==========================================
+        function savePersona() {
+            const name = document.getElementById('persona-name').value.trim();
+            const desc = document.getElementById('persona-desc').value.trim();
+            const imgEl = document.getElementById('persona-avatar-preview');
+            // 只有显示的图片才算有效
+            const avatar = (imgEl.style.display !== 'none' && imgEl.src) ? imgEl.src : '';
+            
+            if (!name) {
+                showToastMsg("❌ 至少起个名字吧~");
+                return;
+            }
+
+            let list = loadPersonas();
+
+            try {
+                if (currentPersonaId) {
+                    // --- 情况A：修改已有身份 ---
+                    const index = list.findIndex(p => p.id === currentPersonaId);
+                    if (index !== -1) {
+                        list[index] = { ...list[index], name, desc, avatar };
+                        showToastMsg("💾 身份信息已更新");
+                    }
+                } else {
+                    // --- 情况B：创建新身份 ---
+                    const newId = Date.now();
+                    const newP = { id: newId, name, desc, avatar };
+                    list.push(newP);
+                    currentPersonaId = newId; // 保存后自动选中它
+                    showToastMsg("✨ 新身份已创建");
+                }
+
+                savePersonas(list);
+                renderPersonaStrip(); // 刷新顶部栏状态
+
+            } catch (e) {
+                // 捕获存储满的错误
+                if (e.name === 'QuotaExceededError') {
+                    alert(" 保存失败：图片太大了！\n浏览器存不下了，请换张小图或者不传头像。");
+                } else {
+                    console.error(e);
+                    alert("保存出错：" + e.message);
+                }
+            }
+        }
+
+        // 切换到：新建模式
+        function resetPersonaForm() {
+            document.getElementById('persona-name').value = '';
+            document.getElementById('persona-desc').value = '';
+            document.getElementById('persona-avatar-preview').style.display = 'none';
+            document.getElementById('persona-avatar-preview').src = '';
+            document.getElementById('persona-placeholder').style.display = 'block';
+            
+            currentPersonaId = null; // null 代表新建
+            
+            showToastMsg(" 切换至新建模式");
+            renderPersonaStrip();
+        }
+
+        // 切换到：查看模式
+        function loadPersonaDetail(p) {
+            document.getElementById('persona-name').value = p.name || '';
+            document.getElementById('persona-desc').value = p.desc || '';
+            currentPersonaId = p.id; 
+            
+            if (p.avatar) {
+                const img = document.getElementById('persona-avatar-preview');
+                img.src = p.avatar;
+                img.style.display = 'block';
+                document.getElementById('persona-placeholder').style.display = 'none';
+            } else {
+                document.getElementById('persona-avatar-preview').style.display = 'none';
+                document.getElementById('persona-placeholder').style.display = 'block';
+            }
+            
+            renderPersonaStrip(); // 刷新高亮
+        }
+        
+        // ==========================================
+        //  修复版：图片压缩 (防止存不下)
+        // ==========================================
+        function onAvatarFileChange(e) {
+             const file = e.target.files[0];
+             if(!file) return;
+
+             // 提示一下大文件
+             if (file.size > 2 * 1024 * 1024) {
+                 showToastMsg(" 图片较大，正在压缩...");
+             }
+
+             const reader = new FileReader();
+             reader.onload = function(evt) {
+                 const img = new Image();
+                 img.src = evt.target.result;
+                 img.onload = function() {
+                     // 创建 Canvas 压缩图片
+                     const canvas = document.createElement('canvas');
+                     const ctx = canvas.getContext('2d');
+                     
+                     // 限制最大宽高为 300px (头像够用了)
+                     const MAX_SIZE = 300;
+                     let width = img.width;
+                     let height = img.height;
+                     
+                     if (width > height) {
+                         if (width > MAX_SIZE) {
+                             height *= MAX_SIZE / width;
+                             width = MAX_SIZE;
+                         }
+                     } else {
+                         if (height > MAX_SIZE) {
+                             width *= MAX_SIZE / height;
+                             height = MAX_SIZE;
+                         }
+                     }
+                     
+                     canvas.width = width;
+                     canvas.height = height;
+                     ctx.drawImage(img, 0, 0, width, height);
+                     
+                     // 压缩为 JPEG，质量 0.7
+                     const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.7);
+                     
+                     const previewEl = document.getElementById('persona-avatar-preview');
+                     previewEl.src = compressedDataUrl;
+                     previewEl.style.display = 'block';
+                     document.getElementById('persona-placeholder').style.display = 'none';
+                 };
+             };
+             reader.readAsDataURL(file);
+        }
+        
+        function clearMemory() {
+             if(confirm("确定要清空所有记忆吗？")) {
+                 // 清空数据
+                 const dungeonKey = 'dungeon_forbidden_city'; // 或者使用当前副本的Key
+                 localStorage.removeItem('infinite.all_saves');
+                 
+                 // 重新渲染空的回廊
+                 const container = document.getElementById('storyLog');
+                 if(container) container.innerHTML = '<div style="text-align:center; color:var(--text-muted); padding:20px;">暂无探索记录</div>';
+             }
+        }
+
+        // ===== 剧本管理 =====
         function loadCustomStory() {
             const raw = localStorage.getItem(STORY_STORAGE);
             if (!raw) {
@@ -745,11 +1693,14 @@
             }
             try {
                 let parsed = JSON.parse(raw);
+                // 核心：调用适配器
                 parsed = adaptEditorData(parsed);
                 
                 if (parsed.meta && parsed.scripts) {
+                    // 新标准格式
                     currentDungeon = parsed;
                 } else if (parsed.start || parsed.main_story) {
+                    // 兼容旧格式：如果上传的是纯 scripts
                     currentDungeon = {
                         meta: { title: "自定义剧本", desc: "本地上传的剧本文件", cover: "", tags: ["本地"] },
                         characters: [],
@@ -772,8 +1723,11 @@
             reader.onload = function(e) {
                 try {
                     let json = JSON.parse(e.target.result);
-                    json = adaptEditorData(json);
                     
+                    // 核心修改点：调用适配器转换数据
+                    json = adaptEditorData(json); 
+                    
+                    // 转换后的校验
                     if (!json.scripts && !json.start && !json.main_story) {
                         throw new Error("JSON必须包含 scripts 或 start 节点");
                     }
@@ -806,415 +1760,285 @@
             }
         }
 
-        // ... (API配置, 字体, 样式, 登录等通用函数保持不变) ...
-        // 为了节省篇幅，这里复用你之前的通用函数代码。
-        // 请确保 applyCustomFont, loadCustomFont, switchView, enterHub, showInstanceDetail, exitGame,
-        // typeWriter, skipTyping, saveApiConfig, loadApiConfig, testApiConnection, 
-        // changeTheme, loadTheme, Personas相关函数, CSS相关函数 都存在。
-        
-        // 补全缺失的通用函数 (以免复制出错)
-        function applyCustomFont() {
-            const url = document.getElementById('customFontUrl').value.trim();
-            if(!url) return;
-            if (url.endsWith('.css') || url.includes('fonts.googleapis.com')) {
-                const link = document.createElement('link'); link.rel = 'stylesheet'; link.href = url; document.head.appendChild(link);
-            } else {
-                const style = document.createElement('style');
-                style.innerHTML = `@font-face { font-family: 'UserCustomFont'; src: url('${url}'); } body { font-family: 'UserCustomFont', var(--font-main) !important; }`;
-                document.head.appendChild(style);
-            }
-            localStorage.setItem(FONT_STORAGE, url);
-            showToastMsg("✨ 字体已应用");
-        }
-        function loadCustomFont() {
-            const url = localStorage.getItem(FONT_STORAGE);
-            if(url) {
-                document.getElementById('customFontUrl').value = url;
-                if (url.endsWith('.css') || url.includes('fonts.googleapis.com')) {
-                     const link = document.createElement('link'); link.rel = 'stylesheet'; link.href = url; document.head.appendChild(link);
-                } else {
-                    const style = document.createElement('style');
-                    style.innerHTML = `@font-face { font-family: 'UserCustomFont'; src: url('${url}'); } body { font-family: 'UserCustomFont', var(--font-main) !important; }`;
-                    document.head.appendChild(style);
-                }
-            }
-        }
-        function switchView(viewName) {
-            document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
-            const target = document.getElementById('view-' + viewName);
-            if (target) target.classList.add('active');
-            if (viewName === 'gallery') renderGallery();
-            document.querySelectorAll('.dock-item').forEach(el => el.classList.remove('active'));
-            const dockItems = document.querySelectorAll('.dock-item');
-            const viewMap = {'hub':0, 'gallery':1, 'shop':2, 'persona':3, 'settings':4};
-            if (dockItems[viewMap[viewName]]) dockItems[viewMap[viewName]].classList.add('active');
-        }
-        function enterHub() {
-            const username = document.getElementById('username').value.trim();
-            if (!username) return;
-            document.getElementById('displayName').textContent = username;
-            localStorage.setItem(USERNAME_STORAGE, username);
-            document.getElementById('loginPage').style.display = 'none';
-            document.getElementById('mainHub').style.display = 'block';
-            switchView('hub');
-        }
-        function showInstanceDetail() { switchView('detail'); }
-        function exitGame() {
-            document.getElementById('gameContainer').style.display = 'none';
-            document.getElementById('mainHub').style.display = 'block';
-            document.querySelector('.dock-nav').style.display = 'flex';
-            switchView('detail');
-        }
-        function saveApiConfig() {
-            const config = { name: document.getElementById('apiName').value, url: document.getElementById('apiUrl').value, key: document.getElementById('settingsApiKey').value, model: document.getElementById('apiModel').value };
-            localStorage.setItem('apiConfig', JSON.stringify(config));
-            showToastMsg("✅ 配置已保存");
-        }
-        function loadApiConfig() {
-            const saved = localStorage.getItem('apiConfig');
-            if(saved) {
-                const c = JSON.parse(saved);
-                document.getElementById('apiName').value = c.name || '';
-                document.getElementById('apiUrl').value = c.url || '';
-                document.getElementById('settingsApiKey').value = c.key || '';
-            }
-        }
-        async function testApiConnection() { showToastMsg("功能与之前一致，略过展示代码以节省空间"); } 
-        // (注：为防止代码过长截断，假设你保留了 testApiConnection, changeTheme 等未修改的函数)
-        // 务必保留 loadTheme, changeTheme, showApiTestResult, savePersonas, loadPersonas, renderPersonaStrip...
-        
-        // 此处补全缺失的重要逻辑函数
-        function changeTheme(theme) {
-            document.body.setAttribute('data-theme', theme);
-            localStorage.setItem('theme', theme);
-            document.querySelectorAll('.theme-btn').forEach(btn => {
-                btn.classList.remove('active');
-                if (btn.getAttribute('data-theme') === theme) btn.classList.add('active');
-            });
-        }
-        function loadTheme() { changeTheme(localStorage.getItem('theme') || 'purple'); }
-
-        // Start Game 逻辑更新：使用 currentDungeon.scripts
-        function startGame(mode) {
-            if (mode === 'start' || mode === 'endless') {
-                if (!currentPersonaId) { openPersonaModal(mode); return; }
-            }
-
-            const mainHub = document.getElementById('mainHub');
-            const game = document.getElementById('gameContainer');
-            const dock = document.querySelector('.dock-nav');
-
-            if (mainHub) mainHub.style.display = 'none';
-            if (dock) dock.style.display = 'none';
-            if (game) game.style.display = 'block';
-            
-            updateGameDisplayName();
-
-            // 获取当前生效的脚本
-            const activeScripts = currentDungeon.scripts;
-
-            if (mode === 'continue') {
-                const saveRaw = localStorage.getItem('infinite.save');
-                if (saveRaw) {
-                    const save = JSON.parse(saveRaw);
-                    // 恢复记忆需要挂在 global 上吗？不，我们动态传
-                    activeScripts.memory = save.memory || ''; 
-                    loadScene(save.currentSceneId);
-                    return;
-                } else {
-                    alert("没有找到自动存档，将开始新游戏");
-                }
-            }
-
-            if (mode !== 'continue') {
-                activeScripts.memory = "故事开端。";
-                localStorage.removeItem('infinite.save');
-            }
-
-            let firstScene = 'start';
-            if (mode === 'endless' && activeScripts['plotBeginAi']) {
-                firstScene = 'plotBeginAi';
-            } else if (!activeScripts[firstScene]) {
-                const keys = Object.keys(activeScripts);
-                if (keys.length > 0) firstScene = keys[0];
-            }
-            
-            loadScene(firstScene);
-        }
-
-        async function loadScene(sceneId) {
-            currentSceneId = sceneId;
-            saveProgress(false);
-
-            const activeScripts = currentDungeon.scripts;
-            let scene = activeScripts[sceneId];
-            const bgEl = document.getElementById('gameBg');
-            const optionsEl = document.getElementById('gameOptions');
-
-            if (!scene && sceneId.startsWith('ai_')) {
-                scene = { type: 'ai', prompt: `（接续剧情）请继续刚才的故事。场景ID: ${sceneId}。`, bg: '' };
-            }
-
-            if (!scene) { alert('剧本结束或场景丢失：' + sceneId); exitGame(); return; }
-
-            if (bgEl && scene.bg) bgEl.style.backgroundImage = `url(${scene.bg})`;
-            if (optionsEl) optionsEl.innerHTML = '';
-
-            if (!scene.type || scene.type === 'fixed') {
+        // 适配器函数 (必须在 loadCustomStory 之前)
+        function adaptEditorData(json) {
+            // 1. 检查是否是编辑器格式（特征：有 worldview 和 main_story）
+            if (json.worldview && json.main_story) {
+                console.log("检测到编辑器格式，正在转换...");
                 
-                const allPersonas = loadPersonas();
-                const myPersona = allPersonas.find(p => p.id === currentPersonaId);
-                const playerName = myPersona ? myPersona.name : "你";
-
-                // 替换文本中的 {{user}}
-                let displayText = scene.text || '';
-                displayText = displayText.replace(/{{user}}/g, playerName);
+                // --- A. 转换元数据 (Meta) ---
+                let coverImg = "";
+                const firstMain = json.main_story[Object.keys(json.main_story)[0]];
+                if (firstMain && firstMain.background) coverImg = firstMain.background;
                 
-                typeWriter(displayText);
-                if (scene.options && scene.options.length) {
-                    scene.options.forEach(opt => {
-                        const btn = document.createElement('button');
-                        btn.className = 'game-option-btn';
-                        btn.textContent = opt.text || opt.label; 
-                        btn.onclick = () => opt.nextScene ? loadScene(opt.nextScene) : exitGame();
-                        optionsEl.appendChild(btn);
+                const newMeta = {
+                    title: json.worldview.name || "未知世界",
+                    desc: json.worldview.description || "暂无简介",
+                    cover: coverImg, 
+                    tags: ["编辑器作品", "自定义"]
+                };
+
+                // --- B. 转换角色 (Characters) ---
+                const newChars = [];
+                if (json.characters) {
+                    Object.values(json.characters).forEach(c => {
+                        newChars.push({
+                            name: c.name,
+                            avatar: c.avatar || "" 
+                        });
                     });
                 }
-                return;
-            }
 
-            if (scene.type === 'ai') {
-                const textEl = document.getElementById('gameText');
-                if (textEl) textEl.innerHTML = '⚡ 正在连接神经元...';
+                // --- C. 转换剧本 (Scripts) ---
+                const allScenes = { 
+                    ...json.main_story, 
+                    ...json.side_stories, 
+                    ...json.char_routes 
+                };
                 
-                // 这里调用 AI 生成，需传入 activeScripts 以便读取 memory
-                const generated = await generateAiSceneText(sceneId, scene, activeScripts);
+                const newScripts = {};
                 
-                if (typeof generated === 'string' && generated.startsWith('❌')) {
-                    typeWriter(generated); 
-                    const btn = document.createElement('button'); btn.className = 'game-option-btn'; btn.textContent = '重试'; btn.onclick = () => loadScene(sceneId); optionsEl.appendChild(btn);
-                    return;
-                }
+                Object.entries(allScenes).forEach(([key, scene]) => {
+                    const newOptions = (scene.options || []).map(opt => ({
+                        text: opt.label,      
+                        nextScene: opt.nextScene 
+                    }));
 
-                const finalText = generated.text || 'AI 生成了空内容';
-                typeWriter(finalText);
-
-                if (generated.options && generated.options.length) {
-                    optionsEl.innerHTML = '';
-                    generated.options.forEach(opt => {
-                        const btn = document.createElement('button');
-                        btn.className = 'game-option-btn';
-                        btn.textContent = opt.text;
-                        btn.onclick = () => {
-                            let nextId = opt.nextScene;
-                            if (!nextId || nextId === 'null') {
-                                nextId = 'ai_next_' + Date.now();
-                                activeScripts[nextId] = { type: 'ai', bg: scene.bg, prompt: `用户选择了：${opt.text}。请根据这个选择继续剧情。` };
-                            }
-                            loadScene(nextId);
-                        };
-                        optionsEl.appendChild(btn);
-                    });
-                }
-            }
-        }
-
-        // 修改 AI 函数以接收 scripts 对象
-        async function generateAiSceneText(sceneId, scene, scriptsObj) {
-            const configRaw = localStorage.getItem('apiConfig');
-            if (!configRaw) return ' 未配置 API';
-            const config = JSON.parse(configRaw);
-            if (!config.key) return ' API Key 为空';
-
-            let baseUrl = config.url || 'https://api.openai.com/v1';
-            baseUrl = baseUrl.replace(/\/+$/, '') + (baseUrl.endsWith('/v1') ? '' : '/v1') + '/chat/completions';
-
-            const allPersonas = loadPersonas();
-            const myPersona = allPersonas.find(p => p.id === currentPersonaId) || { name: "玩家", desc: "普通人" };
-            const memory = scriptsObj.memory || "";
-            
-            const systemInstruction = `你是一个无限流文字游戏的 AI 导演。
-            玩家人设：${myPersona.name} (${myPersona.desc})。
-            前情提要：${memory}
-            请接续剧情，输出JSON：{"text": "...", "options": [{"text":"...", "nextScene":"null"}]}`;
-
-            try {
-                const res = await fetch(baseUrl, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + config.key },
-                    body: JSON.stringify({
-                        model: config.model || 'gpt-3.5-turbo',
-                        messages: [{ role: 'system', content: systemInstruction }, { role: 'user', content: scene.prompt || "继续剧情" }],
-                        temperature: 0.85
-                    })
+                    newScripts[key] = {
+                        type: 'fixed', 
+                        text: scene.text, 
+                        bg: scene.background, 
+                        options: newOptions
+                    };
                 });
-                const data = await res.json();
-                const content = data.choices?.[0]?.message?.content;
-                let parsed;
-                try { parsed = JSON.parse(content.replace(/```json/g, '').replace(/```/g, '').trim()); } 
-                catch { parsed = { text: content, options: [{text:"继续", nextScene:"next"}] }; }
-                
-                if (parsed.text) {
-                    let newMem = memory + "\n" + parsed.text;
-                    if (newMem.length > 2000) newMem = "..." + newMem.slice(-2000);
-                    scriptsObj.memory = newMem;
-                    saveProgress();
+
+                // --- D. 处理入口节点 (Start) ---
+                if (!newScripts['start']) {
+                    if (newScripts['main_1']) {
+                        newScripts['start'] = newScripts['main_1'];
+                    } else {
+                        const firstKey = Object.keys(newScripts)[0];
+                        if (firstKey) newScripts['start'] = newScripts[firstKey];
+                    }
                 }
-                return parsed;
-            } catch (e) { return `❌ 网络错误: ${e.message}`; }
-        }
 
-        function saveProgress(showToast = false) {
-            const activeScripts = currentDungeon.scripts;
-            const saveState = {
-                currentSceneId: currentSceneId || 'start',
-                memory: activeScripts.memory || "",
-                timestamp: Date.now()
-            };
-            localStorage.setItem('infinite.save', JSON.stringify(saveState));
-            if (showToast) showToastMsg("💾 自动存档已更新");
-        }
-
-        // 补全 Personas 相关函数
-        function loadPersonas() { try { return JSON.parse(localStorage.getItem(PERSONA_STORAGE)) || []; } catch { return []; } }
-        function savePersonas(list) { localStorage.setItem(PERSONA_STORAGE, JSON.stringify(list)); }
-        function initPersonas() { renderPersonaStrip(); const box = document.getElementById('gameTextBox'); if (box) box.addEventListener('click', () => { if (isTyping) skipTyping(); }); }
-        function renderPersonaStrip() {
-            const strip = document.getElementById('persona-strip'); if (!strip) return;
-            strip.innerHTML = '';
-            const newBtn = document.createElement('div'); newBtn.className = 'story-ring';
-            newBtn.onclick = resetPersonaForm;
-            newBtn.innerHTML = `<div class="story-avatar-wrap new-btn" style="${currentPersonaId===null?'border:2px solid var(--primary)':''}"><div class="story-avatar-inner"><span style="font-size:24px;">+</span></div></div><div class="story-name">新身份</div>`;
-            strip.appendChild(newBtn);
-            loadPersonas().forEach(p => {
-                const item = document.createElement('div'); item.className = 'story-ring'; item.onclick = () => loadPersonaDetail(p);
-                const img = p.avatar ? `<img src="${p.avatar}">` : `<span style="font-size:20px">👤</span>`;
-                item.innerHTML = `<div class="story-avatar-wrap" style="${currentPersonaId===p.id?'border:2px solid var(--primary);transform:scale(1.1)':''}"><div class="story-avatar-inner">${img}</div></div><div class="story-name">${p.name}</div>`;
-                strip.appendChild(item);
-            });
-        }
-        function savePersona() {
-            const name = document.getElementById('persona-name').value.trim();
-            const desc = document.getElementById('persona-desc').value.trim();
-            const src = document.getElementById('persona-avatar-preview').src;
-            const avatar = (document.getElementById('persona-avatar-preview').style.display !== 'none') ? src : '';
-            if(!name) { showToastMsg("❌ 名字?"); return; }
-            let list = loadPersonas();
-            if(currentPersonaId) {
-                const idx = list.findIndex(p=>p.id===currentPersonaId);
-                if(idx!==-1) list[idx] = {...list[idx], name, desc, avatar};
-            } else {
-                const id = Date.now(); list.push({id, name, desc, avatar}); currentPersonaId = id;
+                return {
+                    meta: newMeta,
+                    characters: newChars,
+                    scripts: newScripts
+                };
             }
-            try { savePersonas(list); renderPersonaStrip(); showToastMsg("💾 保存成功"); } catch(e) { alert("图片太大存不下"); }
-        }
-        function resetPersonaForm() {
-            document.getElementById('persona-name').value = ''; document.getElementById('persona-desc').value = '';
-            document.getElementById('persona-avatar-preview').style.display='none'; document.getElementById('persona-placeholder').style.display='block';
-            currentPersonaId = null; renderPersonaStrip();
-        }
-        function loadPersonaDetail(p) {
-            document.getElementById('persona-name').value = p.name; document.getElementById('persona-desc').value = p.desc;
-            currentPersonaId = p.id;
-            const img = document.getElementById('persona-avatar-preview');
-            if(p.avatar) { img.src=p.avatar; img.style.display='block'; document.getElementById('persona-placeholder').style.display='none'; }
-            else { img.style.display='none'; document.getElementById('persona-placeholder').style.display='block'; }
-            renderPersonaStrip();
-        }
-        function onAvatarFileChange(e) { /* 省略压缩逻辑以节省空间，功能同前 */ 
-            const file = e.target.files[0]; if(!file) return;
-            const reader = new FileReader(); reader.onload = function(evt) { document.getElementById('persona-avatar-preview').src = evt.target.result; document.getElementById('persona-avatar-preview').style.display='block'; document.getElementById('persona-placeholder').style.display='none'; }; reader.readAsDataURL(file);
+            // 如果不是编辑器格式，原样返回
+            return json;
         }
 
-        // 补全打字机和基础UI交互
-        function typeWriter(text) {
-            const el = document.getElementById('gameText'); if(!el) return;
-            if(typingTimer) clearTimeout(typingTimer);
-            typingText = text; typingIndex=0; isTyping=true; el.textContent='';
-            const step = () => { if(!isTyping) return; if(typingIndex>=typingText.length) { el.textContent=typingText; isTyping=false; return; } el.textContent+=typingText.charAt(typingIndex++); typingTimer=setTimeout(step, 30); };
-            step();
-        }
-        function skipTyping() { if(!isTyping) return; document.getElementById('gameText').textContent=typingText; isTyping=false; clearTimeout(typingTimer); }
-        function showToastMsg(msg) { const t=document.getElementById('toast'); t.textContent=msg; t.style.display='block'; t.style.animation='popIn 0.3s'; setTimeout(()=>t.style.display='none', 2000); }
-        function updateGameDisplayName() {} // 占位
-        function openPersonaModal(mode) { pendingGameMode=mode; document.getElementById('personaModal').style.display='flex'; openSaveSlotModalLogic(false); } // 复用逻辑需拆分，这里简化直接调之前的逻辑
-        function openSaveSlotModal() { openSaveSlotModalLogic(true); } 
-        
+        // ==========================================
+        //  新逻辑：人设联动与弹窗检查
+        // ==========================================
+
+        // 打开选择弹窗
+        let pendingGameMode = null; // 暂存用户想玩什么模式
+
         // 重新实现 SaveSlot 和 PersonaModal 的区分
-        // 由于代码合并，这里简单处理：如果是startGame调用的，显示人设列表；如果是点击存档，显示存档列表
-        // 实际上 personaModal 和 saveSlotModal 复用了同一个DOM结构，需要通过JS修改内容
+        // 复用逻辑：如果是startGame调用的，显示人设列表；如果是点击存档，显示存档列表
+        function openPersonaModal(mode = null) {
+            pendingGameMode = mode;
+            document.getElementById('personaModal').style.display = 'flex';
+            openSaveSlotModalLogic(false); // false 表示不是存档模式，是选人设模式
+        }
+
+        function openSaveSlotModal() {
+            document.getElementById('personaModal').style.display = 'flex';
+            openSaveSlotModalLogic(true); // true 表示是存档模式
+        }
+        
         function openSaveSlotModalLogic(isSave) {
             const modal = document.getElementById('personaModal');
             const header = modal.querySelector('.modal-header h3');
             const list = document.getElementById('modalPersonaList');
             const empty = document.getElementById('modalEmptyState');
-            modal.style.display = 'flex'; list.innerHTML = ''; list.style.display='grid'; empty.style.display='none';
+            
+            list.innerHTML = '';
+            list.style.display = 'grid';
+            empty.style.display = 'none';
 
             if (!isSave) {
-                // 显示人设列表
+                // --- 模式：选择人设 (开始游戏前) ---
                 header.textContent = "选择你的身份";
                 const ps = loadPersonas();
-                if(ps.length===0) { list.style.display='none'; empty.style.display='block'; return; }
+                
+                // 新建身份按钮
+                const newBtn = document.createElement('div');
+                newBtn.className = 'persona-select-item';
+                newBtn.style.justifyContent = 'center';
+                newBtn.style.border = '1px dashed var(--primary)';
+                newBtn.innerHTML = '+ 创建新身份';
+                newBtn.onclick = goToPersonaCreate;
+                list.appendChild(newBtn);
+
+                if(ps.length === 0) { 
+                    // 已经在上面加了新建按钮，这里可以不显示 empty state，或者仅提示
+                }
+                
                 ps.forEach(p => {
-                    const el = document.createElement('div'); el.className = `persona-select-item ${currentPersonaId===p.id?'active':''}`;
-                    el.onclick = () => { currentPersonaId=p.id; closePersonaModal(); if(pendingGameMode) startGame(pendingGameMode); };
-                    const img = p.avatar ? `<img src="${p.avatar}" style="width:40px;height:40px;border-radius:50%">` : `👤`;
-                    el.innerHTML = `${img}<div style="flex:1"><b>${p.name}</b><br><small>${p.desc.slice(0,10)}</small></div>`;
+                    const el = document.createElement('div');
+                    el.className = `persona-select-item ${currentPersonaId===p.id?'active':''}`;
+                    el.onclick = () => { 
+                        currentPersonaId = p.id; 
+                        const label = document.getElementById('currentPersonaLabel');
+                        if(label) label.textContent = p.name;
+                        showToastMsg(`已切换身份：${p.name}`);
+                        closePersonaModal(); 
+                        if(pendingGameMode) startGame(pendingGameMode); 
+                    };
+                    
+                    const img = p.avatar 
+                        ? `<img src="${p.avatar}" style="width:40px;height:40px;border-radius:50%;object-fit:cover;">` 
+                        : `<div style="width:40px;height:40px;background:#333;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;">👤</div>`;
+                        
+                    el.innerHTML = `
+                        ${img}
+                        <div style="flex:1;">
+                            <div style="font-weight:bold; font-size:14px; color:var(--text-main);">${p.name}</div>
+                            <div style="font-size:12px; color:var(--text-muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:200px;">${p.desc.substring(0,20)}...</div>
+                        </div>
+                        ${currentPersonaId === p.id ? '<span style="color:var(--primary);">✅</span>' : ''}
+                    `;
                     list.appendChild(el);
                 });
             } else {
-                // 显示存档列表
+                // --- 模式：选择存档槽位 ---
                 header.textContent = "选择存档位置";
                 const dKey = 'dungeon_' + (currentDungeon.meta.title || 'custom'); // 简单的key生成
                 const allSaves = JSON.parse(localStorage.getItem('infinite.all_saves') || '{}');
-                if(!Array.isArray(allSaves[dKey])) allSaves[dKey]=[null,null,null];
+                // 确保有3个槽位
+                if(!Array.isArray(allSaves[dKey])) allSaves[dKey] = [null, null, null];
                 
                 for(let i=0; i<3; i++) {
                     const s = allSaves[dKey][i];
-                    const el = document.createElement('div'); el.className = 'persona-select-item';
-                    el.onclick = () => performSave(i, dKey);
-                    el.innerHTML = `<div style="width:30px;text-align:center">${i+1}</div><div style="flex:1"><b>存档 ${i+1}</b><br><small>${s?s.lastPlayed:'空'}</small></div><div>💾</div>`;
+                    const slotNum = i + 1;
+                    const el = document.createElement('div');
+                    el.className = 'persona-select-item';
+                    el.onclick = () => performSave(i); // 调用保存逻辑
+                    
+                    const statusText = s ? `${s.lastPlayed}` : "空存档位";
+                    const summaryText = s ? (s.summary ? s.summary.substring(0, 20) + "..." : "暂无总结") : "点击存档";
+
+                    el.innerHTML = `
+                        <div style="width:40px;height:40px;background:rgba(255,255,255,0.1);border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:bold;">${slotNum}</div>
+                        <div style="flex:1;">
+                            <div style="font-weight:bold; font-size:14px; color:var(--text-main);">存档 ${slotNum}</div>
+                            <div style="font-size:12px; color:var(--text-muted);">${statusText}</div>
+                            <div style="font-size:12px; color:var(--primary); margin-top:2px;">${summaryText}</div>
+                        </div>
+                        <div style="font-size:12px; padding:4px 8px; background:var(--primary); border-radius:4px;">覆盖</div>
+                    `;
                     list.appendChild(el);
                 }
             }
         }
-        function closePersonaModal() { document.getElementById('personaModal').style.display='none'; }
-        
-        async function performSave(slot, dKey) {
-            closePersonaModal();
-            showToastMsg("⏳ 存档中...");
-            const mem = currentDungeon.scripts.memory || "";
-            // 简单总结，不调API了省事，实际可调 generateSummary
-            const saveObj = { dungeonName: currentDungeon.meta.title, lastPlayed: new Date().toLocaleString(), memory: mem, sceneId: currentSceneId, slot: slot, summary: "剧情存档" };
-            
-            const all = JSON.parse(localStorage.getItem('infinite.all_saves') || '{}');
-            if(!Array.isArray(all[dKey])) all[dKey]=[null,null,null];
-            all[dKey][slot] = saveObj;
-            localStorage.setItem('infinite.all_saves', JSON.stringify(all));
-            showToastMsg("✅ 存档完毕");
+
+        function closePersonaModal() {
+            document.getElementById('personaModal').style.display = 'none';
+            pendingGameMode = null;
         }
 
-        function loadGameFromSlot(slotIndex) {
-            // 需要获取当前副本对应的key
-            // 这是一个Demo简化版，假设只读取当前副本的存档
-            const dKey = 'dungeon_' + (currentDungeon.meta.title || 'custom');
-            const all = JSON.parse(localStorage.getItem('infinite.all_saves') || '{}');
-            const saves = all[dKey];
-            if(saves && saves[slotIndex]) {
-                const s = saves[slotIndex];
-                currentDungeon.scripts.memory = s.memory;
-                loadScene(s.sceneId);
-                exitGame(); // 实际上应该是 enterGame，这里复用逻辑切换界面
-                document.getElementById('mainHub').style.display='none';
-                document.getElementById('gameContainer').style.display='block';
-                showToastMsg("📖 读档成功");
-            } else {
-                alert("空存档");
+        function goToPersonaCreate() {
+            closePersonaModal();
+            switchView('persona'); // 跳转到设定页
+            resetPersonaForm();    // 自动切到新建模式
+        }
+
+        function selectPersonaAndStart(p) {
+            currentPersonaId = p.id;
+            
+            // 更新界面上的小标签
+            const label = document.getElementById('currentPersonaLabel');
+            if(label) label.textContent = p.name;
+            
+            showToastMsg(` 已切换身份：${p.name}`);
+            closePersonaModal();
+            
+            // 如果之前是因为点击了“开始游戏”才弹窗的，现在自动继续
+            if (pendingGameMode) {
+                startGame(pendingGameMode);
             }
         }
         
-        // 最后的自定义CSS加载
+        // 辅助：更新游戏内名字显示
+        function updateGameDisplayName() {
+            if (!currentPersonaId) return;
+            const list = loadPersonas();
+            const p = list.find(item => item.id === currentPersonaId);
+            if (p) {
+                // 这里假设游戏界面某个地方显示名字，或者仅仅是Toast提示
+                // document.getElementById('gamePlayerName').textContent = p.name; 
+            }
+        }
+
+        // 通用辅助函数
+        function triggerAvatarUpload() { document.getElementById('persona-avatar-input').click(); }
+        
+        function showToastMsg(msg) {
+            const toast = document.getElementById('toast');
+            if (!toast) return;
+            toast.textContent = msg;
+            toast.style.display = 'block';
+            toast.style.animation = 'none';
+            toast.offsetHeight; 
+            toast.style.animation = 'popIn 0.3s';
+            
+            setTimeout(() => {
+                toast.style.display = 'none';
+            }, 2000);
+        }
+
+        // ==========================================
+        //  新增功能：自定义 CSS 逻辑
+        // ==========================================
+        const CUSTOM_CSS_STORAGE = 'infinite.custom_css';
+
+        function applyCustomCss() {
+            const css = document.getElementById('customCssInput').value;
+            localStorage.setItem(CUSTOM_CSS_STORAGE, css);
+            injectCustomStyle(css);
+            showToastMsg("🎨 样式已应用");
+        }
+
+        function clearCustomCss() {
+            if(confirm("确定要清空自定义样式吗？")) {
+                document.getElementById('customCssInput').value = '';
+                localStorage.removeItem(CUSTOM_CSS_STORAGE);
+                injectCustomStyle(''); // 移除样式
+                showToastMsg("🗑️ 样式已重置");
+            }
+        }
+
+        function injectCustomStyle(css) {
+            let style = document.getElementById('user-custom-style-tag');
+            if (!style) {
+                style = document.createElement('style');
+                style.id = 'user-custom-style-tag';
+                document.head.appendChild(style);
+            }
+            style.textContent = css;
+        }
+
+        function loadCustomCss() {
+            const savedCss = localStorage.getItem(CUSTOM_CSS_STORAGE);
+            if (savedCss) {
+                // 填充输入框
+                const input = document.getElementById('customCssInput');
+                if (input) input.value = savedCss;
+                // 应用样式
+                injectCustomStyle(savedCss);
+            }
+        }
+
+        // 立即执行加载（不修改 init 函数，直接在脚本末尾调用即可生效）
         loadCustomCss();
+        
+        // 启动
         window.onload = init;
     </script>
 </body>

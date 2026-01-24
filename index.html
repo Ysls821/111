@@ -71,7 +71,7 @@
             background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100' height='100' filter='url(%23noise)' opacity='0.05'/%3E%3C/svg%3E");
         }
 
-        /* SVG 图标通用样式 (新增) */
+        /* SVG 图标通用样式 */
         .icon {
             width: 20px; height: 20px;
             fill: none; stroke: currentColor; stroke-width: 2;
@@ -229,6 +229,44 @@
         /* 剧本上传 */
         .story-upload-area { margin-top: 30px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 20px; }
         .file-btn { display: inline-block; padding: 10px 20px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 12px; cursor: pointer; color: var(--text-muted); font-size: 13px; }
+
+        /* === 记忆回廊 新增折叠样式 === */
+        .gallery-item {
+            background:var(--glass-surface); 
+            border-radius:12px; 
+            margin-bottom:12px; 
+            border-left:4px solid var(--primary); 
+            box-shadow:var(--shadow-card); 
+            overflow:hidden;
+            transition: all 0.3s ease;
+        }
+        .gallery-header {
+            padding: 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            background: rgba(255,255,255,0.02);
+        }
+        .gallery-header:hover {
+            background: rgba(255,255,255,0.05);
+        }
+        .gallery-toggle-icon {
+            transition: transform 0.3s;
+            opacity: 0.6;
+            font-size: 12px;
+        }
+        .gallery-content {
+            padding: 0 16px 16px 16px;
+            display: none;
+            animation: fadeIn 0.3s;
+        }
+        .gallery-item.open .gallery-content {
+            display: block;
+        }
+        .gallery-item.open .gallery-toggle-icon {
+            transform: rotate(180deg);
+        }
 
         /* === 📱 移动端深度适配 (v4.5 修复版) === */
         @media (max-width: 768px) {
@@ -400,10 +438,8 @@
 
         <div class="view-section active" id="view-hub">
             <h2 class="section-header">探索世界</h2>
-            <!-- 动态渲染容器 -->
             <div class="grid-layout" id="hub-dungeon-list">
-                <!-- JS将填充内容 -->
-            </div>
+                </div>
         </div>
 
         <div class="view-section" id="view-detail">
@@ -412,16 +448,13 @@
                 返回
             </button>
 
-            <!-- 动态渲染容器 -->
             <div class="detail-layout glass-panel" id="detail-card-container">
-                <!-- JS将填充内容 -->
-            </div>
+                </div>
 
             <div class="glass-panel" style="padding: 24px; border-radius: 24px; margin-bottom: 30px;">
                 <h3 style="margin-bottom: 16px; font-weight: 700;">主要角色</h3>
                 <div class="char-scroll" id="detail-char-list">
-                    <!-- JS将填充内容 -->
-                </div>
+                    </div>
             </div>
 
             <div class="glass-panel" style="padding: 24px; border-radius: 24px;">
@@ -557,8 +590,7 @@
                 </div>
             </div>
 
-    <!-- === 新增：自定义 CSS 功能区域 (插入在 view-settings 底部) === -->
-            <div class="settings-container glass-panel setting-group" style="margin-top: 24px;">
+    <div class="settings-container glass-panel setting-group" style="margin-top: 24px;">
                 <h3 style="margin-bottom: 20px; font-size: 18px;">🎨 自定义样式 (CSS)</h3>
                 <div style="margin-bottom:10px; font-size:12px; color:var(--text-muted);">
                     在此输入 CSS 代码可覆盖系统默认样式。例如：<br>
@@ -1049,44 +1081,52 @@
             if (showToast) showToastMsg("💾 自动存档已更新");
         }
 
-        // 修复版：记忆回廊渲染 (带折叠/展开功能)
+        // ==========================================
+        //  修改：渲染记忆回廊 (支持折叠)
+        // ==========================================
         function renderGallery() {
             const container = document.getElementById('storyLog'); 
             if (!container) return;
 
+            const dungeonKey = 'dungeon_forbidden_city'; // 默认key
             const allSaves = JSON.parse(localStorage.getItem('infinite.all_saves') || '{}');
-            const keys = Object.keys(allSaves);
+            const dungeonSaves = Array.isArray(allSaves[dungeonKey]) ? allSaves[dungeonKey] : [null, null, null];
 
-            if (keys.length === 0) {
-                container.innerHTML = '<div style="text-align:center; color:var(--text-muted); padding:20px;">暂无探索记录</div>';
+            if (dungeonSaves.every(s => s === null)) {
+                container.innerHTML = '<div style="text-align:center; color:var(--text-muted); padding:20px;">暂无探索记录，请在游戏中点击存档。</div>';
                 return;
             }
 
             let html = '';
-            // 反转数组，让最新的记录显示在最上面
-            keys.reverse().forEach((key, index) => {
-                const save = allSaves[key];
-                // 生成唯一的 ID，用于折叠控制
-                const detailId = `log-detail-${index}`;
-                
-                html += `
-                    <div style="background:var(--glass-surface); border-radius:12px; padding:16px; margin-bottom:12px; border-left:4px solid var(--primary); box-shadow:var(--shadow-card);">
-                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
-                            <div>
-                                <span style="font-weight:bold; font-size:16px; color:var(--text-main); display:block;">${save.dungeonName || '未知副本'}</span>
-                                <span style="font-size:12px; color:var(--text-muted);">${save.lastPlayed}</span>
-                            </div>
-                            <button class="btn-glow" style="padding:4px 10px; font-size:12px; height:auto; width:auto; border-radius:8px;" onclick="toggleLogDetail('${detailId}')">
-                                📜 展开/收起
-                            </button>
-                        </div>
+            dungeonSaves.forEach((save, index) => {
+                if (!save) return;
 
-                        <div id="${detailId}" style="display:none; margin-top:12px; padding-top:12px; border-top:1px solid rgba(255,255,255,0.1);">
-                            <div style="font-size:13px; color:var(--text-main); line-height:1.8; white-space: pre-wrap;">${save.memory}</div>
-                            
-                            <div style="text-align:right; margin-top:12px;">
-                                <button class="btn-glow" style="padding:6px 16px; font-size:12px; width:auto;" onclick="loadGameFromGallery('${key}')">
-                                    ⚡ 读取存档并继续
+                // 使用新样式结构：header常显，content折叠
+                html += `
+                    <div class="gallery-item" id="gallery-item-${index}">
+                        <div class="gallery-header" onclick="toggleGalleryItem(${index})">
+                            <div style="display:flex; align-items:center; gap:10px;">
+                                <span style="background:rgba(255,255,255,0.1); padding:2px 8px; border-radius:6px; font-size:12px;">存档 0${index + 1}</span>
+                                <span style="font-weight:bold; font-size:16px; color:var(--text-main);">${save.dungeonName || '未知副本'}</span>
+                            </div>
+                            <div style="display:flex; align-items:center; gap:10px;">
+                                <span style="font-size:12px; color:var(--text-muted);">${save.lastPlayed}</span>
+                                <span class="gallery-toggle-icon">▼</span>
+                            </div>
+                        </div>
+                        
+                        <div class="gallery-content">
+                            <div style="background:rgba(0,0,0,0.2); padding:12px; border-radius:8px; margin-bottom:16px;">
+                                <div style="font-size:12px; color:var(--primary); margin-bottom:4px; font-weight:bold;">剧情梗概：</div>
+                                <div style="font-size:14px; color:var(--text-muted); line-height:1.6; text-align:justify;">
+                                    ${save.summary || "（暂无总结数据）"}
+                                </div>
+                            </div>
+
+                            <div style="text-align:right;">
+                                <button class="btn-glow" style="padding:8px 20px; font-size:13px; width:auto; display:inline-flex;" onclick="loadGameFromSlot(${index})">
+                                    <svg class="icon" style="margin-right:4px;" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                                    继续探索
                                 </button>
                             </div>
                         </div>
@@ -1096,28 +1136,17 @@
             
             container.className = ''; 
             container.style.height = 'auto';
-            container.style.maxHeight = '65vh'; // 增加高度限制，内部滚动
+            container.style.maxHeight = '60vh';
             container.style.overflowY = 'auto';
             container.innerHTML = html;
         }
 
-        // 新增：折叠切换辅助函数
-        function toggleLogDetail(id) {
-            const el = document.getElementById(id);
-            if (el) {
-                if (el.style.display === 'none') {
-                    el.style.display = 'block';
-                } else {
-                    el.style.display = 'none';
-                }
+        // 新增：切换折叠状态的辅助函数
+        function toggleGalleryItem(index) {
+            const item = document.getElementById(`gallery-item-${index}`);
+            if(item) {
+                item.classList.toggle('open');
             }
-        }
-            
-            container.className = ''; 
-            container.style.height = 'auto';
-            container.style.maxHeight = '60vh';
-            container.style.overflowY = 'auto';
-            container.innerHTML = html;
         }
 
         // 新增：从槽位加载
@@ -1149,108 +1178,25 @@
             }
         }
 
-        // 修复版 loadScene：增强跳转逻辑，防止卡死
         async function loadScene(sceneId) {
-            // 1. 更新当前进度并存档
+            // 更新全局进度并自动存档
             currentSceneId = sceneId;
-            saveProgress(false); 
+            saveProgress(false); // 自动存档不弹提示
 
-            // 2. 尝试获取场景数据
-            let scene = activeStoryData[sceneId];
-
-            // 容错：如果是 AI 生成的临时后续 ID，但本地没有数据，构造临时请求
-            if (!scene && sceneId.startsWith('ai_')) {
-                scene = { type: 'ai', prompt: `（接续剧情）请继续刚才的故事。场景ID: ${sceneId}。`, bg: '' };
-            }
-
-            // 3. 如果完全找不到场景，提示错误
-            if (!scene) {
-                alert('⚠️ 剧本中断：找不到场景 ID [' + sceneId + ']\n请检查剧本文件是否完整。');
-                // 尝试返回 start 防止死循环
-                if(sceneId !== 'start') loadScene('start');
-                return;
-            }
-
-            // 4. 更新背景和清空选项区
+            // 总是从 currentDungeon.scripts 读取
+            const activeScripts = currentDungeon.scripts;
+            let scene = activeScripts[sceneId];
             const bgEl = document.getElementById('gameBg');
             const optionsEl = document.getElementById('gameOptions');
-            const textEl = document.getElementById('gameText');
 
-            if (bgEl && scene.bg) bgEl.style.backgroundImage = `url(${scene.bg})`;
-            if (optionsEl) optionsEl.innerHTML = '';
-
-            // === 分支 A：固定剧本 (Fixed) ===
-            if (!scene.type || scene.type === 'fixed') {
-                typeWriter(scene.text || '');
-                
-                // 渲染固定选项
-                if (scene.options && scene.options.length > 0) {
-                    scene.options.forEach(opt => {
-                        const btn = document.createElement('button');
-                        btn.className = 'game-option-btn';
-                        btn.textContent = opt.text || opt.label || '继续'; // 兼容不同字段名
-                        
-                        // 核心修复：明确的跳转逻辑
-                        btn.onclick = () => {
-                            // 如果 nextScene 存在且不为空，且不是 END，就跳转
-                            if (opt.nextScene && opt.nextScene !== "" && opt.nextScene !== "END") {
-                                loadScene(opt.nextScene);
-                            } else {
-                                // 否则认为是结束或退出
-                                exitGame();
-                            }
-                        };
-                        optionsEl.appendChild(btn);
-                    });
-                } else {
-                    // 如果没有选项，给一个默认的“结束”按钮，防止卡死
-                    const btn = document.createElement('button');
-                    btn.className = 'game-option-btn';
-                    btn.textContent = '【剧本结束】';
-                    btn.onclick = exitGame;
-                    optionsEl.appendChild(btn);
-                }
-            } 
-            // === 分支 B：AI 生成 (AI) ===
-            else if (scene.type === 'ai') {
-                textEl.innerHTML = '<span style="opacity:0.7">⚡ 正在连接神经元...</span>';
-                
-                const generated = await generateAiSceneText(sceneId, scene);
-                const finalText = generated.text || (typeof generated === 'string' ? generated : 'AI 生成了空内容');
-                
-                typeWriter(finalText);
-
-                if (generated.options && generated.options.length) {
-                    generated.options.forEach(opt => {
-                        const btn = document.createElement('button');
-                        btn.className = 'game-option-btn';
-                        btn.textContent = opt.text;
-                        btn.onclick = () => {
-                            let nextId = opt.nextScene;
-                            // 如果 AI 没返回 ID，或者 ID 是 null，生成一个新的时间戳 ID
-                            if (!nextId || nextId === 'null' || nextId === 'next') {
-                                nextId = 'ai_next_' + Date.now();
-                                // 临时存入 activeStoryData 以便上下文连贯
-                                activeStoryData[nextId] = { 
-                                    type: 'ai', 
-                                    bg: scene.bg, 
-                                    prompt: `用户选择了：${opt.text}。请继续剧情。` 
-                                };
-                            }
-                            loadScene(nextId);
-                        };
-                        optionsEl.appendChild(btn);
-                    });
-                } else {
-                    // 默认继续按钮
-                    const btn = document.createElement('button');
-                    btn.className = 'game-option-btn';
-                    btn.textContent = '继续';
-                    btn.onclick = () => loadScene('ai_next_' + Date.now());
-                    optionsEl.appendChild(btn);
-                }
+            // 容错：如果是 AI 生成的临时后续 ID，但本地没有数据，我们需要在这里构造一个临时的 AI 请求
+            if (!scene && sceneId.startsWith('ai_')) {
+                scene = {
+                    type: 'ai',
+                    prompt: `（接续剧情）请继续刚才的故事。场景ID: ${sceneId}。`,
+                    bg: ''
+                };
             }
-        }
 
             if (!scene) {
                 alert('剧本结束或场景丢失：' + sceneId);
@@ -1862,7 +1808,10 @@
             }
         }
 
-        // 适配器函数 (必须在 loadCustomStory 之前)
+        // ==========================================
+        //  核心修复：适配器函数
+        //  修复：自动检测线性剧情并生成“继续”按钮
+        // ==========================================
         function adaptEditorData(json) {
             // 1. 检查是否是编辑器格式（特征：有 worldview 和 main_story）
             if (json.worldview && json.main_story) {
@@ -1900,11 +1849,27 @@
                 
                 const newScripts = {};
                 
-                Object.entries(allScenes).forEach(([key, scene]) => {
-                    const newOptions = (scene.options || []).map(opt => ({
+                // 获取所有 Key 的数组，方便查找下一个场景
+                const sceneKeys = Object.keys(allScenes);
+
+                sceneKeys.forEach((key, index) => {
+                    const scene = allScenes[key];
+                    let newOptions = (scene.options || []).map(opt => ({
                         text: opt.label,      
                         nextScene: opt.nextScene 
                     }));
+
+                    // === FIX START: 自动检测线性连接 ===
+                    // 如果该场景没有选项，且列表里还有下一个场景，自动连接
+                    if (newOptions.length === 0 && index < sceneKeys.length - 1) {
+                         const nextKey = sceneKeys[index + 1];
+                         // 排除掉可能是侧边故事的乱序干扰，这里简单假设编辑器导出的顺序即为剧情顺序
+                         newOptions.push({
+                             text: "继续",
+                             nextScene: nextKey
+                         });
+                    }
+                    // === FIX END ===
 
                     newScripts[key] = {
                         type: 'fixed', 
@@ -2038,6 +2003,40 @@
                     list.appendChild(el);
                 }
             }
+        }
+
+        // 抽离的保存逻辑
+        function performSave(slotIndex) {
+            const activeScripts = currentDungeon.scripts;
+            const now = new Date();
+            const timeStr = `${now.getMonth()+1}/${now.getDate()} ${now.getHours()}:${now.getMinutes().toString().padStart(2,'0')}`;
+            
+            // 简单生成总结：取当前场景的文本前30个字
+            let summary = "当前处于探索中...";
+            if (activeScripts[currentSceneId]) {
+                const txt = activeScripts[currentSceneId].text || "";
+                summary = txt.substring(0, 50) + "...";
+            } else if (activeScripts['memory']) {
+                summary = activeScripts['memory'].substring(activeScripts['memory'].length - 50);
+            }
+
+            const saveState = {
+                dungeonName: currentDungeon.meta.title,
+                sceneId: currentSceneId || 'start',
+                memory: activeScripts.memory || "",
+                lastPlayed: timeStr,
+                summary: summary
+            };
+
+            const dKey = 'dungeon_' + (currentDungeon.meta.title || 'custom');
+            const allSaves = JSON.parse(localStorage.getItem('infinite.all_saves') || '{}');
+            if(!Array.isArray(allSaves[dKey])) allSaves[dKey] = [null, null, null];
+            
+            allSaves[dKey][slotIndex] = saveState;
+            localStorage.setItem('infinite.all_saves', JSON.stringify(allSaves));
+            
+            showToastMsg(`💾 存档 0${slotIndex+1} 保存成功`);
+            closePersonaModal();
         }
 
         function closePersonaModal() {

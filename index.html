@@ -898,7 +898,7 @@
             1. 使用第三人称。
             2. 重点概括发生的关键事件、主角的选择以及当前的状态。
             3. 字数控制在600字以内。
-            4. 语气要有代入感，像是一本小说的大纲。`;
+            4. 语气客观冷静，以线性方式记录故事经历，尽量全地总结信息。`;
 
             try {
                 const res = await fetch(finalUrl, {
@@ -1111,7 +1111,16 @@
             if (optionsEl) optionsEl.innerHTML = '';
 
             if (!scene.type || scene.type === 'fixed') {
-                typeWriter(scene.text || '');
+                // 获取当前玩家名字（如果没有人设，默认为“你”）
+const allPersonas = loadPersonas();
+const myPersona = allPersonas.find(p => p.id === currentPersonaId);
+const playerName = myPersona ? myPersona.name : "你";
+
+// 替换文本中的 {{user}}
+let displayText = scene.text || '';
+displayText = displayText.replace(/{{user}}/g, playerName);
+
+typeWriter(displayText);
                 if (scene.options && scene.options.length) {
                     scene.options.forEach(opt => {
                         const btn = document.createElement('button');
@@ -1570,44 +1579,162 @@
              }
         }
 
-        function loadCustomStory() {
-            const raw = localStorage.getItem(STORY_STORAGE);
-            if (!raw) return;
-            try {
-                const parsed = JSON.parse(raw);
-                if (parsed && typeof parsed === 'object') {
-                    if (parsed.main_story) {
-                        activeStoryData = parsed.main_story;
-                    } else {
-                        activeStoryData = parsed;
-                    }
-                }
-            } catch (e) {
-                console.warn('自定义剧本解析失败，已忽略：', e);
+        // === 新增：编辑器格式适配器 ===
+function adaptEditorData(json) {
+    // 1. 检查是否是编辑器格式（特征：有 worldview 和 main_story）
+    if (json.worldview && json.main_story) {
+        console.log("检测到编辑器格式，正在转换...");
+        
+        // --- A. 转换元数据 (Meta) ---
+        // 如果没有封面，尝试取第一张背景图或第一个角色头像
+        let coverImg = "";
+        const firstMain = json.main_story[Object.keys(json.main_story)[0]];
+        if (firstMain && firstMain.background) coverImg = firstMain.background;
+        
+        const newMeta = {
+            title: json.worldview.name || "未知世界",
+            desc: json.worldview.description || "暂无简介",
+            cover: coverImg, // 编辑器导出文件通常没有专门的封面字段，先取背景顶替
+            tags: ["编辑器作品", "自定义"]
+        };
+
+        // --- B. 转换角色 (Characters) ---
+        // 编辑器是 Object 结构 {"char_1":...}，网页需要 Array 结构 [...]
+        const newChars = [];
+        if (json.characters) {
+            Object.values(json.characters).forEach(c => {
+                newChars.push({
+                    name: c.name,
+                    avatar: c.avatar || "" // 兼容 Base64 头像
+                });
+            });
+        }
+
+        // --- C. 转换剧本 (Scripts) ---
+        // 1. 合并主线、支线、个人线
+        const allScenes = { 
+            ...json.main_story, 
+            ...json.side_stories, 
+            ...json.char_routes 
+        };
+        
+        const newScripts = {};
+        
+        // 2. 遍历所有节点进行字段映射
+        Object.entries(allScenes).forEach(([key, scene]) => {
+            // 映射选项结构
+            const newOptions = (scene.options || []).map(opt => ({
+                text: opt.label,      // 编辑器叫 label，网页叫 text
+                nextScene: opt.nextScene // 目标节点ID
+            }));
+
+            // 如果没有选项，且不是结局，自动加一个“继续”按钮指向下一段逻辑
+            // (注：这里只是简单的兜底，具体逻辑看你的编辑器是否会自动生成 nextScene)
+            // 如果编辑器数据里没有 nextScene，通常意味着是线性剧情，可能需要手动处理逻辑，
+            // 但为了防止死胡同，这里不强行加，由 JSON 数据决定。
+
+            newScripts[key] = {
+                type: 'fixed', // 编辑器导出的大多是固定文本模式
+                text: scene.text, // 处理 {{user}} 占位符在渲染时做，这里先存原始值
+                bg: scene.background, // 编辑器叫 background，网页叫 bg
+                options: newOptions
+            };
+        });
+
+        // --- D. 处理入口节点 (Start) ---
+        // 网页引擎默认从 'start' 开始，但编辑器通常从 'main_1' 开始
+        // 我们把 'main_1' 复制一份变成 'start'，或者做一个软链接
+        if (!newScripts['start']) {
+            if (newScripts['main_1']) {
+                newScripts['start'] = newScripts['main_1'];
+            } else {
+                // 如果没有 main_1，取第一个key作为起点
+                const firstKey = Object.keys(newScripts)[0];
+                if (firstKey) newScripts['start'] = newScripts[firstKey];
             }
         }
+
+        // 返回转换后的标准格式
+        return {
+            meta: newMeta,
+            characters: newChars,
+            scripts: newScripts
+        };
+    }
+    
+    // 如果不是编辑器格式，原样返回（兼容旧版JSON）
+    return json;
+}
+
+        function loadCustomStory() {
+    const raw = localStorage.getItem(STORY_STORAGE);
+    if (!raw) {
+        currentDungeon = defaultDungeon;
+        return;
+    }
+    try {
+        let parsed = JSON.parse(raw);
+        
+        // >>> 核心修改点：读取时也尝试适配（防止旧缓存问题） <<<
+        parsed = adaptEditorData(parsed);
+        // >>> 修改结束 <<<
+
+        if (parsed.meta && parsed.scripts) {
+            currentDungeon = parsed;
+        } else {
+            // 兼容旧的纯脚本格式
+            if (parsed.start || parsed.main_story) {
+                 currentDungeon = {
+                    meta: { title: "自定义剧本", desc: "本地剧本", cover: "", tags: ["本地"] },
+                    characters: [],
+                    scripts: parsed
+                };
+            } else {
+                currentDungeon = defaultDungeon;
+            }
+        }
+    } catch (e) {
+        console.warn('剧本解析失败', e);
+        currentDungeon = defaultDungeon;
+    }
+}
         
         function handleStoryUpload(event) {
-            const file = event.target.files[0];
-            if (!file) return;
+    const file = event.target.files[0];
+    if (!file) return;
+    
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        try {
+            let json = JSON.parse(e.target.result);
             
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                try {
-                    const json = JSON.parse(e.target.result);
-                    if (!json.main_story && !json.start) {
-                        throw new Error("格式不对，必须包含 main_story 或 start 节点");
-                    }
-                    localStorage.setItem(STORY_STORAGE, JSON.stringify(json));
-                    loadCustomStory();
-                    document.getElementById('storyUploadMsg').textContent = ` 成功加载: ${file.name}`;
-                    alert("剧本上传成功！请点击副本开始游戏。");
-                } catch (err) {
-                    alert("剧本文件格式错误: " + err.message);
-                }
-            };
-            reader.readAsText(file);
+            // >>> 核心修改点：调用适配器转换数据 <<<
+            json = adaptEditorData(json); 
+            // >>> 修改结束 <<<
+
+            // 转换后的校验（检查 scripts 即可，因为适配器保证了格式）
+            if (!json.scripts || !json.meta) {
+                throw new Error("无法识别的剧本格式，请确认包含 scripts 或 main_story");
+            }
+
+            localStorage.setItem(STORY_STORAGE, JSON.stringify(json));
+            
+            if(confirm("上传新剧本将覆盖当前副本并重置进度，是否继续？")) {
+                localStorage.removeItem('infinite.save');
+                localStorage.removeItem('infinite.all_saves');
+                loadCustomStory();
+                renderUI(); 
+                document.getElementById('storyUploadMsg').textContent = `✅ 成功加载: ${file.name}`;
+                alert("副本已更新！");
+                switchView('hub');
+            }
+        } catch (err) {
+            console.error(err);
+            alert("剧本文件格式错误: " + err.message);
         }
+    };
+    reader.readAsText(file);
+}
 
         function resetStory() {
             activeStoryData = storyData;

@@ -1476,6 +1476,60 @@
             isTyping = false;
             textEl.textContent = typingText;
         }
+
+        // ==========================================
+        //  🔙 找回功能：AI 剧情总结 (自动拉取记忆生成总结)
+        // ==========================================
+        async function generateSummary(memoryText) {
+            const configRaw = localStorage.getItem('apiConfig');
+            if (!configRaw) return "（未配置API，无法生成总结）";
+            const config = JSON.parse(configRaw);
+            if (!config.key) return "（API Key为空，无法生成总结）";
+
+            // 截取最近的记忆，防止超过 token 限制
+            const recentContext = memoryText.slice(-4000); 
+
+            let baseUrl = config.url || 'https://api.openai.com/v1';
+            // 处理 URL 格式
+            baseUrl = baseUrl.replace(/\/+$/, '');
+            if (baseUrl.endsWith('/chat/completions')) baseUrl = baseUrl.replace(/\/chat\/completions$/, '');
+            if (!baseUrl.endsWith('/v1')) baseUrl += '/v1';
+            const finalUrl = baseUrl + '/chat/completions';
+
+            const systemPrompt = `你是一个专业的剧情记录员。请根据提供的游戏剧情片段（最后约20轮对话），写一段剧情总结。
+            要求：
+            1. 使用第三人称。
+            2. 重点概括发生的关键事件、主角的选择以及当前的状态。
+            3. 字数控制在600字以内。
+            4. 语气客观冷静，以线性方式记录故事经历，尽量全地总结信息。`;
+
+            try {
+                const res = await fetch(finalUrl, {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json', 
+                        'Authorization': 'Bearer ' + config.key 
+                    },
+                    body: JSON.stringify({
+                        model: config.model || 'gpt-3.5-turbo',
+                        messages: [
+                            { role: 'system', content: systemPrompt },
+                            { role: 'user', content: "剧情片段：\n" + recentContext }
+                        ],
+                        temperature: 0.7
+                    })
+                });
+
+                if (!res.ok) throw new Error(res.statusText);
+
+                const data = await res.json();
+                return data.choices?.[0]?.message?.content || "（AI 总结生成失败）";
+            } catch (e) {
+                console.error("总结生成出错:", e);
+                // 降级处理：如果 AI 失败，抓取一段原文作为总结，不让存档空着
+                return "（网络连接失败，暂无详细总结）" + memoryText.slice(-100) + "...";
+            }
+        }
         
         // API 配置保存
         function saveApiConfig() {
@@ -2153,29 +2207,40 @@
             }
         }
 
-        // 抽离的保存逻辑
-        function performSave(slotIndex) {
+        // ==========================================
+        //  🔄 修改后的存档逻辑：等待 AI 总结后再保存
+        // ==========================================
+        async function performSave(slotIndex) {
+            // 1. 关闭弹窗并给用户反馈（因为生成总结需要几秒钟）
+            document.getElementById('personaModal').style.display = 'none';
+            showToastMsg("⏳ 正在生成剧情总结并存档...");
+
             const activeScripts = currentDungeon.scripts;
+            const memory = activeScripts.memory || "";
+            
+            // 2. 调用 AI 生成总结 (await 等待)
+            // 如果是新开局没记忆，就写个默认的，省流量
+            let summary = "故事刚刚开始...";
+            if (memory.length > 50) {
+                summary = await generateSummary(memory);
+            } else if (activeScripts[currentSceneId] && activeScripts[currentSceneId].text) {
+                summary = activeScripts[currentSceneId].text.substring(0, 100) + "...";
+            }
+
+            // 3. 构建存档数据
             const now = new Date();
             const timeStr = `${now.getMonth()+1}/${now.getDate()} ${now.getHours()}:${now.getMinutes().toString().padStart(2,'0')}`;
-            
-            // 简单生成总结：取当前场景的文本前30个字
-            let summary = "当前处于探索中...";
-            if (activeScripts[currentSceneId]) {
-                const txt = activeScripts[currentSceneId].text || "";
-                summary = txt.substring(0, 50) + "...";
-            } else if (activeScripts['memory']) {
-                summary = activeScripts['memory'].substring(activeScripts['memory'].length - 50);
-            }
 
             const saveState = {
                 dungeonName: currentDungeon.meta.title,
                 sceneId: currentSceneId || 'start',
-                memory: activeScripts.memory || "",
+                memory: memory,
                 lastPlayed: timeStr,
-                summary: summary
+                summary: summary, // 这里现在是 AI 生成的 600 字总结了
+                timestamp: Date.now()
             };
 
+            // 4. 写入 LocalStorage
             const dKey = 'dungeon_' + (currentDungeon.meta.title || 'custom');
             const allSaves = JSON.parse(localStorage.getItem('infinite.all_saves') || '{}');
             if(!Array.isArray(allSaves[dKey])) allSaves[dKey] = [null, null, null];
@@ -2183,8 +2248,17 @@
             allSaves[dKey][slotIndex] = saveState;
             localStorage.setItem('infinite.all_saves', JSON.stringify(allSaves));
             
-            showToastMsg(`💾 存档 0${slotIndex+1} 保存成功`);
-            closePersonaModal();
+            // 同时更新自动存档，方便“继续游戏”
+            localStorage.setItem('infinite.save', JSON.stringify(saveState));
+            
+            // 5. 完成提示
+            showToastMsg(`✅ 存档 0${slotIndex+1} 保存成功`);
+            
+            // 刷新界面
+            const galleryView = document.getElementById('view-gallery');
+            if (galleryView && galleryView.classList.contains('active')) {
+                renderGallery();
+            }
         }
 
         function closePersonaModal() {

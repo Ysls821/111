@@ -553,39 +553,192 @@
             </div>
         </div>
 
-<div class="view-section" id="view-persona">
-            <h2 class="section-header">我的设定</h2>
-            <div class="persona-container">
-                <div class="glass-panel" style="border-radius: 20px; padding: 12px 16px; margin-bottom: 20px;">
-                    <div class="persona-strip-container" id="persona-strip"></div>
-                </div>
+<!-- VIEW: Persona (完美双端适配版) -->
+        <div class="view-section hidden" id="view-persona">
+            
+            <!-- 引入字体和图标 -->
+            <link href="https://fonts.googleapis.com/css2?family=Spline+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+            <!-- 引入 Tailwind (只在此处生效样式) -->
+            <script src="https://cdn.tailwindcss.com"></script>
+            <script>
+                tailwind.config = {
+                    theme: { extend: { colors: { primary: '#8c2bee', surface: '#1e1628' } } }
+                }
+            </script>
 
-                <div class="glass-panel persona-form" style="margin-top: 16px; padding: 20px;">
-                    <div class="input-wrapper">
-                        <label class="input-label">姓名</label>
-                        <input id="persona-name" class="input-modern" placeholder="角色名">
+            <!-- 核心容器：手机是竖排(flex-col)，电脑是网格(grid-cols-12) -->
+            <div class="w-full max-w-[1400px] mx-auto p-4 lg:p-10 flex flex-col lg:grid lg:grid-cols-12 gap-8 font-['Spline_Sans'] text-white">
+                
+                <!-- === 左侧/顶部区域：角色列表 === -->
+                <!-- 手机：顶部横向；电脑：左侧占4列 -->
+                <section class="lg:col-span-4 flex flex-col gap-4 min-w-0">
+                    <div class="flex justify-between items-end px-2">
+                        <h3 class="text-gray-500 text-xs font-bold uppercase tracking-widest">Identities</h3>
+                        <span class="text-[10px] text-purple-400 bg-purple-500/10 px-2 py-0.5 rounded-full border border-purple-500/20">Local</span>
                     </div>
-                    <div class="input-wrapper">
-                        <label class="input-label">设定</label>
-                        <textarea id="persona-desc" class="input-modern" style="min-height: 100px;" placeholder="人物小传..."></textarea>
-                    </div>
-                    <div class="input-wrapper">
-                        <label class="input-label">头像</label>
-                        <div style="display:flex; align-items:center; gap:16px;">
-                            <div class="persona-avatar-slot" id="persona-avatar-slot" onclick="triggerAvatarUpload()" style="width: 60px; height: 60px; background: rgba(255,255,255,0.1); border-radius: 12px; display: flex; align-items: center; justify-content: center; cursor: pointer; overflow: hidden;">
-                                <img id="persona-avatar-preview" style="display:none; width:100%; height:100%; object-fit:cover;">
-                                <span id="persona-placeholder" style="font-size: 10px;">点击上传</span>
+
+                    <!-- 列表容器 -->
+                    <div class="bg-white/5 lg:bg-transparent rounded-2xl p-4 lg:p-0 border border-white/5 lg:border-none">
+                        <!-- 新建按钮 (JS逻辑: resetPersonaForm) -->
+                        <button onclick="resetPersonaForm()" class="hidden lg:flex w-full mb-4 items-center gap-3 p-3 rounded-xl border border-dashed border-white/20 hover:bg-white/5 transition-all group">
+                            <div class="size-10 rounded-full bg-white/5 flex items-center justify-center group-hover:scale-110 transition-transform">
+                                <span class="material-icons-round text-gray-400">add</span>
                             </div>
-                            <span style="font-size:12px; color:var(--text-muted);">仅本地保存</span>
+                            <span class="text-sm text-gray-400 font-medium">Create New Identity</span>
+                        </button>
+
+                        <!-- JS 列表挂载点 -->
+                        <!-- 关键：flex-row (手机横排) vs lg:flex-col (电脑竖排) -->
+                        <div id="persona-strip" class="flex flex-row lg:flex-col gap-4 overflow-x-auto lg:overflow-x-visible lg:overflow-y-auto custom-scroll pb-2 lg:pb-0 lg:max-h-[600px]">
+                            <!-- JS 会生成 .story-ring，我们用下面的 CSS 来控制它的变形 -->
                         </div>
-                        <input type="file" id="persona-avatar-input" accept="image/*" style="display:none;" onchange="onAvatarFileChange(event)">
                     </div>
-                    <div class="persona-actions" style="margin-top: 20px;">
-                        <button class="btn-glow" style="flex:1;" onclick="savePersona()">保存设定</button>
+                </section>
+
+                <!-- === 右侧/底部区域：编辑表单 === -->
+                <!-- 手机：下方；电脑：右侧占8列 -->
+                <div class="lg:col-span-8 flex flex-col gap-6 lg:bg-white/[0.02] lg:p-8 lg:rounded-3xl lg:border lg:border-white/5">
+                    
+                    <!-- 标题 (仅桌面显示) -->
+                    <div class="hidden lg:flex flex-col gap-2 mb-4">
+                        <h1 class="text-3xl font-bold">Configuration</h1>
+                        <p class="text-gray-400 text-sm">Edit your neural persona details.</p>
+                    </div>
+
+                    <!-- 姓名 -->
+                    <div class="flex flex-col gap-2">
+                        <label class="text-xs font-semibold text-gray-500 uppercase tracking-wider pl-1">Designation</label>
+                        <div class="relative group">
+                            <input id="persona-name" class="w-full bg-[#1e1628]/80 border border-white/10 rounded-xl px-4 py-4 text-white focus:border-purple-500 focus:ring-1 focus:ring-purple-500 focus:outline-none transition-all placeholder-white/20 text-lg shadow-inner backdrop-blur-sm" placeholder="Character Name">
+                            <span class="material-icons-round absolute right-4 top-1/2 -translate-y-1/2 text-white/20 group-focus-within:text-purple-500 transition-colors">badge</span>
+                        </div>
+                    </div>
+
+                    <!-- 描述 -->
+                    <div class="flex flex-col gap-2 flex-1">
+                        <label class="text-xs font-semibold text-gray-500 uppercase tracking-wider pl-1">Backstory</label>
+                        <textarea id="persona-desc" class="w-full h-40 lg:h-64 bg-[#1e1628]/80 border border-white/10 rounded-xl px-4 py-4 text-white focus:border-purple-500 focus:ring-1 focus:ring-purple-500 focus:outline-none transition-all placeholder-white/20 text-base leading-relaxed shadow-inner resize-none backdrop-blur-sm" placeholder="Define personality traits and history..."></textarea>
+                    </div>
+
+                    <!-- 头像上传 -->
+                    <div class="bg-gradient-to-br from-white/5 to-white/[0.02] border border-white/5 p-4 rounded-xl flex items-center gap-5">
+                        <div id="persona-avatar-slot" onclick="triggerAvatarUpload()" class="size-16 lg:size-20 rounded-2xl bg-black/40 shrink-0 border border-white/10 relative overflow-hidden group cursor-pointer flex items-center justify-center">
+                            <img id="persona-avatar-preview" class="w-full h-full object-cover hidden">
+                            <span id="persona-placeholder" class="material-icons-round text-white/20 text-2xl">add_photo_alternate</span>
+                            <div class="absolute inset-0 bg-purple-500/20 mix-blend-overlay opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                        </div>
+                        <div class="flex-1">
+                            <h4 class="text-sm font-semibold text-white">Visual Uplink</h4>
+                            <p class="text-xs text-gray-400 mt-1">Tap to upload avatar</p>
+                        </div>
+                        <!-- 隐藏 input -->
+                        <input type="file" id="persona-avatar-input" accept="image/*" class="hidden" onchange="onAvatarFileChange(event)">
+                    </div>
+
+                    <!-- 保存按钮 -->
+                    <div class="mt-auto pt-6 border-t border-white/5 flex justify-end">
+                        <button onclick="savePersona()" class="w-full lg:w-auto px-8 h-12 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-bold text-sm shadow-lg shadow-purple-500/25 transition-all flex items-center justify-center gap-2">
+                            <span class="material-icons-round">save</span>
+                            Save Configuration
+                        </button>
                     </div>
                 </div>
             </div>
-        </div> 
+
+            <!-- CSS 魔法：控制 JS 生成的元素在不同屏幕的形态 -->
+            <style>
+                /* === 1. 手机端样式 (默认) === */
+                /* 让列表变成横向排列 */
+                .story-ring {
+                    flex: 0 0 auto !important; /* 不许压缩 */
+                    width: 70px !important;    /* 固定宽度 */
+                    display: flex !important;
+                    flex-direction: column !important; /* 图标在上，文字在下 */
+                    align-items: center !important;
+                    gap: 8px !important;
+                }
+                
+                /* 图标容器 */
+                .story-avatar-wrap {
+                    width: 60px !important;
+                    height: 60px !important;
+                    border-radius: 50% !important;
+                    margin: 0 !important;
+                    padding: 2px !important;
+                }
+
+                /* 名字 */
+                .story-name {
+                    font-size: 11px !important;
+                    color: rgba(255,255,255,0.7) !important;
+                    text-align: center !important;
+                    max-width: 100% !important;
+                }
+
+                /* 选中状态高亮 (手机端: 亮圈) */
+                .story-avatar-wrap[style*="border"] {
+                    border: 2px solid #8c2bee !important;
+                    box-shadow: 0 0 15px rgba(140, 43, 238, 0.4);
+                    transform: scale(1.05);
+                }
+
+                /* 新建按钮在列表里的样子 */
+                .story-ring:first-child .story-avatar-wrap {
+                    border: 2px dashed rgba(255,255,255,0.2) !important;
+                    background: transparent !important;
+                }
+
+                /* === 2. 电脑端样式 (LG 屏幕) === */
+                @media (min-width: 1024px) {
+                    /* 让列表变成竖向长条卡片 */
+                    .story-ring {
+                        width: 100% !important;
+                        flex-direction: row !important; /* 图标在左，文字在右 */
+                        padding: 12px !important;
+                        border-radius: 12px !important;
+                        background: rgba(255,255,255,0.02) !important;
+                        border: 1px solid transparent !important;
+                        transition: all 0.2s !important;
+                    }
+                    .story-ring:hover {
+                        background: rgba(255,255,255,0.05) !important;
+                    }
+                    
+                    /* 图标容器变小 */
+                    .story-avatar-wrap {
+                        width: 40px !important;
+                        height: 40px !important;
+                        margin-right: 12px !important;
+                    }
+
+                    /* 名字变大 */
+                    .story-name {
+                        font-size: 14px !important;
+                        color: white !important;
+                        text-align: left !important;
+                    }
+
+                    /* 选中状态高亮 (电脑端: 整行高亮) */
+                    /* 利用 has 选择器：如果内部 wrap 被选中了，就把外层卡片变色 */
+                    .story-ring:has(.story-avatar-wrap[style*="border"]) {
+                        background: rgba(140, 43, 238, 0.1) !important;
+                        border-color: rgba(140, 43, 238, 0.4) !important;
+                    }
+                    /* 去掉手机端那个亮圈，改用整行背景 */
+                    .story-avatar-wrap[style*="border"] {
+                        border: none !important; 
+                        box-shadow: none !important;
+                        transform: none !important;
+                    }
+                    
+                    /* 隐藏列表里的第一个“新建”按钮 (因为电脑左侧有专门的大按钮) */
+                    .story-ring:first-child {
+                        display: none !important;
+                    }
+                }
+            </style>
+        </div>
+    </div> 
         
 <div class="view-section" id="view-settings">
             <h2 class="section-header">系统设置</h2>

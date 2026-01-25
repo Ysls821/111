@@ -456,11 +456,19 @@
             z-index: 2;
             padding: 8px 14px;
             border-radius: 999px;
-            border: none;
-            background: rgba(0, 0, 0, 0.7);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
             color: #fff;
             font-size: 13px;
             cursor: pointer;
+            transition: background 0.2s, border-color 0.2s;
+        }
+
+        .game-exit-btn:hover {
+            background: rgba(255, 255, 255, 0.25);
+            border-color: rgba(255, 255, 255, 0.4);
         }
 
         .card-badge {
@@ -867,9 +875,141 @@
             background: rgba(255, 255, 255, 0.2);
         }
 
-        .game-exit-btn {
+        /* 悬浮菜单 */
+        /* 悬浮菜单 */
+        .game-menu-container {
             position: absolute;
+            top: 20px;
+            left: 20px;
+            /* 左上角 */
+            z-index: 100;
+            display: flex;
+            flex-direction: row;
+            /* 水平排列 */
+            align-items: center;
+            gap: 12px;
+        }
+
+        .menu-items {
+            display: flex;
+            gap: 12px;
+            opacity: 0;
+            transform: translateX(20px);
+            pointer-events: none;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .menu-items.show {
+            opacity: 1;
+            transform: translateX(0);
+            pointer-events: auto;
+        }
+
+        .menu-btn {
+            height: 36px;
+            padding: 0 16px;
+            border-radius: 18px;
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: #fff;
+            font-size: 13px;
             cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+
+        .menu-btn.magic-btn {
+            width: 36px;
+            padding: 0;
+            border-radius: 50%;
+        }
+
+        .menu-btn:hover {
+            background: rgba(255, 255, 255, 0.25);
+            transform: translateY(-2px);
+        }
+
+        .menu-toggle-btn {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .menu-toggle-btn:hover {
+            background: rgba(255, 255, 255, 0.25);
+        }
+
+        .menu-toggle-btn svg {
+            width: 20px;
+            height: 20px;
+            transition: transform 0.3s;
+        }
+
+        .menu-toggle-btn.active svg {
+            transform: rotate(180deg);
+        }
+
+        /* 播放器 CSS 自定义弹窗 */
+        #playerCssModal .modal-card {
+            max-width: 450px;
+        }
+
+        #playerCssModal textarea {
+            width: 100%;
+            min-height: 180px;
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 14px;
+            color: var(--text-main);
+            font-family: 'Menlo', 'Monaco', 'Courier New', monospace;
+            font-size: 12px;
+            line-height: 1.5;
+            resize: vertical;
+            margin-bottom: 12px;
+        }
+
+        #playerCssModal textarea::-webkit-scrollbar {
+            width: 6px;
+            background: transparent;
+        }
+
+        #playerCssModal textarea::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+        }
+
+        #playerCssModal textarea::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        #playerCssModal input {
+            width: 100%;
+            padding: 12px 14px;
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            color: var(--text-main);
+            font-size: 14px;
+            margin-bottom: 12px;
+        }
+
+        #playerCssModal .btn-row {
+            display: flex;
+            gap: 10px;
         }
 
         /* 剧本上传 */
@@ -929,15 +1069,16 @@
                 padding: 12px;
                 gap: 12px;
                 align-items: stretch;
-                /* 让子元素等高 */
+                /* 让子元素等高 (Deleted to fix stretching) -> 改为顶端对齐 */
                 background: linear-gradient(180deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0) 100%);
             }
 
             .detail-cover {
                 flex: 0 0 calc(50% - 6px);
                 /* 占一半宽度 */
+                aspect-ratio: 3 / 4;
                 height: auto;
-                min-height: 160px;
+                /* min-height: 160px; (Removed to enforce aspect ratio) */
                 border-radius: 12px;
                 box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
                 overflow: hidden;
@@ -988,7 +1129,7 @@
                 color: var(--text-muted);
                 margin-top: 6px;
                 display: -webkit-box;
-                -webkit-line-clamp: 6;
+                -webkit-line-clamp: 4;
                 -webkit-box-orient: vertical;
                 overflow: hidden;
             }
@@ -1147,7 +1288,7 @@
         .gallery-item {
             background: rgba(255, 255, 255, 0.03);
             border-radius: 12px;
-            margin-bottom: 8px;
+            margin-bottom: 6px;
             /* 减少间距 */
             border: 1px solid rgba(255, 255, 255, 0.05);
             overflow: hidden;
@@ -1160,13 +1301,13 @@
         }
 
         .gallery-header {
-            padding: 12px 14px;
-            /* 减少内边距 */
+            padding: 10px 12px;
+            /* 紧凑内边距 */
             display: flex;
             justify-content: space-between;
             align-items: center;
             cursor: pointer;
-            height: 50px;
+            height: 44px;
             /* 固定高度确保整齐 */
             box-sizing: border-box;
         }
@@ -1530,14 +1671,68 @@
 
     <div id="gameContainer" class="game-container">
         <div id="gameBg" class="game-bg"></div>
-        <button class="game-exit-btn" onclick="openSaveSlotModal()"
-            style="right: 80px; background: rgba(16, 185, 129, 0.6);"> 存档</button>
-        <button class="game-exit-btn" onclick="exitGame()">退出</button>
+
+        <!-- 悬浮菜单容器 -->
+        <div class="game-menu-container" onclick="event.stopPropagation()">
+            <button class="menu-toggle-btn" onclick="toggleGameMenu()" id="gameMenuToggle">
+                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M15 18l-6-6 6-6" />
+                </svg>
+            </button>
+            <div class="menu-items" id="gameMenuItems">
+                <button class="menu-btn magic-btn" onclick="openPlayerCssModal()" title="自定义样式">
+                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path
+                            d="M15 4V2M15 16v-2M8 9h2M20 9h2M17.8 11.8L19 13M17.8 6.2L19 5M12.2 11.8L11 13M12.2 6.2L11 5" />
+                        <path d="M15 9a2 2 0 1 1-4 0 2 2 0 0 1 4 0Z" />
+                        <path d="m2 22 10-10" />
+                        <path d="m12 12 1.5 1.5" />
+                    </svg>
+                </button>
+                <button class="menu-btn save-btn" onclick="openSaveSlotModal()">存档</button>
+                <button class="menu-btn exit-btn" onclick="exitGame()">退出</button>
+            </div>
+        </div>
+
         <div class="game-content">
             <div id="gameTextBox" class="game-text-box">
                 <span id="gameText"></span>
             </div>
             <div id="gameOptions" class="game-options"></div>
+        </div>
+    </div>
+
+    <!-- 播放器 CSS 自定义弹窗 -->
+    <div id="playerCssModal" class="modal-overlay" style="display:none;" onclick="closePlayerCssModalOutside(event)">
+        <div class="modal-card glass-panel" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <h3>✨ 播放器样式自定义</h3>
+                <button class="close-btn" onclick="closePlayerCssModal()">×</button>
+            </div>
+            输入 CSS 代码来美化播放器界面（仅对播放页面生效）
+            </p>
+
+            <div style="margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between;">
+                <label style="font-size: 13px; color: var(--text-main);">选择预设：</label>
+                <select id="playerCssPresetSelect" onchange="loadPlayerPresetFromSelect()"
+                    style="background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.2); color: white; padding: 4px 8px; border-radius: 6px; font-size: 12px;">
+                    <option value="">-- 新建 / 自定义 --</option>
+                </select>
+            </div>
+
+            <textarea id="playerCssInput" placeholder="/* 示例 */
+.game-text-box {
+    background: rgba(0, 0, 0, 0.8);
+    border-radius: 20px;
+}
+.game-option-btn {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+}"></textarea>
+            <input type="text" id="playerCssPresetName" placeholder="预设名称（例如：梦幻紫）">
+            <div class="btn-row">
+                <button class="btn-glow" style="flex:1;" onclick="savePlayerCssPreset()">保存并应用</button>
+            </div>
         </div>
     </div>
 
@@ -1559,6 +1754,8 @@
                 const STORY_STORAGE = 'infinite.customStory';
                 const DUNGEONS_STORAGE = 'infinite.dungeons'; // 多副本列表
                 const FONT_STORAGE = 'infinite.customFont';
+                const PLAYER_CSS_STORAGE = 'infinite.playerCss'; // 当前应用的 CSS
+                const PLAYER_CSS_PRESETS_STORAGE = 'infinite.playerCssPresets'; // CSS 预设列表
 
                 let currentPersonaId = null;
                 let allDungeons = []; // 所有副本列表
@@ -3601,6 +3798,154 @@ JSON 结构：
                     style.textContent = css;
                 }
 
+                // === 播放器 CSS 自定义功能 ===
+                function openPlayerCssModal() {
+                    const modal = document.getElementById('playerCssModal');
+                    const input = document.getElementById('playerCssInput');
+                    const nameInput = document.getElementById('playerCssPresetName');
+                    const select = document.getElementById('playerCssPresetSelect');
+
+                    // 渲染预设列表
+                    renderPlayerCssPresets();
+
+                    // 加载当前 CSS
+                    const saved = localStorage.getItem(PLAYER_CSS_STORAGE);
+                    if (saved) {
+                        try {
+                            const current = JSON.parse(saved);
+                            input.value = current.css || '';
+                            nameInput.value = current.name || '';
+                            select.value = current.name || ''; // 尝试选中对应预设
+                        } catch (e) {
+                            input.value = saved;
+                        }
+                    }
+                    modal.style.display = 'flex';
+                }
+
+                function renderPlayerCssPresets() {
+                    const select = document.getElementById('playerCssPresetSelect');
+                    const presets = JSON.parse(localStorage.getItem(PLAYER_CSS_PRESETS_STORAGE) || '[]');
+
+                    let html = '<option value="">-- 新建 / 自定义 --</option>';
+                    presets.forEach(p => {
+                        html += `<option value="${p.name}">${p.name}</option>`;
+                    });
+                    select.innerHTML = html;
+                }
+
+                function loadPlayerPresetFromSelect() {
+                    const select = document.getElementById('playerCssPresetSelect');
+                    const name = select.value;
+                    const input = document.getElementById('playerCssInput');
+                    const nameInput = document.getElementById('playerCssPresetName');
+
+                    if (!name) {
+                        // 切换到新建模式，清空输入框
+                        input.value = '';
+                        nameInput.value = '';
+                        return;
+                    }
+
+                    const presets = JSON.parse(localStorage.getItem(PLAYER_CSS_PRESETS_STORAGE) || '[]');
+                    const preset = presets.find(p => p.name === name);
+                    if (preset) {
+                        input.value = preset.css;
+                        nameInput.value = preset.name;
+                    }
+                }
+
+                function savePlayerCssPreset() {
+                    const css = document.getElementById('playerCssInput').value.trim();
+                    const name = document.getElementById('playerCssPresetName').value.trim() || '自定义预设';
+
+                    // 保存当前应用状态
+                    const current = { name, css };
+                    localStorage.setItem(PLAYER_CSS_STORAGE, JSON.stringify(current));
+
+                    // 保存到预设列表
+                    let presets = JSON.parse(localStorage.getItem(PLAYER_CSS_PRESETS_STORAGE) || '[]');
+                    // 检查是否存在同名预设，存在则更新，不存在则添加
+                    const index = presets.findIndex(p => p.name === name);
+                    if (index >= 0) {
+                        presets[index] = current;
+                    } else {
+                        presets.push(current);
+                    }
+                    localStorage.setItem(PLAYER_CSS_PRESETS_STORAGE, JSON.stringify(presets));
+
+                    applyPlayerCss(css);
+                    closePlayerCssModal();
+                    showToastMsg(`✨ 预设「${name}」已保存`);
+                }
+
+                function closePlayerCssModal() {
+                    document.getElementById('playerCssModal').style.display = 'none';
+                }
+
+                function closePlayerCssModalOutside(e) {
+                    if (e.target.id === 'playerCssModal') {
+                        closePlayerCssModal();
+                    }
+                }
+
+                function savePlayerCssPreset() {
+                    const css = document.getElementById('playerCssInput').value.trim();
+                    const name = document.getElementById('playerCssPresetName').value.trim() || '自定义预设';
+
+                    const preset = { name, css };
+                    localStorage.setItem(PLAYER_CSS_STORAGE, JSON.stringify(preset));
+
+                    applyPlayerCss(css);
+                    closePlayerCssModal();
+                    showToastMsg(`✨ 预设「${name}」已保存`);
+                }
+
+                function applyPlayerCss(css) {
+                    // 移除旧的播放器样式
+                    let oldStyle = document.getElementById('player-custom-style-tag');
+                    if (oldStyle) oldStyle.remove();
+
+                    if (!css) return;
+
+                    // 创建新的样式标签，仅对 #gameContainer 内生效
+                    const style = document.createElement('style');
+                    style.id = 'player-custom-style-tag';
+                    // 将所有选择器限制在 #gameContainer 内
+                    const scopedCss = css.replace(/([^{}]+)\{/g, (match, selector) => {
+                        // 处理每个选择器
+                        const selectors = selector.split(',').map(s => {
+                            s = s.trim();
+                            if (s.startsWith('#gameContainer') || s.startsWith('.game-')) {
+                                return '#gameContainer ' + s;
+                            }
+                            return '#gameContainer ' + s;
+                        });
+                        return selectors.join(', ') + ' {';
+                    });
+                    style.textContent = scopedCss;
+                    document.head.appendChild(style);
+                }
+
+                function toggleGameMenu() {
+                    const toggle = document.getElementById('gameMenuToggle');
+                    const menu = document.getElementById('gameMenuItems');
+                    toggle.classList.toggle('active');
+                    menu.classList.toggle('show');
+                }
+
+                function loadPlayerCss() {
+                    const saved = localStorage.getItem(PLAYER_CSS_STORAGE);
+                    if (saved) {
+                        try {
+                            const preset = JSON.parse(saved);
+                            if (preset.css) applyPlayerCss(preset.css);
+                        } catch (e) {
+                            applyPlayerCss(saved);
+                        }
+                    }
+                }
+
                 function loadCustomCss() {
                     const savedCss = localStorage.getItem(CUSTOM_CSS_STORAGE);
                     if (savedCss) {
@@ -3611,6 +3956,7 @@ JSON 结构：
                 }
 
                 loadCustomCss();
+                loadPlayerCss();
                 window.onload = init;
             </script>
 </body>

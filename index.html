@@ -1387,8 +1387,11 @@
                         <input type="file" id="persona-avatar-input" accept="image/*" style="display:none;"
                             onchange="onAvatarFileChange(event)">
                     </div>
-                    <div class="persona-actions" style="margin-top: 20px;">
-                        <button class="btn-glow" style="flex:1;" onclick="savePersona()">保存设定</button>
+                    <div class="persona-actions" style="margin-top: 20px; display:flex; gap:10px;">
+                        <button class="btn-glow" style="flex:2;" onclick="savePersona()">保存设定</button>
+                        <button class="btn-glow"
+                            style="flex:1; background:rgba(239, 68, 68, 0.2); border-color:rgba(239, 68, 68, 0.4);"
+                            onclick="deletePersona()">删除</button>
                     </div>
                 </div>
             </div>
@@ -1908,7 +1911,7 @@
                     <!-- 移动端：毛玻璃按钮在作者信息下方 -->
                     <div class="detail-action-row">
                         <button class="btn-glow" onclick="startGame('start')">
-                            <svg class="icon" viewBox="0 0 24 24"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path></svg>
+                            <svg class="icon" viewBox="0 0 24 24"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path><path d="M22 3h-6a4 4 0 0 1-4 4v14a3 3 0 0 1 3-3h7z"></path></svg>
                             开始
                         </button>
                         <button class="btn-glow" style="background: rgba(16, 185, 129, 0.2);" onclick="startGame('continue')">
@@ -2899,9 +2902,20 @@ JSON 结构：
                 }
 
                 function loadPersonaDetail(p) {
+                    if (!p) {
+                        // 新建模式
+                        currentPersonaId = null;
+                        resetPersonaForm();
+                        renderPersonaStrip();
+                        return;
+                    }
+
                     document.getElementById('persona-name').value = p.name || '';
                     document.getElementById('persona-desc').value = p.desc || '';
                     currentPersonaId = p.id;
+
+                    // 只要选中了，就自动进入隐式编辑状态（点击保存即更新）
+                    // editingPersonaId = null; // 不再需要这个显式变量，或者说 currentPersonaId 充当了这个角色
 
                     if (p.avatar) {
                         const img = document.getElementById('persona-avatar-preview');
@@ -2913,6 +2927,91 @@ JSON 结构：
                         document.getElementById('persona-placeholder').style.display = 'block';
                     }
                     renderPersonaStrip();
+                }
+
+                // 不再需要显式的 startEditingCurrent
+
+                function renderPersonaStrip() {
+                    const list = loadPersonas();
+                    const container = document.getElementById('persona-strip');
+                    if (!container) return;
+                    container.innerHTML = '';
+
+                    // 1. 添加“新建”按钮（作为列表第一项）
+                    const newItem = document.createElement('div');
+                    newItem.style.width = '40px';
+                    newItem.style.height = '40px';
+                    newItem.style.borderRadius = '50%';
+                    newItem.style.overflow = 'hidden';
+                    newItem.style.cursor = 'pointer';
+                    // 如果当前ID为空，说明在新建模式，高亮
+                    newItem.style.border = !currentPersonaId ? '2px solid var(--primary)' : '2px solid rgba(255,255,255,0.2)';
+                    newItem.style.transition = 'all 0.2s';
+                    newItem.style.marginRight = '8px';
+                    newItem.style.display = 'inline-flex';
+                    newItem.style.alignItems = 'center';
+                    newItem.style.justifyContent = 'center';
+                    newItem.style.flexShrink = '0';
+                    newItem.style.background = 'rgba(255,255,255,0.1)';
+                    newItem.innerHTML = '<span style="font-size:20px; color:#fff; font-weight:bold;">+</span>';
+                    newItem.title = '新建角色';
+                    newItem.onclick = () => loadPersonaDetail(null); // null 表示新建
+                    container.appendChild(newItem);
+
+                    if (list.length === 0) {
+                        // 即使没有角色，也已经有了新建按钮
+                    }
+
+                    list.forEach(p => {
+                        const div = document.createElement('div');
+                        div.style.width = '40px';
+                        div.style.height = '40px';
+                        div.style.borderRadius = '50%';
+                        div.style.overflow = 'hidden';
+                        div.style.cursor = 'pointer';
+                        div.style.border = currentPersonaId === p.id ? '2px solid var(--primary)' : '2px solid transparent';
+                        div.style.transition = 'all 0.2s';
+                        div.style.marginRight = '8px';
+                        div.style.display = 'inline-block';
+                        div.style.flexShrink = '0';
+
+                        div.onclick = () => loadPersonaDetail(p);
+
+                        if (p.avatar) {
+                            const img = document.createElement('img');
+                            img.src = p.avatar;
+                            img.style.width = '100%';
+                            img.style.height = '100%';
+                            img.style.objectFit = 'cover';
+                            div.appendChild(img);
+                        } else {
+                            div.style.background = '#333';
+                            div.innerHTML = '<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:#fff;font-size:12px;">👤</div>';
+                        }
+
+                        container.appendChild(div);
+                    });
+
+                    container.style.display = 'flex';
+                    container.style.overflowX = 'auto';
+                    container.style.whiteSpace = 'nowrap';
+                    container.style.paddingBottom = '4px';
+                }
+
+                function deletePersona() {
+                    if (!currentPersonaId) {
+                        showToastMsg('❌ 无法删除：当前是新建模式');
+                        return;
+                    }
+
+                    if (confirm('确定要删除这个角色吗？')) {
+                        let list = loadPersonas();
+                        list = list.filter(p => p.id !== currentPersonaId);
+                        savePersonas(list);
+
+                        showToastMsg('🗑️ 角色已删除');
+                        loadPersonaDetail(null); // 重置为新建
+                    }
                 }
 
                 function onAvatarFileChange(e) {
@@ -3229,6 +3328,7 @@ JSON 结构：
                 }
 
                 let pendingGameMode = null;
+                // let editingPersonaId = null; // 新增：记录当前正在编辑的角色ID
 
                 function openPersonaModal(mode = null) {
                     pendingGameMode = mode;
@@ -3254,6 +3354,7 @@ JSON 结构：
                         list.forEach(p => {
                             const el = document.createElement('div');
                             el.className = `persona-select-item ${currentPersonaId === p.id ? 'active' : ''}`;
+                            // 点击整体仍然是选择
                             el.onclick = () => selectPersonaAndStart(p);
 
                             const avatarHtml = p.avatar
@@ -3266,7 +3367,10 @@ JSON 结构：
                             <div style="font-weight:bold; font-size:14px; color:var(--text-main);">${p.name}</div>
                             <div style="font-size:12px; color:var(--text-muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:200px;">${p.desc.substring(0, 20)}...</div>
                         </div>
-                        ${currentPersonaId === p.id ? '<span style="color:var(--primary);">✅</span>' : ''}
+                        <div style="display:flex; gap:8px; align-items:center;">
+                            ${currentPersonaId === p.id ? '<span style="color:var(--primary); margin-right:4px;">✅</span>' : ''}
+                            <button class="btn-glow" style="width:auto; padding:4px 8px; height:auto;font-size:12px;background:rgba(255,255,255,0.1);" onclick="event.stopPropagation(); editPersona('${p.id}')">✏️</button>
+                        </div>
                     `;
                             listContainer.appendChild(el);
                         });
@@ -3295,10 +3399,40 @@ JSON 结构：
                     if (modal) modal.style.display = 'none';
                 }
 
-                function goToPersonaCreate() {
+                function editPersona(id) {
+                    const list = loadPersonas();
+                    const p = list.find(item => item.id === id);
+                    if (!p) return;
+
                     closePersonaModal();
                     switchView('persona');
-                    resetPersonaForm();
+
+                    // 填充表单
+                    document.getElementById('persona-name').value = p.name;
+                    document.getElementById('persona-desc').value = p.desc;
+
+                    const preview = document.getElementById('persona-avatar-preview');
+                    const placeholder = document.getElementById('persona-placeholder');
+                    if (p.avatar) {
+                        preview.src = p.avatar;
+                        preview.style.display = 'block';
+                        preview.onerror = () => {
+                            // 图片加载失败处理
+                            preview.style.display = 'none';
+                            if (placeholder) placeholder.style.display = 'block';
+                            if (placeholder) placeholder.textContent = '图片已损坏';
+                        };
+                        if (placeholder) placeholder.style.display = 'none';
+                    } else {
+                        preview.style.display = 'none';
+                        if (placeholder) placeholder.style.display = 'block';
+                    }
+
+                    currentPersonaId = id; // 标记为编辑模式
+
+                    // 可选：更改按钮文字提示用户
+                    // const saveBtn = document.querySelector('.persona-actions button');
+                    // if (saveBtn) saveBtn.textContent = '保存修改';
                 }
 
                 function triggerAvatarUpload() {
@@ -3309,6 +3443,7 @@ JSON 结构：
                     const name = document.getElementById('persona-name').value.trim();
                     const desc = document.getElementById('persona-desc').value.trim();
                     const avatarPreview = document.getElementById('persona-avatar-preview');
+                    // 只有在预览图显示时才保存图片数据
                     const avatar = (avatarPreview && avatarPreview.style.display !== 'none') ? avatarPreview.src : '';
 
                     if (!name) {
@@ -3316,26 +3451,37 @@ JSON 结构：
                         return;
                     }
 
-                    // 修复Bug：使用时间戳+随机数作为唯一ID，彻底解决同图/同名覆盖问题
-                    const newId = 'persona_' + Date.now() + '_' + Math.floor(Math.random() * 10000);
-
-                    const newPersona = {
-                        id: newId,
-                        name: name,
-                        desc: desc,
-                        avatar: avatar
-                    };
-
                     const list = loadPersonas();
-                    list.push(newPersona);
+
+                    if (currentPersonaId) {
+                        // 编辑模式：更新现有角色
+                        const index = list.findIndex(p => p.id === currentPersonaId);
+                        if (index !== -1) {
+                            list[index].name = name;
+                            list[index].desc = desc;
+                            list[index].avatar = avatar;
+                            showToastMsg('✅ 人设已更新');
+                        } else {
+                            // 虽然有ID但找不到（可能是异常），新建
+                            const newId = 'persona_' + Date.now() + '_' + Math.floor(Math.random() * 10000);
+                            list.push({ id: newId, name, desc, avatar });
+                            // 更新当前选中ID
+                            currentPersonaId = newId;
+                            showToastMsg('⚠️ 原角色未找到，已存为新人设');
+                        }
+                    } else {
+                        // 新建模式（无ID）
+                        const newId = 'persona_' + Date.now() + '_' + Math.floor(Math.random() * 10000);
+                        list.push({ id: newId, name, desc, avatar });
+                        // 存完后，保持选中新创建的，以便继续修改
+                        currentPersonaId = newId;
+                        showToastMsg('✅ 新人设已保存');
+                    }
+
                     savePersonas(list);
 
                     // 刷新显示
                     renderPersonaStrip();
-                    showToastMsg('✅ 人设已保存');
-
-                    // 清空表单
-                    resetPersonaForm();
                 }
 
                 function resetPersonaForm() {
@@ -3350,9 +3496,18 @@ JSON 结构：
                     if (avatarPreview) {
                         avatarPreview.src = '';
                         avatarPreview.style.display = 'none';
+                        avatarPreview.onerror = null;
                     }
-                    if (placeholder) placeholder.style.display = 'block';
+                    if (placeholder) {
+                        placeholder.style.display = 'block';
+                        placeholder.textContent = '点击上传';
+                    }
                     if (fileInput) fileInput.value = '';
+
+                    editingPersonaId = null; // 退出编辑模式
+
+                    const saveBtn = document.querySelector('.persona-actions button');
+                    if (saveBtn) saveBtn.textContent = '保存设定';
                 }
 
                 function onAvatarFileChange(event) {
@@ -3365,16 +3520,22 @@ JSON 结构：
                         return;
                     }
 
-                    // 限制大小 (例如 2MB)
-                    if (file.size > 2 * 1024 * 1024) {
-                        showToastMsg('⚠️ 图片过大，建议小于 2MB');
-                        // 继续处理，只是警告
+                    // 限制大小
+                    if (file.size > 3 * 1024 * 1024) {
+                        showToastMsg('⚠️ 图片过大，建议小于 3MB');
                     }
 
                     const reader = new FileReader();
+
                     reader.onload = function (e) {
                         const preview = document.getElementById('persona-avatar-preview');
                         const placeholder = document.getElementById('persona-placeholder');
+
+                        // 校验结果有效性
+                        if (!e.target.result || e.target.result.length < 100) {
+                            showToastMsg('❌ 图片读取失败，可能是格式不支持');
+                            return;
+                        }
 
                         if (preview) {
                             preview.src = e.target.result;
@@ -3384,7 +3545,17 @@ JSON 结构：
                             placeholder.style.display = 'none';
                         }
                     };
-                    reader.readAsDataURL(file);
+
+                    reader.onerror = function () {
+                        showToastMsg('❌ 读取文件发生错误');
+                    };
+
+                    try {
+                        reader.readAsDataURL(file);
+                    } catch (err) {
+                        console.error(err);
+                        showToastMsg('❌ 无法读取该文件');
+                    }
                 }
 
                 function updateGameDisplayName() {

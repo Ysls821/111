@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -7,46 +8,71 @@
     <style>
         :root {
             /* 稍微收敛一点的工业深色风 */
-            --bg-dark: #09090b;       /* 更深邃的黑 */
-            --bg-panel: #18181b;      /* 面板背景 */
-            --bg-input: #27272a;      /* 输入框背景 */
-            --primary: #d946ef;       /* 核心主色 */
+            --bg-dark: #09090b;
+            /* 更深邃的黑 */
+            --bg-panel: #18181b;
+            /* 面板背景 */
+            --bg-input: #27272a;
+            /* 输入框背景 */
+            --primary: #d946ef;
+            /* 核心主色 */
             --secondary: #8b5cf6;
             --success: #10b981;
             --danger: #ef4444;
-            --text: #e4e4e7;          /* 亮灰白 */
+            --text: #e4e4e7;
+            /* 亮灰白 */
             --text-muted: #a1a1aa;
-            --border: #3f3f46;        /* 更有存在感的边框 */
+            --border: #3f3f46;
+            /* 更有存在感的边框 */
         }
-        
-        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        
-        body { 
-            margin: 0; 
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; 
-            background: var(--bg-dark); 
-            color: var(--text); 
-            height: 100vh; 
-            display: flex; 
+
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            margin: 0;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg-dark);
+            color: var(--text);
+            height: 100vh;
+            display: flex;
             flex-direction: column;
             overflow: hidden;
         }
 
         /* SVG 图标通用样式 */
         .svg-icon {
-            width: 18px; height: 18px; fill: none; stroke: currentColor; 
-            stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
+            width: 18px;
+            height: 18px;
+            fill: none;
+            stroke: currentColor;
+            stroke-width: 2;
+            stroke-linecap: round;
+            stroke-linejoin: round;
         }
-        .nav-btn .svg-icon { width: 22px; height: 22px; }
+
+        .nav-btn .svg-icon {
+            width: 22px;
+            height: 22px;
+        }
 
         /* === 布局系统 === */
-        .app-container { display: flex; flex: 1; overflow: hidden; position: relative; }
+        .app-container {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+            position: relative;
+        }
 
         /* PC 左侧导航 */
         .pc-nav {
             width: 64px;
             background: #000;
-            display: flex; flex-direction: column; align-items: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
             padding-top: 20px;
             border-right: 1px solid var(--border);
             z-index: 10;
@@ -57,7 +83,8 @@
             width: 260px;
             background: var(--bg-panel);
             border-right: 1px solid var(--border);
-            display: flex; flex-direction: column;
+            display: flex;
+            flex-direction: column;
         }
 
         /* 编辑区 */
@@ -74,177 +101,433 @@
             width: 380px;
             background: #050505;
             border-left: 1px solid var(--border);
-            display: flex; flex-direction: column;
-            align-items: center; justify-content: center;
-            padding: 20px; position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            position: relative;
         }
 
         /* === 移动端适配 === */
         .mobile-tab-bar {
-            display: none; height: 60px;
+            display: none;
+            height: 60px;
             background: rgba(24, 24, 27, 0.98);
             border-top: 1px solid var(--border);
-            justify-content: space-around; align-items: center;
+            justify-content: space-around;
+            align-items: center;
             z-index: 100;
         }
+
         .tab-item {
-            flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
-            color: var(--text-muted); font-size: 10px; gap: 4px; height: 100%;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-muted);
+            font-size: 10px;
+            gap: 4px;
+            height: 100%;
         }
-        .tab-item.active { color: var(--primary); }
+
+        .tab-item.active {
+            color: var(--primary);
+        }
 
         .mobile-top-nav {
-            display: none; overflow-x: auto; gap: 8px; padding: 10px;
-            background: #000; border-bottom: 1px solid var(--border);
+            display: none;
+            overflow-x: auto;
+            gap: 8px;
+            padding: 10px;
+            background: #000;
+            border-bottom: 1px solid var(--border);
         }
 
         /* === 组件样式 === */
         .nav-btn {
-            width: 44px; height: 44px; margin-bottom: 12px;
-            border-radius: 8px; border: 1px solid transparent;
-            background: transparent; color: var(--text-muted);
-            cursor: pointer; display: flex; align-items: center; justify-content: center;
+            width: 44px;
+            height: 44px;
+            margin-bottom: 12px;
+            border-radius: 8px;
+            border: 1px solid transparent;
+            background: transparent;
+            color: var(--text-muted);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             transition: all 0.2s;
         }
-        .nav-btn:hover { background: rgba(255,255,255,0.05); color: var(--text); }
-        .nav-btn.active { background: var(--primary); color: white; border-color: transparent; }
-        
-        .mobile-top-nav .nav-btn { width: auto; padding: 0 16px; font-size: 13px; height: 36px; border: 1px solid var(--border); }
-        .mobile-top-nav .nav-btn.active { border-color: var(--primary); }
 
-        .scene-list { flex: 1; overflow-y: auto; list-style: none; padding: 0; margin: 0; }
-        .scene-item { 
-            padding: 14px 18px; border-bottom: 1px solid rgba(255,255,255,0.03); 
-            font-size: 13px; cursor: pointer; display: flex; justify-content: space-between; align-items: center;
+        .nav-btn:hover {
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text);
+        }
+
+        .nav-btn.active {
+            background: var(--primary);
+            color: white;
+            border-color: transparent;
+        }
+
+        .mobile-top-nav .nav-btn {
+            width: auto;
+            padding: 0 16px;
+            font-size: 13px;
+            height: 36px;
+            border: 1px solid var(--border);
+        }
+
+        .mobile-top-nav .nav-btn.active {
+            border-color: var(--primary);
+        }
+
+        .scene-list {
+            flex: 1;
+            overflow-y: auto;
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .scene-item {
+            padding: 14px 18px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+            font-size: 13px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
             color: var(--text-muted);
         }
-        .scene-item:hover { background: rgba(255,255,255,0.02); }
-        .scene-item.active { background: rgba(217, 70, 239, 0.08); border-left: 3px solid var(--primary); color: var(--text); }
+
+        .scene-item:hover {
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        .scene-item.active {
+            background: rgba(217, 70, 239, 0.08);
+            border-left: 3px solid var(--primary);
+            color: var(--text);
+        }
 
         /* 表单控件 */
-        .form-group { margin-bottom: 20px; }
-        label { display: block; margin-bottom: 8px; font-size: 12px; color: var(--text-muted); font-weight: 500; letter-spacing: 0.5px; text-transform: uppercase;}
-        
-        input, textarea, select {
-            width: 100%; padding: 12px 14px;
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 12px;
+            color: var(--text-muted);
+            font-weight: 500;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+
+        input,
+        textarea,
+        select {
+            width: 100%;
+            padding: 12px 14px;
             background: var(--bg-input);
             border: 1px solid var(--border);
-            color: var(--text); border-radius: 6px;
-            font-size: 14px; outline: none;
+            color: var(--text);
+            border-radius: 6px;
+            font-size: 14px;
+            outline: none;
             transition: all 0.2s;
-            font-family: monospace; /* 编辑器就要用等宽字体 */
+            font-family: monospace;
+            /* 编辑器就要用等宽字体 */
         }
-        input:focus, textarea:focus, select:focus { border-color: var(--primary); background: #2e2e33; }
-        
-        .btn { padding: 9px 18px; border: none; border-radius: 6px; cursor: pointer; font-size: 13px; color: white; font-weight: 500; display: inline-flex; align-items: center; gap: 6px; justify-content: center; }
-        .btn-primary { background: var(--primary); }
-        .btn-success { background: var(--success); }
-        .btn-danger { background: var(--danger); }
-        .btn-outline { background: transparent; border: 1px solid var(--border); color: var(--text-muted); }
-        .btn-outline:hover { border-color: var(--text); color: var(--text); }
-        .btn-full { width: 100%; padding: 12px; margin-top: 10px; }
-        .btn-float-save { margin-top: 30px; margin-bottom: 50px; }
+
+        input:focus,
+        textarea:focus,
+        select:focus {
+            border-color: var(--primary);
+            background: #2e2e33;
+        }
+
+        .btn {
+            padding: 9px 18px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 13px;
+            color: white;
+            font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            justify-content: center;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+        }
+
+        .btn-success {
+            background: var(--success);
+        }
+
+        .btn-danger {
+            background: var(--danger);
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 1px solid var(--border);
+            color: var(--text-muted);
+        }
+
+        .btn-outline:hover {
+            border-color: var(--text);
+            color: var(--text);
+        }
+
+        .btn-full {
+            width: 100%;
+            padding: 12px;
+            margin-top: 10px;
+        }
+
+        .btn-float-save {
+            margin-top: 30px;
+            margin-bottom: 50px;
+        }
 
         /* 图片上传组合控件 */
-        .image-input-group { display: flex; gap: 8px; }
-        .image-preview-mini { width: 44px; height: 44px; background: #000; border: 1px solid var(--border); border-radius: 4px; object-fit: cover; display: none; }
+        .image-input-group {
+            display: flex;
+            gap: 8px;
+        }
 
-        .option-card { background: rgba(255,255,255,0.02); padding: 12px; margin-bottom: 12px; border-radius: 6px; border: 1px solid var(--border); }
+        .image-preview-mini {
+            width: 44px;
+            height: 44px;
+            background: #000;
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            object-fit: cover;
+            display: none;
+        }
+
+        .option-card {
+            background: rgba(255, 255, 255, 0.02);
+            padding: 12px;
+            margin-bottom: 12px;
+            border-radius: 6px;
+            border: 1px solid var(--border);
+        }
 
         /* === 虚拟手机预览器 === */
         .phone-frame {
-            width: 320px; height: 600px;
+            width: 320px;
+            height: 600px;
             border-radius: 30px;
             border: 8px solid #222;
             position: relative;
             overflow: hidden;
             background: #000;
-            box-shadow: 0 0 50px rgba(0,0,0,0.5);
+            box-shadow: 0 0 50px rgba(0, 0, 0, 0.5);
         }
+
         .phone-bg {
-            position: absolute; inset: 0;
-            background-size: cover; background-position: center;
+            position: absolute;
+            inset: 0;
+            background-size: cover;
+            background-position: center;
             filter: brightness(0.6);
             transition: background-image 0.3s;
             background-color: #111;
         }
+
         .phone-ui {
-            position: absolute; bottom: 0; left: 0; right: 0;
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
             padding: 20px;
-            display: flex; flex-direction: column; gap: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
         }
+
         .phone-text-box {
             background: rgba(20, 20, 25, 0.85);
             backdrop-filter: blur(12px);
-            padding: 16px; border-radius: 16px;
-            font-size: 14px; line-height: 1.6; color: #fff;
-            border: 1px solid rgba(255,255,255,0.1);
+            padding: 16px;
+            border-radius: 16px;
+            font-size: 14px;
+            line-height: 1.6;
+            color: #fff;
+            border: 1px solid rgba(255, 255, 255, 0.1);
             min-height: 80px;
         }
+
         .phone-btn {
-            background: rgba(0,0,0,0.6);
-            color: white; border: 1px solid rgba(255,255,255,0.2);
-            padding: 10px 14px; border-radius: 20px;
-            font-size: 13px; text-align: center;
-            margin-right: 6px; margin-bottom: 6px; display: inline-block;
+            background: rgba(0, 0, 0, 0.6);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 10px 14px;
+            border-radius: 20px;
+            font-size: 13px;
+            text-align: center;
+            margin-right: 6px;
+            margin-bottom: 6px;
+            display: inline-block;
         }
 
         /* === 响应式 === */
         @media (max-width: 768px) {
-            .pc-nav { display: none; }
-            .app-container > div { display: none; width: 100%; } 
-            .app-container > div.active-mobile-view { display: flex; } 
-            .sidebar { width: 100%; border: none; }
-            .preview-panel { width: 100%; border: none; padding: 0; background: #000; }
-            .phone-frame { width: 100%; height: 100%; border: none; border-radius: 0; }
-            .mobile-tab-bar { display: flex; }
-            .mobile-top-nav { display: flex; }
+            .pc-nav {
+                display: none;
+            }
+
+            .app-container>div {
+                display: none;
+                width: 100%;
+            }
+
+            .app-container>div.active-mobile-view {
+                display: flex;
+            }
+
+            .sidebar {
+                width: 100%;
+                border: none;
+            }
+
+            .preview-panel {
+                width: 100%;
+                border: none;
+                padding: 0;
+                background: #000;
+            }
+
+            /* 修复编辑器在移动端的显示问题 */
+            .main-editor.active-mobile-view {
+                display: block !important;
+                /* 强制使用 block 布局，避免 flex 导致的宽度收缩 */
+            }
+
+            .editor-form {
+                width: 100%;
+                max-width: 100%;
+                margin: 0 auto;
+            }
+
+            .phone-frame {
+                width: 100%;
+                height: 100%;
+                border: none;
+                border-radius: 0;
+            }
+
+            .mobile-tab-bar {
+                display: flex;
+            }
+
+            .mobile-top-nav {
+                display: flex;
+            }
         }
+
         @media (min-width: 769px) {
-            .mobile-top-nav { display: none; }
+            .mobile-top-nav {
+                display: none;
+            }
         }
     </style>
 </head>
+
 <body>
 
     <input type="file" id="globalImageInput" accept="image/*" style="display:none">
     <input type="file" id="importFile" style="display:none" onchange="importJson(this)">
 
     <div class="mobile-top-nav" id="mobileTopNav">
-        <button class="nav-btn active" onclick="switchSection('world')">🌍 世界</button>
-        <button class="nav-btn" onclick="switchSection('main')">📖 主线</button>
-        <button class="nav-btn" onclick="switchSection('branch')">🌿 支线</button>
-        <button class="nav-btn" onclick="switchSection('chars')">👤 角色</button>
+        <button class="nav-btn active" onclick="switchSection('world')">世界</button>
+        <button class="nav-btn" onclick="switchSection('world_book')">世界书</button>
+        <button class="nav-btn" onclick="switchSection('main')">主线</button>
+        <button class="nav-btn" onclick="switchSection('branch')">支线</button>
+        <button class="nav-btn" onclick="switchSection('chars')">角色</button>
     </div>
 
     <div class="app-container">
         <div class="pc-nav">
             <button class="nav-btn active" onclick="switchSection('world')" title="世界观">
-                <svg class="svg-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
+                <svg class="svg-icon" viewBox="0 0 24 24">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <line x1="2" y1="12" x2="22" y2="12"></line>
+                    <path
+                        d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z">
+                    </path>
+                </svg>
+            </button>
+            <button class="nav-btn" onclick="switchSection('world_book')" title="世界书 (AI 设定)">
+                <svg class="svg-icon" viewBox="0 0 24 24">
+                    <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+                    <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+                </svg>
             </button>
             <button class="nav-btn" onclick="switchSection('main')" title="主线剧情">
-                <svg class="svg-icon" viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
+                <svg class="svg-icon" viewBox="0 0 24 24">
+                    <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+                    <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+                </svg>
             </button>
             <button class="nav-btn" onclick="switchSection('branch')" title="普通支线">
-                <svg class="svg-icon" viewBox="0 0 24 24"><line x1="6" y1="3" x2="6" y2="15"></line><circle cx="18" cy="6" r="3"></circle><circle cx="6" cy="18" r="3"></circle><path d="M18 9a9 9 0 0 1-9 9"></path></svg>
+                <svg class="svg-icon" viewBox="0 0 24 24">
+                    <line x1="6" y1="3" x2="6" y2="15"></line>
+                    <circle cx="18" cy="6" r="3"></circle>
+                    <circle cx="6" cy="18" r="3"></circle>
+                    <path d="M18 9a9 9 0 0 1-9 9"></path>
+                </svg>
             </button>
             <button class="nav-btn" onclick="switchSection('chars')" title="角色设定">
-                <svg class="svg-icon" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                <svg class="svg-icon" viewBox="0 0 24 24">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="12" cy="7" r="4"></circle>
+                </svg>
             </button>
             <div style="flex:1"></div>
             <button class="nav-btn" onclick="exportJson()" title="导出" style="color:var(--success);">
-                <svg class="svg-icon" viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
+                <svg class="svg-icon" viewBox="0 0 24 24">
+                    <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+                    <polyline points="17 21 17 13 7 13 7 21"></polyline>
+                    <polyline points="7 3 7 8 15 8"></polyline>
+                </svg>
             </button>
-            <button class="nav-btn" onclick="document.getElementById('importFile').click()" title="导入" style="color:var(--secondary);">
-                <svg class="svg-icon" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+            <button class="nav-btn" onclick="document.getElementById('importFile').click()" title="导入"
+                style="color:var(--secondary);">
+                <svg class="svg-icon" viewBox="0 0 24 24">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                    <polyline points="17 8 12 3 7 8"></polyline>
+                    <line x1="12" y1="3" x2="12" y2="15"></line>
+                </svg>
+            </button>
+            <button class="nav-btn" onclick="toggleLibrary()" title="副本记录 (本地存档)" style="color:#fbbf24;">
+                <svg class="svg-icon" viewBox="0 0 24 24">
+                    <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+                    <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+                    <path d="M12 8l4 4-4 4M8 12h8"></path>
+                </svg>
             </button>
         </div>
 
         <div class="sidebar active-mobile-view" id="panel-list">
-            <div style="padding: 20px; border-bottom: 1px solid var(--border); display:flex; justify-content:space-between; align-items:center;">
+            <div
+                style="padding: 20px; border-bottom: 1px solid var(--border); display:flex; justify-content:space-between; align-items:center;">
                 <h3 id="sectionTitle" style="margin:0; font-size:16px; font-weight:600; letter-spacing:1px;">世界观</h3>
                 <button class="btn btn-primary" style="padding:6px 10px;" onclick="addItem()">
-                    <svg class="svg-icon" style="width:14px;height:14px;" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                    <svg class="svg-icon" style="width:14px;height:14px;" viewBox="0 0 24 24">
+                        <line x1="12" y1="5" x2="12" y2="19"></line>
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                    </svg>
                 </button>
             </div>
             <ul class="scene-list" id="itemList"></ul>
@@ -257,30 +540,51 @@
                     <input type="text" id="worldName" oninput="saveWorld()">
                 </div>
                 <div class="form-group">
+                    <label>作者</label>
+                    <input type="text" id="worldAuthor" oninput="saveWorld()">
+                </div>
+                <div class="form-group">
                     <label>背景故事简介</label>
-                    <textarea id="worldDesc" style="height: 300px;" oninput="saveWorld()"></textarea>
+                    <textarea id="worldDesc" style="height: 150px;" oninput="saveWorld()"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>标签 (最多2个，每签3字)</label>
+                    <div style="display:flex; gap:10px;">
+                        <input type="text" id="worldTag1" placeholder="标签1" maxlength="3" style="text-align:center;"
+                            oninput="saveWorld()">
+                        <input type="text" id="worldTag2" placeholder="标签2" maxlength="3" style="text-align:center;"
+                            oninput="saveWorld()">
+                    </div>
                 </div>
                 <button class="btn btn-success btn-full btn-float-save" onclick="manualSave()">
-                    <svg class="svg-icon" viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
+                    <svg class="svg-icon" viewBox="0 0 24 24">
+                        <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+                        <polyline points="17 21 17 13 7 13 7 21"></polyline>
+                        <polyline points="7 3 7 8 15 8"></polyline>
+                    </svg>
                     保存并刷新预览
                 </button>
             </div>
 
             <div id="formChar" class="editor-form" style="display:none;">
                 <div id="charEditorContainer">
-                    <div class="form-group"><label>ID (自动生成)</label><input type="text" id="charId" disabled style="opacity:0.5; font-family:monospace; color:var(--text-muted);"></div>
-                    <div class="form-group"><label>姓名</label><input type="text" id="charName" oninput="saveCurrentItem()"></div>
-                    <div class="form-group"><label>人设 (AI 扮演指令)</label><textarea id="charPersona" style="height:120px;" oninput="saveCurrentItem()"></textarea></div>
-                    
+                    <div class="form-group"><label>ID (自动生成)</label><input type="text" id="charId" disabled
+                            style="opacity:0.5; font-family:monospace; color:var(--text-muted);"></div>
+                    <div class="form-group"><label>姓名</label><input type="text" id="charName"
+                            oninput="saveCurrentItem()"></div>
+                    <div class="form-group"><label>人设 (AI 扮演指令)</label><textarea id="charPersona" style="height:120px;"
+                            oninput="saveCurrentItem()"></textarea></div>
+
                     <div class="form-group">
                         <label>头像 (URL 或 本地上传)</label>
                         <div class="image-input-group">
-                            <input type="text" id="charAvatar" oninput="saveCurrentItem()" placeholder="https://..." style="flex:1">
+                            <input type="text" id="charAvatar" oninput="saveCurrentItem()" placeholder="https://..."
+                                style="flex:1">
                             <button class="btn btn-outline" onclick="triggerUpload('charAvatar')">📂</button>
                             <img id="preview_charAvatar" class="image-preview-mini">
                         </div>
                     </div>
-                    
+
                     <button class="btn btn-success btn-full btn-float-save" onclick="manualSave()">💾 保存并刷新预览</button>
                     <button class="btn btn-danger btn-full" onclick="deleteCurrentItem()">删除角色</button>
                 </div>
@@ -290,7 +594,8 @@
             <div id="formScene" class="editor-form" style="display:none;">
                 <div id="sceneEditorContainer">
                     <div class="form-group" style="display:flex; gap:10px;">
-                        <div style="flex:1"><label>ID (自动生成)</label><input type="text" id="sceneId" disabled style="opacity:0.8; color:var(--success); font-weight:bold;"></div>
+                        <div style="flex:1"><label>ID (自动生成)</label><input type="text" id="sceneId" disabled
+                                style="opacity:0.8; color:var(--success); font-weight:bold;"></div>
                         <div style="width:100px"><label>类型</label>
                             <select id="sceneType" onchange="saveCurrentItem()">
                                 <option value="fixed">固定</option>
@@ -302,28 +607,50 @@
                         <label>剧情文本 / AI Prompt</label>
                         <textarea id="sceneContent" style="height: 120px;" oninput="saveCurrentItem()"></textarea>
                     </div>
-                    
+
                     <div class="form-group">
                         <label>背景图 (URL 或 本地上传)</label>
                         <div class="image-input-group">
-                            <input type="text" id="sceneBg" oninput="saveCurrentItem()" placeholder="https://..." style="flex:1">
+                            <input type="text" id="sceneBg" oninput="saveCurrentItem()" placeholder="https://..."
+                                style="flex:1">
                             <button class="btn btn-outline" onclick="triggerUpload('sceneBg')">📂</button>
                             <img id="preview_sceneBg" class="image-preview-mini">
                         </div>
                     </div>
-                    
+
                     <div class="form-group">
-                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                        <div
+                            style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
                             <label style="margin:0">分支选项</label>
-                            <button class="btn btn-primary" style="padding:4px 8px; font-size:12px;" onclick="addOption()">+ 添加</button>
+                            <button class="btn btn-primary" style="padding:4px 8px; font-size:12px;"
+                                onclick="addOption()">+ 添加</button>
                         </div>
                         <div id="optionsList"></div>
                     </div>
-                    
+
                     <button class="btn btn-success btn-full btn-float-save" onclick="manualSave()">💾 保存并刷新预览</button>
                     <button class="btn btn-danger btn-full" onclick="deleteCurrentItem()">删除此节点</button>
                 </div>
                 <div id="sceneEmpty" style="text-align:center; padding:50px; color:#666;">请从左侧列表选择剧情节点</div>
+            </div>
+
+            <div id="formWorldBook" class="editor-form" style="display:none;">
+                <div id="wbEditorContainer">
+                    <div class="form-group"><label>ID (自动生成)</label><input type="text" id="wbId" disabled
+                            style="opacity:0.5; font-family:monospace; color:var(--text-muted);"></div>
+                    <div class="form-group">
+                        <label>触发关键词 (用逗号分隔)</label>
+                        <input type="text" id="wbKeys" oninput="saveCurrentItem()" placeholder="例如: 魔法,  mana, 禁咒">
+                    </div>
+                    <div class="form-group">
+                        <label>设定内容 (AI 读取)</label>
+                        <textarea id="wbContent" style="height:300px;" oninput="saveCurrentItem()"></textarea>
+                    </div>
+
+                    <button class="btn btn-success btn-full btn-float-save" onclick="manualSave()">💾 保存条目</button>
+                    <button class="btn btn-danger btn-full" onclick="deleteCurrentItem()">删除条目</button>
+                </div>
+                <div id="wbEmpty" style="text-align:center; padding:50px; color:#666;">请从左侧列表选择世界书条目</div>
             </div>
         </div>
 
@@ -336,7 +663,8 @@
                     </div>
                     <div id="previewOptions" style="display:flex; flex-wrap:wrap;"></div>
                 </div>
-                <div id="previewOverlay" style="position:absolute; inset:0; background:rgba(0,0,0,0.8); display:flex; align-items:center; justify-content:center; flex-direction:column; text-align:center; padding:20px; display:none;">
+                <div id="previewOverlay"
+                    style="position:absolute; inset:0; background:rgba(0,0,0,0.8); display:flex; align-items:center; justify-content:center; flex-direction:column; text-align:center; padding:20px; display:none;">
                     <div style="font-size:40px; margin-bottom:20px; color:var(--text-muted);">🌍</div>
                     <div style="color:var(--text-muted);">正在编辑世界观<br>无需预览剧情</div>
                 </div>
@@ -346,30 +674,99 @@
 
     <div class="mobile-tab-bar">
         <div class="tab-item active" onclick="switchMobileTab('list', this)">
-            <svg class="svg-icon" viewBox="0 0 24 24"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>
+            <svg class="svg-icon" viewBox="0 0 24 24">
+                <line x1="8" y1="6" x2="21" y2="6"></line>
+                <line x1="8" y1="12" x2="21" y2="12"></line>
+                <line x1="8" y1="18" x2="21" y2="18"></line>
+                <line x1="3" y1="6" x2="3.01" y2="6"></line>
+                <line x1="3" y1="12" x2="3.01" y2="12"></line>
+                <line x1="3" y1="18" x2="3.01" y2="18"></line>
+            </svg>
             <span>列表</span>
         </div>
         <div class="tab-item" onclick="switchMobileTab('edit', this)">
-            <svg class="svg-icon" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+            <svg class="svg-icon" viewBox="0 0 24 24">
+                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+            </svg>
             <span>编辑</span>
         </div>
         <div class="tab-item" onclick="switchMobileTab('preview', this)">
-            <svg class="svg-icon" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+            <svg class="svg-icon" viewBox="0 0 24 24">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                <circle cx="12" cy="12" r="3"></circle>
+            </svg>
             <span>预览</span>
         </div>
-        <div class="tab-item" onclick="exportJson()">
-            <svg class="svg-icon" viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
-            <span>导出</span>
+        <div class="tab-item" onclick="document.getElementById('importFile').click()">
+            <svg class="svg-icon" viewBox="0 0 24 24">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                <polyline points="17 8 12 3 7 8"></polyline>
+                <line x1="12" y1="3" x2="12" y2="15"></line>
+            </svg>
+            <span>导入</span>
+        </div>
+        <div class="tab-item" onclick="toggleLibrary()">
+            <svg class="svg-icon" viewBox="0 0 24 24">
+                <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+                <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+            </svg>
+            <span>记录</span>
+        </div>
+    </div>
+
+    <!-- 图书馆/存档 Modal -->
+    <div id="libraryModal"
+        style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.85); z-index:200; align-items:center; justify-content:center; padding:20px;">
+        <div
+            style="width:100%; max-width:600px; background:var(--bg-panel); border:1px solid var(--border); border-radius:12px; display:flex; flex-direction:column; max-height:80vh;">
+            <div
+                style="padding:15px 20px; border-bottom:1px solid var(--border); display:flex; justify-content:space-between; align-items:center;">
+                <h3 style="margin:0;">📁 副本记录 (本地存档)</h3>
+                <button onclick="toggleLibrary()" class="btn btn-outline" style="padding:4px 8px;">✕</button>
+            </div>
+
+            <div style="padding:15px 20px; background:rgba(0,0,0,0.2);">
+                <button class="btn btn-primary btn-full" onclick="saveToLibrary()">💾 将当前副本保存到记录</button>
+                <div style="font-size:12px; color:var(--text-muted); margin-top:8px; text-align:center;">
+                    ⚠️ 数据存储在浏览器本地，清空缓存会丢失。建议定期导出 JSON 备份。
+                </div>
+            </div>
+
+            <div id="libraryList" style="flex:1; overflow-y:auto; padding:0 20px;">
+                <!-- 列表项 -->
+            </div>
+
         </div>
     </div>
 
     <script>
-        let fullData = { worldview: { name: "", description: "" }, characters: {}, main_story: {}, side_stories: {}, char_routes: {} };
+        let fullData = {
+            id: generateUUID(),
+            worldview: { name: "", author: "", description: "", tags: [] },
+            world_book: {},
+            characters: {},
+            main_story: {},
+            side_stories: {},
+            char_routes: {}
+        };
         let currentSection = 'world';
         let currentItemId = null;
         let currentUploadTargetId = null; // 记录当前正在给哪个输入框传图
 
-        function init() { switchSection('world'); }
+        function init() {
+            switchSection('world');
+            // 首次尝试读取本地数据?
+            // 可选: 自动加载上次未保存的 (这里暂不自动加载，避免覆盖)
+        }
+
+        // UUID 生成
+        function generateUUID() {
+            return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+                var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
+                return v.toString(16);
+            });
+        }
 
         // === 图片上传核心逻辑 ===
         function triggerUpload(inputId) {
@@ -378,36 +775,36 @@
         }
 
         // 监听文件选择
-        document.getElementById('globalImageInput').addEventListener('change', function(e) {
+        document.getElementById('globalImageInput').addEventListener('change', function (e) {
             const file = e.target.files[0];
             if (!file) return;
 
             // 压缩图片逻辑 (限制最大宽度 500px，压缩质量 0.7)
             const reader = new FileReader();
-            reader.onload = function(evt) {
+            reader.onload = function (evt) {
                 const img = new Image();
                 img.src = evt.target.result;
-                img.onload = function() {
+                img.onload = function () {
                     const canvas = document.createElement('canvas');
                     const ctx = canvas.getContext('2d');
-                    
+
                     const MAX_SIZE = 500;
                     let width = img.width;
                     let height = img.height;
-                    
+
                     if (width > height) {
                         if (width > MAX_SIZE) { height *= MAX_SIZE / width; width = MAX_SIZE; }
                     } else {
                         if (height > MAX_SIZE) { width *= MAX_SIZE / height; height = MAX_SIZE; }
                     }
-                    
+
                     canvas.width = width;
                     canvas.height = height;
                     ctx.drawImage(img, 0, 0, width, height);
-                    
+
                     // 得到 Base64
                     const dataUrl = canvas.toDataURL('image/jpeg', 0.7);
-                    
+
                     // 回填到输入框
                     if (currentUploadTargetId) {
                         const inputEl = document.getElementById(currentUploadTargetId);
@@ -429,33 +826,44 @@
 
             document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
             // 简单高亮逻辑：根据 section 索引 (pc-nav children)
-            const indexMap = { 'world':0, 'main':1, 'branch':2, 'chars':3 };
+            const indexMap = { 'world': 0, 'world_book': 1, 'main': 2, 'branch': 3, 'chars': 4 };
             const navBtns = document.querySelectorAll('.pc-nav .nav-btn');
-            if(navBtns[indexMap[section]]) navBtns[indexMap[section]].classList.add('active');
+            if (navBtns[indexMap[section]]) navBtns[indexMap[section]].classList.add('active');
 
-            const titles = { 'world': '世界观', 'main': '主线剧情', 'branch': '普通支线', 'chars': '角色设定' };
+            const titles = { 'world': '世界观', 'world_book': '世界书 (AI)', 'main': '主线剧情', 'branch': '普通支线', 'chars': '角色设定' };
             document.getElementById('sectionTitle').textContent = titles[section];
 
             document.querySelectorAll('.editor-form').forEach(el => el.style.display = 'none');
-            
+
             if (section === 'world') {
                 document.getElementById('formWorld').style.display = 'block';
                 document.getElementById('worldName').value = fullData.worldview.name || "";
+                document.getElementById('worldAuthor').value = fullData.worldview.author || "";
                 document.getElementById('worldDesc').value = fullData.worldview.description || "";
+
+                // Load Tags
+                let tags = fullData.worldview.tags || [];
+                document.getElementById('worldTag1').value = tags[0] || "";
+                document.getElementById('worldTag2').value = tags[1] || "";
+
                 updatePreviewVisual(null);
-                if(window.innerWidth <= 768) switchMobileTab('edit');
+                if (window.innerWidth <= 768) switchMobileTab('edit');
             } else {
                 renderSidebarList();
                 if (section === 'chars') {
                     document.getElementById('formChar').style.display = 'block';
                     document.getElementById('charEditorContainer').style.display = 'none';
                     document.getElementById('charEmpty').style.display = 'block';
+                } else if (section === 'world_book') {
+                    document.getElementById('formWorldBook').style.display = 'block';
+                    document.getElementById('wbEditorContainer').style.display = 'none';
+                    document.getElementById('wbEmpty').style.display = 'block';
                 } else {
                     document.getElementById('formScene').style.display = 'block';
                     document.getElementById('sceneEditorContainer').style.display = 'none';
                     document.getElementById('sceneEmpty').style.display = 'block';
                 }
-                if(window.innerWidth <= 768) switchMobileTab('list');
+                if (window.innerWidth <= 768) switchMobileTab('list');
             }
         }
 
@@ -474,13 +882,13 @@
             const listEl = document.getElementById('itemList');
             listEl.innerHTML = '';
             let dataMap = getDataMapBySection();
-            
+
             if (Object.keys(dataMap).length === 0) {
                 listEl.innerHTML = '<div style="padding:20px; text-align:center; color:#666; font-size:12px;">暂无条目，点击右上角新建</div>';
             }
 
             // 智能排序：提取数字部分排序
-            const keys = Object.keys(dataMap).sort((a,b) => {
+            const keys = Object.keys(dataMap).sort((a, b) => {
                 const numA = parseInt(a.match(/\d+$/)) || 0;
                 const numB = parseInt(b.match(/\d+$/)) || 0;
                 return numA - numB;
@@ -489,11 +897,12 @@
             keys.forEach(key => {
                 const li = document.createElement('li');
                 li.className = `scene-item ${key === currentItemId ? 'active' : ''}`;
-                
+
                 let label = key;
                 if (currentSection === 'chars') label = dataMap[key].name || "未命名";
+                else if (currentSection === 'world_book') label = dataMap[key].keys || "新条目";
                 else if (dataMap[key].text) label = dataMap[key].text.substring(0, 12) + "...";
-                
+
                 li.innerHTML = `<span style="font-weight:500;">${label}</span> <span style="font-size:10px; opacity:0.5; font-family:monospace;">${key}</span>`;
                 li.onclick = () => loadItem(key);
                 listEl.appendChild(li);
@@ -501,6 +910,7 @@
         }
 
         function getDataMapBySection() {
+            if (currentSection === 'world_book') return fullData.world_book;
             if (currentSection === 'chars') return fullData.characters;
             if (currentSection === 'main') return fullData.main_story;
             if (currentSection === 'branch') return fullData.side_stories;
@@ -516,7 +926,7 @@
                 .filter(k => k.startsWith(prefix + "_"))
                 .map(k => parseInt(k.replace(prefix + "_", "")))
                 .filter(n => !isNaN(n));
-            
+
             const max = nums.length > 0 ? Math.max(...nums) : 0;
             return prefix + "_" + (max + 1);
         }
@@ -525,35 +935,44 @@
             currentItemId = id;
             const data = getDataMapBySection()[id];
             renderSidebarList();
-            if(window.innerWidth <= 768) switchMobileTab('edit');
+            if (window.innerWidth <= 768) switchMobileTab('edit');
 
             if (currentSection === 'chars') {
                 document.getElementById('charEditorContainer').style.display = 'block';
                 document.getElementById('charEmpty').style.display = 'none';
-                
+
                 document.getElementById('charId').value = id;
                 document.getElementById('charName').value = data.name || "";
                 document.getElementById('charPersona').value = data.persona || "";
                 document.getElementById('charAvatar').value = data.avatar || "";
-                
+
                 // 迷你预览更新
                 const mini = document.getElementById('preview_charAvatar');
-                if(data.avatar) { mini.src=data.avatar; mini.style.display='block'; } else { mini.style.display='none'; }
-                
+                if (data.avatar) { mini.src = data.avatar; mini.style.display = 'block'; } else { mini.style.display = 'none'; }
+
+                updatePreviewVisual(null);
+            } else if (currentSection === 'world_book') {
+                document.getElementById('wbEditorContainer').style.display = 'block';
+                document.getElementById('wbEmpty').style.display = 'none';
+
+                document.getElementById('wbId').value = id;
+                document.getElementById('wbKeys').value = data.keys || "";
+                document.getElementById('wbContent').value = data.content || "";
+
                 updatePreviewVisual(null);
             } else {
                 document.getElementById('sceneEditorContainer').style.display = 'block';
                 document.getElementById('sceneEmpty').style.display = 'none';
-                
+
                 document.getElementById('sceneId').value = id;
                 document.getElementById('sceneType').value = data.type || 'fixed';
                 document.getElementById('sceneContent').value = data.text || data.prompt || "";
                 document.getElementById('sceneBg').value = data.background || "";
-                
+
                 // 迷你预览更新
                 const mini = document.getElementById('preview_sceneBg');
-                if(data.background) { mini.src=data.background; mini.style.display='block'; } else { mini.style.display='none'; }
-                
+                if (data.background) { mini.src = data.background; mini.style.display = 'block'; } else { mini.style.display = 'none'; }
+
                 renderOptionsForm(data.options || []);
                 updatePreviewVisual(data);
             }
@@ -574,7 +993,7 @@
                 bg.style.backgroundImage = 'none';
                 bg.style.backgroundColor = '#111';
             }
-            
+
             text.textContent = data.text || data.prompt || "(空文本)";
             if (data.type === 'ai') text.innerHTML = "⚡ [AI 模式] <br>" + text.textContent;
 
@@ -590,11 +1009,12 @@
         }
 
         function addItem() {
-            let prefix = currentSection === 'chars' ? "char" : currentSection;
+            let prefix = currentSection === 'chars' ? "char" : (currentSection === 'world_book' ? "wb" : currentSection);
             let newId = generateNextId(prefix);
-            let newObj = currentSection === 'chars' 
-                ? { name: "新角色", persona: "" } 
-                : { type: "fixed", text: "新剧情...", options: [] };
+            let newObj;
+            if (currentSection === 'chars') newObj = { name: "新角色", persona: "" };
+            else if (currentSection === 'world_book') newObj = { keys: "关键词", content: "" };
+            else newObj = { type: "fixed", text: "新剧情...", options: [] };
 
             getDataMapBySection()[newId] = newObj;
             loadItem(newId);
@@ -602,23 +1022,35 @@
 
         function saveWorld() {
             fullData.worldview.name = document.getElementById('worldName').value;
+            fullData.worldview.author = document.getElementById('worldAuthor').value;
             fullData.worldview.description = document.getElementById('worldDesc').value;
+
+            // Tags logic
+            let t1 = document.getElementById('worldTag1').value.trim();
+            let t2 = document.getElementById('worldTag2').value.trim();
+            fullData.worldview.tags = [];
+            if (t1) fullData.worldview.tags.push(t1);
+            if (t2) fullData.worldview.tags.push(t2);
         }
 
         function saveCurrentItem() {
             if (!currentItemId) return;
             const map = getDataMapBySection();
             const item = map[currentItemId];
-            
+
             if (currentSection === 'chars') {
                 item.name = document.getElementById('charName').value;
                 item.persona = document.getElementById('charPersona').value;
                 item.avatar = document.getElementById('charAvatar').value;
-                
+
                 // 迷你预览同步
                 const mini = document.getElementById('preview_charAvatar');
-                if(item.avatar) { mini.src=item.avatar; mini.style.display='block'; } else { mini.style.display='none'; }
-                
+                if (item.avatar) { mini.src = item.avatar; mini.style.display = 'block'; } else { mini.style.display = 'none'; }
+
+                renderSidebarList();
+            } else if (currentSection === 'world_book') {
+                item.keys = document.getElementById('wbKeys').value;
+                item.content = document.getElementById('wbContent').value;
                 renderSidebarList();
             } else {
                 item.type = document.getElementById('sceneType').value;
@@ -626,63 +1058,66 @@
                 if (item.type === 'ai') { item.prompt = content; delete item.text; }
                 else { item.text = content; delete item.prompt; }
                 item.background = document.getElementById('sceneBg').value;
-                
+
                 // 迷你预览同步
                 const mini = document.getElementById('preview_sceneBg');
-                if(item.background) { mini.src=item.background; mini.style.display='block'; } else { mini.style.display='none'; }
-                
+                if (item.background) { mini.src = item.background; mini.style.display = 'block'; } else { mini.style.display = 'none'; }
+
                 updatePreviewVisual(item);
             }
         }
-        
+
         function manualSave() {
-            if(currentSection === 'world') saveWorld();
+            if (currentSection === 'world') saveWorld();
             else saveCurrentItem();
-            
+
             // 强制刷新一次预览
             if (currentItemId && currentSection !== 'world') {
-               updatePreviewVisual(getDataMapBySection()[currentItemId]);
+                updatePreviewVisual(getDataMapBySection()[currentItemId]);
             }
-            
+
             alert('✅ 保存成功！');
-            if(window.innerWidth <= 768) switchMobileTab('preview');
+            if (window.innerWidth <= 768) switchMobileTab('preview');
         }
 
         function deleteCurrentItem() {
-            if(confirm('删除后无法恢复，确定吗？')) {
+            if (confirm('删除后无法恢复，确定吗？')) {
                 delete getDataMapBySection()[currentItemId];
                 currentItemId = null;
                 document.getElementById('sceneEditorContainer').style.display = 'none';
+                document.getElementById('sceneEditorContainer').style.display = 'none';
                 document.getElementById('charEditorContainer').style.display = 'none';
+                document.getElementById('wbEditorContainer').style.display = 'none';
                 document.getElementById('sceneEmpty').style.display = 'block';
                 document.getElementById('charEmpty').style.display = 'block';
+                document.getElementById('wbEmpty').style.display = 'block';
                 renderSidebarList();
-                if(window.innerWidth <= 768) switchMobileTab('list');
+                if (window.innerWidth <= 768) switchMobileTab('list');
             }
         }
 
         function renderOptionsForm(opts) {
             const list = document.getElementById('optionsList');
             list.innerHTML = '';
-            
+
             const allIds = [];
-            if(fullData.main_story) allIds.push(...Object.keys(fullData.main_story));
-            if(fullData.side_stories) allIds.push(...Object.keys(fullData.side_stories));
-            if(fullData.char_routes) allIds.push(...Object.keys(fullData.char_routes));
+            if (fullData.main_story) allIds.push(...Object.keys(fullData.main_story));
+            if (fullData.side_stories) allIds.push(...Object.keys(fullData.side_stories));
+            if (fullData.char_routes) allIds.push(...Object.keys(fullData.char_routes));
 
             opts.forEach((opt, idx) => {
                 const div = document.createElement('div');
                 div.className = 'option-card';
                 let selectHtml = `<select onchange="updateOpt(${idx}, 'nextScene', this.value)" style="flex:1; margin-top:5px;">`;
                 selectHtml += `<option value="">-- 选择跳转 --</option>`;
-                selectHtml += `<option value="END" ${opt.nextScene==='END'?'selected':''}>[END] 结束</option>`;
+                selectHtml += `<option value="END" ${opt.nextScene === 'END' ? 'selected' : ''}>[END] 结束</option>`;
                 allIds.forEach(id => {
-                    selectHtml += `<option value="${id}" ${opt.nextScene===id?'selected':''}>${id}</option>`;
+                    selectHtml += `<option value="${id}" ${opt.nextScene === id ? 'selected' : ''}>${id}</option>`;
                 });
                 selectHtml += `</select>`;
 
                 div.innerHTML = `
-                    <input placeholder="选项文案" value="${opt.label||''}" oninput="updateOpt(${idx}, 'label', this.value)">
+                    <input placeholder="选项文案" value="${opt.label || ''}" oninput="updateOpt(${idx}, 'label', this.value)">
                     <div style="display:flex; gap:5px;">${selectHtml}<button class="btn btn-danger" onclick="delOpt(${idx})" style="margin-top:5px;">🗑️</button></div>
                 `;
                 list.appendChild(div);
@@ -691,8 +1126,8 @@
 
         function addOption() {
             const map = getDataMapBySection();
-            if(!map[currentItemId].options) map[currentItemId].options = [];
-            map[currentItemId].options.push({label:"", nextScene:""});
+            if (!map[currentItemId].options) map[currentItemId].options = [];
+            map[currentItemId].options.push({ label: "", nextScene: "" });
             renderOptionsForm(map[currentItemId].options);
             updatePreviewVisual(map[currentItemId]);
         }
@@ -711,7 +1146,7 @@
         }
 
         function exportJson() {
-            const blob = new Blob([JSON.stringify(fullData, null, 2)], {type: "application/json"});
+            const blob = new Blob([JSON.stringify(fullData, null, 2)], { type: "application/json" });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
@@ -721,20 +1156,155 @@
 
         function importJson(input) {
             const file = input.files[0];
-            if(!file) return;
+            if (!file) return;
             const reader = new FileReader();
             reader.onload = e => {
                 try {
                     fullData = JSON.parse(e.target.result);
-                    ['worldview','characters','main_story','side_stories','char_routes'].forEach(k => { if(!fullData[k]) fullData[k] = {}; });
+                    ['worldview', 'characters', 'world_book', 'main_story', 'side_stories', 'char_routes'].forEach(k => { if (!fullData[k]) fullData[k] = {}; });
+                    // 兼容旧数据 author/summary/id
+                    if (!fullData.worldview.author) fullData.worldview.author = "";
+                    if (!fullData.worldview.tags) fullData.worldview.tags = [];
+                    // remove summary if exists or ignore
+                    if (!fullData.id) fullData.id = generateUUID();
+
                     switchSection('world');
-                    alert('导入成功！');
-                } catch(err) { alert('文件格式错误'); }
+                    alert('导入成功！记得点开“副本记录”保存哦~');
+                } catch (err) { alert('文件格式错误'); }
             };
             reader.readAsText(file);
+        }
+
+        // === 图书馆/存档系统 ===
+        function toggleLibrary() {
+            const modal = document.getElementById('libraryModal');
+            if (modal.style.display === 'none') {
+                modal.style.display = 'flex';
+                renderLibraryList();
+            } else {
+                modal.style.display = 'none';
+            }
+        }
+
+        function getLibraryData() {
+            try {
+                return JSON.parse(localStorage.getItem('utopia_library') || "[]");
+            } catch (e) { return []; }
+        }
+
+        function saveLibraryData(list) {
+            localStorage.setItem('utopia_library', JSON.stringify(list));
+        }
+
+        function renderLibraryList() {
+            const listEl = document.getElementById('libraryList');
+            const data = getLibraryData();
+            listEl.innerHTML = '';
+
+            if (data.length === 0) {
+                listEl.innerHTML = '<div style="padding:40px; text-align:center; color:#666;">暂无本地存档</div>';
+                return;
+            }
+
+            // 按更新时间倒序
+            data.sort((a, b) => b.updatedAt - a.updatedAt);
+
+            data.forEach(item => {
+                const div = document.createElement('div');
+                div.style.cssText = 'background:rgba(255,255,255,0.03); margin-top:10px; padding:15px; border-radius:8px; border:1px solid rgba(255,255,255,0.05); display:flex; justify-content:space-between; align-items:center;';
+
+                const dateStr = new Date(item.updatedAt).toLocaleString();
+                const sizeStr = (JSON.stringify(item.data).length / 1024).toFixed(1) + ' KB';
+
+                div.innerHTML = `
+                    <div style="flex:1;">
+                        <div style="font-weight:600; font-size:15px; color:var(--text);">${item.name || "未命名副本"}</div>
+                        <div style="font-size:12px; color:var(--text-muted); margin-top:4px;">
+                            ${item.author ? 'Author: ' + item.author + ' | ' : ''}
+                            ${dateStr} | ${sizeStr}
+                        </div>
+                    </div>
+                    <div style="display:flex; gap:8px;">
+                        <button class="btn btn-primary" style="padding:6px 12px;" onclick="loadFromLibrary('${item.id}')">读取</button>
+                        <button class="btn btn-outline" style="padding:6px 12px;" onclick="exportSingleLibrary('${item.id}')">导出</button>
+                        <button class="btn btn-danger" style="padding:6px 12px;" onclick="deleteFromLibrary('${item.id}')">删除</button>
+                    </div>
+                `;
+                listEl.appendChild(div);
+            });
+        }
+
+        function saveToLibrary() {
+            if (!fullData.id) fullData.id = generateUUID();
+
+            // 检查大小
+            const str = JSON.stringify(fullData);
+            if (str.length > 4 * 1024 * 1024) {
+                if (!confirm('当前副本数据量较大(>' + (str.length / 1024 / 1024).toFixed(1) + 'MB)，可能导致浏览器缓存存满。建议使用导出功能。确定要继续存入本地库吗？')) return;
+            }
+
+            const list = getLibraryData();
+            const existingIdx = list.findIndex(x => x.id === fullData.id);
+
+            const meta = {
+                id: fullData.id,
+                name: fullData.worldview.name || "未命名副本",
+                author: fullData.worldview.author || "",
+                updatedAt: Date.now(),
+                data: fullData
+            };
+
+            if (existingIdx >= 0) {
+                if (!confirm(`已存在同名档案 (ID: ${fullData.id})，确定覆盖吗？`)) return;
+                list[existingIdx] = meta;
+            } else {
+                list.push(meta);
+            }
+
+            try {
+                saveLibraryData(list);
+                alert('存档成功！');
+                renderLibraryList();
+            } catch (e) {
+                alert('保存失败，可能是浏览器存储空间已满。请尝试删除无需的旧存档或导出 JSON。');
+            }
+        }
+
+        function loadFromLibrary(id) {
+            const list = getLibraryData();
+            const item = list.find(x => x.id === id);
+            if (item) {
+                if (confirm('读取存档将覆盖当前未保存的编辑内容，确定吗？')) {
+                    fullData = JSON.parse(JSON.stringify(item.data)); // Deep clone just in case
+                    switchSection('world');
+                    toggleLibrary();
+                }
+            }
+        }
+
+        function deleteFromLibrary(id) {
+            if (!confirm('确定永久删除此本地存档吗？')) return;
+            let list = getLibraryData();
+            list = list.filter(x => x.id !== id);
+            saveLibraryData(list);
+            renderLibraryList();
+        }
+
+        function exportSingleLibrary(id) {
+            const list = getLibraryData();
+            const item = list.find(x => x.id === id);
+            if (item) {
+                const blob = new Blob([JSON.stringify(item.data, null, 2)], { type: "application/json" });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = (item.name || "script") + ".json";
+                a.click();
+            }
         }
 
         init();
     </script>
 </body>
+
 </html>

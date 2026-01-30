@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Utopia note·乌托邦手记</title>
+    <title>Utopia note·乌托邦手记 【修复版:v3】</title>
     <style>
         :root {
             /* === 你的原始配色系统 (保持不变) === */
@@ -841,15 +841,22 @@
 
         .game-text-box {
             max-width: 900px;
-            margin: 0 auto 16px;
-            background: rgba(0, 0, 0, 0.68);
-            border-radius: 16px;
-            padding: 16px 18px;
+            margin: 0 auto;
+            /* White frosted glass style */
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            padding: 24px 32px;
+            font-size: 16px;
+            line-height: 1.8;
             color: #fff;
-            min-height: 90px;
-            font-size: 15px;
-            line-height: 1.7;
-            cursor: pointer;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            /* Add text shadow for clarity */
+            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.9);
+            min-height: 120px;
+            position: relative;
+            z-index: 2;
         }
 
         .game-options {
@@ -2092,6 +2099,10 @@
         let currentSceneId = null; // 全局记录当前场景 ID
         let lastValidBackground = ''; // 追踪上一个有效的背景图
 
+        // Global Game State
+        let hasUnsavedChanges = false; // Track if new content generated
+        let hasAiInteraction = false; // Track if AI has been used in this session
+
         // 打字机状态
         let typingTimer = null;
         let typingIndex = 0;
@@ -2235,7 +2246,7 @@
         // 全局状态变量
         let currentDungeon = defaultDungeon;
         let activeStoryData = currentDungeon.scripts; // 核心修复：确保它引用当前剧本的脚本
-        let hasUnsavedChanges = false; // 追踪未保存的改动
+        // let hasUnsavedChanges = false; // 追踪未保存的改动 - Moved to Global Game State
 
         // 初始化
         function init() {
@@ -2373,30 +2384,43 @@
                 isLoadingFromDB = true;
                 loadDungeonsFromDB().then(dbDungeons => {
                     let added = 0;
+                    let updated = 0;
+
                     dbDungeons.forEach(d => {
                         if (d && d.meta && d.scripts) {
-                            // 避免重复（优先检查 ID）
-                            const exists = allDungeons.some(existing => {
+                            // 查找是否存在（优先检查 ID）
+                            const existingIdx = allDungeons.findIndex(existing => {
                                 if (d.id && existing.id) {
                                     return d.id === existing.id;
                                 }
-                                // 如果新副本有ID而现有副本无ID，视为不同
                                 if (d.id && !existing.id) {
                                     return false;
                                 }
-                                // 仅当都无ID时，才降级比较标题
                                 return existing.meta.title === d.meta.title;
                             });
 
-                            if (!exists) {
+                            if (existingIdx !== -1) {
+                                // 存在：如果是用户副本（非默认），则用 DB 的完整数据（含图片）覆盖 LS 的精简数据
+                                // 使用 Object.assign 原地更新，这样 currentDungeon 如果引用它也能自动更新
+                                if (existingIdx !== 0) { // 跳过默认副本
+                                    Object.assign(allDungeons[existingIdx], adaptEditorData(d));
+                                    updated++;
+                                }
+                            } else {
+                                // 不存在：直接添加
                                 allDungeons.push(adaptEditorData(d));
                                 added++;
                             }
                         }
                     });
-                    if (added > 0) {
-                        console.log('[IndexedDB] 补充加载了', added, '个副本');
-                        renderHub(); // 现在可以安全调用，因为 renderHub 不再反向调用 loadAllDungeons
+
+                    if (added > 0 || updated > 0) {
+                        console.log(`[IndexedDB] 同步完成: 新增 ${added}, 更新 ${updated} (含图片恢复)`);
+                        renderHub();
+                        // 如果当前就在详情页，刷新一下详情（让图片立即出来）
+                        if (document.getElementById('view-detail').classList.contains('active')) {
+                            renderDetail();
+                        }
                     }
                     isLoadingFromDB = false;
                 }).catch(e => {
@@ -2702,6 +2726,13 @@
 
         // ===== 游戏流程 =====
         function startGame(mode) {
+            if (!currentDungeon) return;
+
+            // Reset state
+            hasUnsavedChanges = false;
+            hasAiInteraction = false;
+            sandboxState = { isActive: false };
+
             if (mode === 'start' || mode === 'endless') {
                 if (!currentPersonaId) {
                     openPersonaModal(mode);
@@ -3081,6 +3112,7 @@
                 optionsEl.style.display = 'none';
                 currentContinueHandler = (e) => {
                     if (e.target.closest('.game-exit-btn')) return;
+                    if (e.target.closest('.game-option-btn')) return;
                     if (isTyping) {
                         skipTyping();
                         return;
@@ -3203,6 +3235,10 @@
                     }
 
                     const aiResponse = await generateSandboxContinuation(scene);
+                    // Mark global interaction
+                    hasAiInteraction = true;
+                    hasUnsavedChanges = true;
+
                     sandboxState.chatHistory.push({ role: 'assistant', content: aiResponse });
                     typeWriter(aiResponse);
 
@@ -3218,7 +3254,12 @@
 
         // 生成沙盒自动续写内容
         async function generateSandboxContinuation(scene) {
-            const apiConfig = JSON.parse(localStorage.getItem('apiConfig') || '{}');
+            const apiConfig = JSON.parse(localStorage.getItem('infinite.apiConfig') || localStorage.getItem('apiConfig') || '{}');
+            console.log('[generateSandboxContinuation] 使用的 API 配置:', {
+                url: apiConfig.url,
+                model: apiConfig.model,
+                key: apiConfig.key ? '***' + apiConfig.key.slice(-4) : '(empty)'
+            });
             if (!apiConfig.url || !apiConfig.key) {
                 return '❌ 请先在"系统设置"中配置 API Key';
             }
@@ -3250,8 +3291,11 @@
                     return `- ${c.name}${c.desc ? ': ' + c.desc : ''}`;
                 }).join('\n');
             }
-
-            // 获取沙盒状态
+            console.log('[Sandbox] 角色卡信息:', {
+                '玩家角色': myPersona.name + ' - ' + (myPersona.desc || '未知'),
+                'NPC数量': currentDungeon.characters?.length || 0,
+                'NPC卡片': characterCards
+            });            // 获取沙盒状态
             const currentTurn = sandboxState.currentTurn || 1;
             const maxTurns = sandboxState.maxTurns || 10;
             const guideText = scene.guide || '（无前置引导）';
@@ -3393,6 +3437,11 @@ ${chatHistoryText}
         // 生成沙盒回复
         async function generateSandboxResponse(userInput, scene) {
             const apiConfig = JSON.parse(localStorage.getItem('infinite.apiConfig') || localStorage.getItem('apiConfig') || '{}');
+            console.log('[generateSandboxResponse] 使用的 API 配置:', {
+                url: apiConfig.url,
+                model: apiConfig.model,
+                key: apiConfig.key ? '***' + apiConfig.key.slice(-4) : '(empty)'
+            });
             if (!apiConfig.url || !apiConfig.key) {
                 return '❌ 请先在"系统设置"中配置 API Key';
             }
@@ -3561,10 +3610,12 @@ ${scenePrompt ? `【📜 本场景特殊指令】：${scenePrompt}` : ''}
             try {
                 let apiUrl = apiConfig.url.trim();
                 if (apiUrl.endsWith('/')) apiUrl = apiUrl.slice(0, -1);
-                if (!apiUrl.includes('/chat/completions') && !apiUrl.includes('/v1/')) {
-                    apiUrl = apiUrl + '/v1/chat/completions';
-                } else if (!apiUrl.includes('/chat/completions')) {
+                if (apiUrl.includes('/chat/completions')) {
+                    // 已经是完整路径
+                } else if (apiUrl.endsWith('/v1')) {
                     apiUrl = apiUrl + '/chat/completions';
+                } else {
+                    apiUrl = apiUrl + '/v1/chat/completions';
                 }
 
                 const res = await fetch(apiUrl, {
@@ -3585,6 +3636,10 @@ ${scenePrompt ? `【📜 本场景特殊指令】：${scenePrompt}` : ''}
                 });
 
                 const data = await res.json();
+                // Mark interaction
+                if (data.choices?.[0]?.message?.content) {
+                    hasAiInteraction = true;
+                }
                 return data.choices?.[0]?.message?.content || outlineText;
             } catch (err) {
                 console.error('Expand error:', err);
@@ -3602,6 +3657,12 @@ ${scenePrompt ? `【📜 本场景特殊指令】：${scenePrompt}` : ''}
             }
 
             const generated = await generateAiSceneText(sceneId, scene, activeStoryData);
+
+            // Mark interaction
+            if (generated && !generated.toString().startsWith('❌')) {
+                hasAiInteraction = true;
+                hasUnsavedChanges = true;
+            }
 
             if (typeof generated === 'string' && generated.startsWith('❌')) {
                 typeWriter(generated);
@@ -3679,6 +3740,11 @@ ${scenePrompt ? `【📜 本场景特殊指令】：${scenePrompt}` : ''}
         // ==========================================
         async function generateAiSceneText(sceneId, scene, activeScripts) {
             const apiConfig = JSON.parse(localStorage.getItem('infinite.apiConfig') || localStorage.getItem('apiConfig') || '{}');
+            console.log('[generateAiSceneText] 使用的 API 配置:', {
+                url: apiConfig.url,
+                model: apiConfig.model,
+                key: apiConfig.key ? '***' + apiConfig.key.slice(-4) : '(empty)'
+            });
             if (!apiConfig.url || !apiConfig.key) {
                 return "❌ 请先在“系统设置”中配置 API Key";
             }
@@ -3732,6 +3798,11 @@ ${scenePrompt ? `【📜 本场景特殊指令】：${scenePrompt}` : ''}
                         return `- ${c.name}${c.desc ? ': ' + c.desc : ''}`;
                     }).join('\n');
                 }
+                console.log('[AI Scene] 角色卡信息:', {
+                    '玩家角色': myPersona.name + ' - ' + (myPersona.desc || '未知'),
+                    'NPC数量': currentDungeon.characters?.length || 0,
+                    'NPC卡片': characterCards
+                });
 
                 // 获取沙盒状态
                 const currentTurn = sandboxState.currentTurn || 1;
@@ -3822,10 +3893,12 @@ ${chatHistoryText}
             try {
                 let fetchUrl = apiConfig.url.trim();
                 if (fetchUrl.endsWith('/')) fetchUrl = fetchUrl.slice(0, -1);
-                if (!fetchUrl.includes('/chat/completions') && !fetchUrl.includes('/v1/')) {
-                    fetchUrl = fetchUrl + '/v1/chat/completions';
-                } else if (!fetchUrl.includes('/chat/completions')) {
+                if (fetchUrl.includes('/chat/completions')) {
+                    // 已经是完整路径
+                } else if (fetchUrl.endsWith('/v1')) {
                     fetchUrl = fetchUrl + '/chat/completions';
+                } else {
+                    fetchUrl = fetchUrl + '/v1/chat/completions';
                 }
 
                 const response = await fetch(fetchUrl, {
@@ -3848,7 +3921,7 @@ ${chatHistoryText}
                 if (!response.ok) throw new Error(`API Error: ${response.status}`);
 
                 const data = await response.json();
-                const content = data.choices[0].message.content;
+                const content = data.choices?.[0]?.message?.content || "";
 
                 try {
                     const cleanContent = content.replace(/```json/g, '').replace(/```/g, '').trim();
@@ -3947,16 +4020,22 @@ ${chatHistoryText}
             if (!config.key) return "（API Key为空，无法生成总结）";
 
             const maxContext = config.maxContext || 100000;
-            // 对于总结，我们可以取比 maxContext 稍小一点的范围，或者直接用 maxContext
-            // 这里简单处理，直接截取字符串长度
+            // Ensure memoryText is a string
+            memoryText = memoryText || "";
             const recentContext = memoryText.slice(-maxContext);
 
             let baseUrl = config.url.trim();
             if (baseUrl.endsWith('/')) baseUrl = baseUrl.slice(0, -1);
-            if (!baseUrl.includes('/chat/completions') && !baseUrl.includes('/v1/')) {
-                baseUrl = baseUrl + '/v1/chat/completions';
-            } else if (!baseUrl.includes('/chat/completions')) {
+
+            // 智能补全路径
+            if (baseUrl.includes('/chat/completions')) {
+                // 已经是完整路径，不做修改
+            } else if (baseUrl.endsWith('/v1')) {
+                // 以 /v1 结尾，直接添加 /chat/completions
                 baseUrl = baseUrl + '/chat/completions';
+            } else {
+                // 其他情况，添加 /v1/chat/completions
+                baseUrl = baseUrl + '/v1/chat/completions';
             }
             const finalUrl = baseUrl;
 
@@ -3968,6 +4047,11 @@ ${chatHistoryText}
             4. 语气客观冷静，以线性方式记录故事经历，尽量全地总结信息。`;
 
             try {
+                // DEBUG: v3 详细诊断
+                const debugMsg = `正在请求: ${finalUrl}\n模型: ${config.model}`;
+                console.log(debugMsg);
+                alert(debugMsg);
+
                 const res = await fetch(finalUrl, {
                     method: 'POST',
                     headers: {
@@ -3985,7 +4069,12 @@ ${chatHistoryText}
                     })
                 });
 
-                if (!res.ok) throw new Error(res.statusText);
+                if (!res.ok) {
+                    const errorText = await res.text();
+                    const errMsg = `API Error: ${res.status}\nURL: ${finalUrl}\nDetails: ${errorText}`;
+                    alert(errMsg);
+                    throw new Error(errMsg);
+                }
 
                 const data = await res.json();
                 return data.choices?.[0]?.message?.content || "（AI 总结生成失败）";
@@ -4089,31 +4178,43 @@ ${chatHistoryText}
             const maxContext = parseInt(document.getElementById('apiMaxContextInput').value) || 100000;
             const temperature = parseFloat(document.getElementById('apiTemperature').value) || 0.8;
 
-            if (!apiName || !apiUrl || !apiKey) {
-                showToastMsg('❌ 请填写完整配置');
+            if (!apiUrl || !apiKey) {
+                showToastMsg('❌ 请填写 API URL 和 Key');
                 return;
             }
 
             const config = { name: apiName, url: apiUrl, key: apiKey, model: model, maxTokens, maxContext, temperature };
 
-            // 保存当前生效配置
+            // 保存当前生效配置 (即使没有名字)
             localStorage.setItem('infinite.apiConfig', JSON.stringify(config));
+            console.log('[saveApiConfig] 配置已保存:', {
+                url: config.url,
+                model: config.model,
+                key: config.key ? '***' + config.key.slice(-4) : '(empty)'
+            });
             if (typeof apiConfig !== 'undefined') apiConfig = config;
 
-            // 保存到预设列表
-            let presets = JSON.parse(localStorage.getItem('infinite.apiPresets') || '[]');
-            const existingIndex = presets.findIndex(p => p.name === apiName);
+            // 仅当提供了名称时，才保存到预设列表
+            if (apiName) {
+                let presets = JSON.parse(localStorage.getItem('infinite.apiPresets') || '[]');
+                const existingIndex = presets.findIndex(p => p.name === apiName);
 
-            if (existingIndex >= 0) {
-                presets[existingIndex] = config; // 更新
-                showToastMsg(`✅ 预设 "${apiName}" 已更新`);
+                if (existingIndex >= 0) {
+                    presets[existingIndex] = config; // 更新
+                    showToastMsg(`✅ 预设 "${apiName}" 已更新并应用`);
+                } else {
+                    presets.push(config); // 新增
+                    showToastMsg(`✅ 新预设 "${apiName}" 已保存并应用`);
+                }
+                localStorage.setItem('infinite.apiPresets', JSON.stringify(presets));
+                updatePresetSelect(presets, config);
             } else {
-                presets.push(config); // 新增
-                showToastMsg(`✅ 新预设 "${apiName}" 已保存`);
+                // 如果没有名字，仅应用
+                showToastMsg('✅ 配置已应用 (未保存为预设)');
+                // 刷新下拉框确保选中状态正确（可能变为"新建/自定义"）
+                const presets = JSON.parse(localStorage.getItem('infinite.apiPresets') || '[]');
+                updatePresetSelect(presets, config);
             }
-            localStorage.setItem('infinite.apiPresets', JSON.stringify(presets));
-
-            updatePresetSelect(presets, config);
         }
 
         function loadApiConfig() {
@@ -4172,51 +4273,84 @@ ${chatHistoryText}
             showApiTestResult('🔄 正在测试连接...', 'loading');
 
             try {
-                let modelsUrl = apiUrl.replace(/\/$/, '');
-                if (modelsUrl.endsWith('/v1')) modelsUrl = modelsUrl.replace(/\/v1$/, '');
-                if (modelsUrl.endsWith('/chat/completions')) modelsUrl = modelsUrl.replace(/\/chat\/completions$/, '');
-                modelsUrl += '/models';
+                // 1. 基础清理
+                let baseUrl = apiUrl.replace(/\/$/, '');
+                if (baseUrl.endsWith('/chat/completions')) {
+                    baseUrl = baseUrl.substring(0, baseUrl.lastIndexOf('/chat/completions'));
+                }
+                baseUrl = baseUrl.replace(/\/$/, '');
 
-                const res = await fetch(modelsUrl, {
-                    method: 'GET',
-                    headers: {
-                        'Authorization': 'Bearer ' + apiKey,
-                        'Content-Type': 'application/json'
+                // 2. 构造候选项
+                const candidates = [];
+
+                // 优先尝试: 原样 + /models (适用于用户已填 .../v1 的情况)
+                candidates.push(baseUrl + '/models');
+
+                // 备选: 如果原路径没有 /v1，尝试加上 (适用于用户只填了 ... 的情况)
+                if (!baseUrl.match(/\/v1$/)) {
+                    candidates.push(baseUrl + '/v1/models');
+                }
+
+                let models = null;
+                let lastError = null;
+
+                // 3. 依次尝试
+                for (const url of candidates) {
+                    try {
+                        console.log('[API Test] 尝试获取模型列表:', url);
+                        const res = await fetch(url, {
+                            method: 'GET',
+                            headers: {
+                                'Authorization': 'Bearer ' + apiKey,
+                                'Content-Type': 'application/json'
+                            }
+                        });
+
+                        if (res.ok) {
+                            const data = await res.json();
+                            if (data && (Array.isArray(data.data) || Array.isArray(data))) {
+                                models = Array.isArray(data.data) ? data.data : data;
+                                break; // 成功找到，退出循环
+                            }
+                        } else {
+                            if (res.status === 404) {
+                                // 路径不对，尝试下一个
+                                console.warn('[API Test] 404 Not Found:', url);
+                            } else {
+                                // 可能是认证错误等，记录但不一定立即放弃（除非是401）
+                                const errTxt = await res.text();
+                                lastError = `HTTP ${res.status}: ${errTxt}`;
+                            }
+                        }
+                    } catch (e) {
+                        console.warn('[API Test] 网络/解析错误:', e);
+                        lastError = e.message;
                     }
-                });
+                }
 
-                if (!res.ok) {
-                    const errorText = await res.text();
-                    showApiTestResult(` 连接失败: ${res.status} ${res.statusText}`, 'error');
-                    console.error('API Error:', errorText);
+                if (!models) {
+                    showApiTestResult(` 连接失败: ${lastError || '无法从常见路径获取模型列表'}`, 'error');
                     return;
                 }
 
-                const data = await res.json();
+                showApiTestResult(` 连接成功！找到 ${models.length} 个可用模型`, 'success');
 
-                if (data.data && Array.isArray(data.data)) {
-                    const models = data.data;
-                    showApiTestResult(` 连接成功！找到 ${models.length} 个可用模型`, 'success');
+                modelSelect.innerHTML = '<option value="">-- 请选择模型 --</option>';
+                models.forEach(model => {
+                    const option = document.createElement('option');
+                    option.value = model.id;
+                    option.textContent = model.id;
+                    modelSelect.appendChild(option);
+                });
 
-                    modelSelect.innerHTML = '<option value="">-- 请选择模型 --</option>';
-                    models.forEach(model => {
-                        const option = document.createElement('option');
-                        option.value = model.id;
-                        option.textContent = model.id;
-                        modelSelect.appendChild(option);
-                    });
-
-                    const savedConfig = localStorage.getItem('infinite.apiConfig') || localStorage.getItem('apiConfig');
-                    if (savedConfig) {
-                        try {
-                            const config = JSON.parse(savedConfig);
-                            if (config.model) {
-                                modelSelect.value = config.model;
-                            }
-                        } catch (e) { }
-                    }
-                } else {
-                    showApiTestResult('✅ 连接成功！但未能获取模型列表，请手动输入模型名', 'warning');
+                const savedConfig = localStorage.getItem('infinite.apiConfig') || localStorage.getItem('apiConfig');
+                if (savedConfig) {
+                    try {
+                        const config = JSON.parse(savedConfig);
+                        if (config.model) {
+                            modelSelect.value = config.model;
+                        }
+                    } catch (e) { }
                 }
             } catch (error) {
                 showApiTestResult(` 网络错误: ${error.message}`, 'error');
@@ -4980,8 +5114,11 @@ ${chatHistoryText}
                 }
             } catch (err) {
                 console.error("Error generating summary:", err);
-                summary = "总结生成失败";
+                summary = "总结生成失败: " + err.message;
             }
+
+            // 判断总结是否失败
+            const summaryFailed = summary.includes('总结生成失败') || summary.includes('网络连接失败') || summary.includes('AI 总结生成失败');
 
             const now = new Date();
             const timeStr = `${now.getMonth() + 1}/${now.getDate()} ${now.getHours()}:${now.getMinutes().toString().padStart(2, '0')}`;
@@ -5007,7 +5144,12 @@ ${chatHistoryText}
             // 同时更新自动存档
             localStorage.setItem('infinite.save', JSON.stringify(saveObj));
 
-            showToastMsg("✅ 存档成功！记忆已更新");
+            // 根据总结结果显示不同提示
+            if (summaryFailed) {
+                showToastMsg("⚠️ 存档已保存，但剧情总结生成失败");
+            } else {
+                showToastMsg("✅ 存档成功！剧情总结已更新");
+            }
 
             // 标记为已保存
             hasUnsavedChanges = false;
@@ -5703,7 +5845,9 @@ ${chatHistoryText}
         //  退出保护逻辑
         // ==========================================
         function checkExit() {
-            if (hasUnsavedChanges) {
+            // Updated logic: Only confirm if AI has been triggered (hasAiInteraction)
+            // or if traditional hasUnsavedChanges is true (though usually they are synced)
+            if (hasAiInteraction) {
                 showExitConfirmModal();
             } else {
                 exitGame();
